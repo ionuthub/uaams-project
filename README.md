@@ -32,8 +32,8 @@ The Sprint 2 demo path is:
 | Dawid | Firebase/back-end, Firestore data model, Firebase Storage, authentication, security rules, seed data |
 | Elena | Student front-end screens, registration/login UI, dashboard, form steps and upload screen |
 | Sorin | Email provider decision, SMTP setup, verification and decision emails, email logging |
-| Silvana | Test plan, integration checks, smoke testing, demo-path testing |
-| Cornel | Architecture overview, schema documentation, design documentation, Sprint 3 user-testing method |
+| Silvana | Architecture overview, schema documentation, design documentation, Sprint 3 user-testing method |
+| Cornel | Test plan, integration checks, smoke testing, demo-path testing |
 
 ## Workflow Rules
 

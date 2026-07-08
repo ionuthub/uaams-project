@@ -25,7 +25,7 @@ The weekly smoke test should prove that:
 
 ## Weekly Smoke Test
 
-Silvana owns the weekly smoke test. Results should be added to the Sprint 2 report with the date, build URL, tested path, pass/fail result, and evidence link.
+Cornel owns the weekly smoke test, integration checks, and demo-path testing. Results should be added to the Sprint 2 report with the date, build URL, tested path, pass/fail result, and evidence link.
 
 ## Priority Checks
 

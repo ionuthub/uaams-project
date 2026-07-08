@@ -1,6 +1,6 @@
 # Schema Documentation
 
-This document tracks the Sprint 2 Firestore schema. It is a working draft and should be updated as Dawid and Cornel finalise the data model.
+This document tracks the Sprint 2 Firestore schema. It is a working draft and should be updated as Dawid and Silvana finalise the data model.
 
 ## Proposed Collections
 
