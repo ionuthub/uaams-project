@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// UAAMS Firestore security rules: FIRST PASS (Sprint 2, Dawid + Ionut, Week 6).
+// Enforces the two core guarantees of the demo path:
+//   1. Students only ever see their own applications.
+//   2. Admins only see applications for THEIR university (scoping).
+// Sprint 3 TODO: field-level validation on writes, rate limiting via
+// App Check, and the GDPR delete cascade rules (pending IS-06).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers ----
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isVerified() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isAdmin() {
+      return isVerified() && userDoc().role == 'admin';
+    }
+    function adminOf(universityId) {
+      return isAdmin() && userDoc().universityId == universityId;
+    }
+
+    // ---- users ----
+    match /users/{uid} {
+      // A user reads/creates their own profile. Role is fixed to "student"
+      // on self-creation — admin accounts are made only by the seed script.
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == 'student';
+      allow update: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role; // cannot self-promote
+      allow delete: if false; // GDPR delete cascade is a Sprint 3 item (IS-06)
+    }
+
+    // ---- universities (read-only reference data) ----
+    match /universities/{id} {
+      allow read: if signedIn();
+      allow write: if false; // seeded via Admin SDK only
+    }
+
+    // ---- applications ----
+    match /applications/{appId} {
+      // Student: own applications. Admin: applications for their university.
+      allow read: if isVerified()
+                  && (resource.data.studentUid == request.auth.uid
+                      || adminOf(resource.data.universityId));
+
+      // Only a verified student can create, and only as themselves, in draft.
+      allow create: if isVerified()
+                    && request.resource.data.studentUid == request.auth.uid
+                    && request.resource.data.status == 'draft';
+
+      // Student may update their own draft (form edits, document link, submit).
+      // Admin of the university may update status/decision fields.
+      allow update: if isVerified()
+                    && (
+                      (resource.data.studentUid == request.auth.uid
+                        && resource.data.status == 'draft')
+                      || adminOf(resource.data.universityId)
+                    );
+
+      allow delete: if false; // no deletes in the PoC; GDPR cascade is Sprint 3
+
+      // ---- decision audit log (IS-05): append-only ----
+      match /decisions/{decisionId} {
+        allow read: if isVerified()
+                    && (get(/databases/$(database)/documents/applications/$(appId)).data.studentUid == request.auth.uid
+                        || adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId));
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow update, delete: if false; // decisions are never edited or removed
+      }
+    }
+
+    // ---- email logs (written by Sorin's module) ----
+    match /emailLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isVerified(); // tighten in Sprint 3 once send path is final
+      allow update, delete: if false; // anonymise-vs-delete pending IS-06
+    }
+  }
+}
