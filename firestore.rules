@@ -4,8 +4,8 @@ rules_version = '2';
 // Enforces the two core guarantees of the demo path:
 //   1. Students only ever see their own applications.
 //   2. Admins only see applications for THEIR university (scoping).
-// Sprint 3 TODO: field-level validation on writes, rate limiting via
-// App Check, and the GDPR delete cascade rules (pending IS-06).
+// Field-level allow-lists on user/application updates added after PR review.
+// Sprint 3 TODO: value-format validation, App Check, GDPR delete cascade (IS-06).
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -36,8 +36,9 @@ service cloud.firestore {
                     && request.auth.uid == uid
                     && request.resource.data.role == 'student';
       allow update: if signedIn()
-                    && request.auth.uid == uid
-                    && request.resource.data.role == resource.data.role; // cannot self-promote
+              && request.auth.uid == uid
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['fullName', 'updatedAt']);
       allow delete: if false; // GDPR delete cascade is a Sprint 3 item (IS-06)
     }
 
@@ -59,14 +60,25 @@ service cloud.firestore {
                     && request.resource.data.studentUid == request.auth.uid
                     && request.resource.data.status == 'draft';
 
-      // Student may update their own draft (form edits, document link, submit).
-      // Admin of the university may update status/decision fields.
-      allow update: if isVerified()
-                    && (
-                      (resource.data.studentUid == request.auth.uid
-                        && resource.data.status == 'draft')
-                      || adminOf(resource.data.universityId)
-                    );
+      // Student: may edit allowed draft fields only, and may move
+      // status draft -> submitted. Admin: may write decision fields only.
+      allow update: if isVerified() && (
+        (
+          resource.data.studentUid == request.auth.uid
+          && resource.data.status == 'draft'
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['form', 'documentPath', 'status', 'submittedAt', 'updatedAt'])
+          && (request.resource.data.status == 'draft'
+              || request.resource.data.status == 'submitted')
+        )
+        ||
+        (
+          adminOf(resource.data.universityId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'latestDecisionMessage', 'updatedAt'])
+          && request.resource.data.status in ['under_review', 'offer', 'rejected']
+        )
+      );
 
       allow delete: if false; // no deletes in the PoC; GDPR cascade is Sprint 3
 

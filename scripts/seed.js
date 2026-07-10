@@ -8,7 +8,9 @@
 //      Generate new private key -> save as serviceAccountKey.json
 //      (NEVER commit this file — add it to .gitignore immediately)
 //   2. npm install firebase-admin
-//   3. node scripts/seed.js
+//   3. Set the seed admin password (never committed):
+//      PowerShell:  $env:SEED_ADMIN_PASSWORD="your-password"
+//   4. npm run seed
 //
 // The console output IS the evidence for the Sprint 2 report
 // ("Foundations live... seed output" milestone) — screenshot it.
@@ -30,9 +32,15 @@ const UNIVERSITY = {
 
 const ADMIN_USER = {
   email: "admin@solent.test",
-  password: "Admin123",
+  password: process.env.SEED_ADMIN_PASSWORD,
   fullName: "Admin",
 };
+
+if (!ADMIN_USER.password || ADMIN_USER.password.length < 8) {
+  console.error("Set SEED_ADMIN_PASSWORD (min 8 chars) before running, e.g.");
+  console.error('  PowerShell:  $env:SEED_ADMIN_PASSWORD="your-password"; npm run seed');
+  process.exit(1);
+}
 
 async function seed() {
   // 1. University
@@ -43,7 +51,8 @@ async function seed() {
   let user;
   try {
     user = await auth.getUserByEmail(ADMIN_USER.email);
-    console.log(`✔ Admin auth account already exists: ${user.uid}`);
+    await auth.updateUser(user.uid, { password: ADMIN_USER.password });
+    console.log(`✔ Admin auth account already exists: ${user.uid} (password updated)`);
   } catch {
     user = await auth.createUser({
       email: ADMIN_USER.email,
