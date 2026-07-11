@@ -25,7 +25,7 @@ import {
   recordDecision,
 } from "../lib/db";
 import { uploadDocument, validateFile } from "../lib/storage";
-import { auth } from "../lib/firebase";
+import { getAuthClient } from "../lib/firebase";
 
 export default function Harness() {
   const [user, setUser] = useState(null);
@@ -42,17 +42,22 @@ export default function Harness() {
   const say = (msg) => setLog((l) => [`${new Date().toLocaleTimeString()}  ${msg}`, ...l]);
 
   useEffect(() => {
-    const unsub = watchAuth(async (u) => {
-      setUser(u);
-      if (u) {
-        const p = await getUserProfile(u.uid);
-        setProfile(p);
-        say(`Signed in as ${u.email} (verified: ${u.emailVerified}, role: ${p?.role})`);
-      } else {
-        setProfile(null);
-      }
-    });
-    return unsub;
+    try {
+      const unsub = watchAuth(async (u) => {
+        setUser(u);
+        if (u) {
+          const p = await getUserProfile(u.uid);
+          setProfile(p);
+          say(`Signed in as ${u.email} (verified: ${u.emailVerified}, role: ${p?.role})`);
+        } else {
+          setProfile(null);
+        }
+      });
+      return unsub;
+    } catch (error) {
+      say(`SETUP REQUIRED: ${error.message}`);
+      return undefined;
+    }
   }, []);
 
   const run = (label, fn) => async () => {
@@ -80,7 +85,7 @@ export default function Harness() {
       <button onClick={run("login", async () => { const { verified } = await login(email, password);
             if (!verified) say("Signed in but NOT verified. Click the link in your email, then press Login again.");
           })}>Login</button>
-      <button onClick={run("resend verification", () => resendVerification(auth.currentUser))}>
+      <button onClick={run("resend verification", () => resendVerification(getAuthClient().currentUser))}>
         Resend verification
       </button>
       <button onClick={run("logout", logout)}>Logout</button>
