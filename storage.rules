@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// UAAMS Storage rules: enforce IS-07 (10 MB; PDF/JPG/PNG) server-side,
+// and implement the IS-04 decision: access is rules-scoped, not public links.
+// Files live at: applications/{applicationId}/{fileName}
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /applications/{applicationId}/{fileName} {
+
+      function signedIn() {
+        return request.auth != null;
+      }
+      function appData() {
+        return firestore.get(/databases/(default)/documents/applications/$(applicationId)).data;
+      }
+      function isOwner() {
+        return signedIn() && appData().studentUid == request.auth.uid;
+      }
+      function isScopedAdmin() {
+        return signedIn()
+          && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.universityId == appData().universityId;
+      }
+
+      // IS-07 enforced here — cannot be bypassed by skipping the UI:
+      allow write: if isOwner()
+                   && request.resource.size <= 10 * 1024 * 1024
+                   && request.resource.contentType.matches('application/pdf|image/jpeg|image/png');
+
+      // IS-04: only the owning student or the scoped admin can read.
+      allow read: if isOwner() || isScopedAdmin();
+
+      allow delete: if false; // GDPR cascade is Sprint 3 (IS-06)
+    }
+
+    // Deny everything else by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
