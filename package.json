@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "verify:repo": "node scripts/check-source.mjs",
+    "check": "npm run verify:repo && npm run build"
   },
   "dependencies": {
     "firebase": "^11.1.0",
