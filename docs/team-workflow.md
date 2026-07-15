@@ -1,5 +1,37 @@
 # Team Workflow
 
+## Agile Delivery Model
+
+UAAMS treats Sprint 2 as one four-week Sprint with weekly planning and review checkpoints. It uses one ordered Product Backlog. Epics group long-lived product capabilities; user stories express stakeholder value; technical tasks describe how the team delivers a selected story.
+
+Week 1 to Week 4 are checkpoints inside Sprint 2, not separate Sprints.
+
+The delivery chain is:
+
+```text
+Product Goal -> Epic -> User Story -> FR/NFR -> Task/PR -> Test -> Evidence
+```
+
+### Sprint 2 Week 2 Goal
+
+By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list and open application details.
+
+### Weekly Events
+
+- **Sprint Planning:** agree the Sprint Goal, select ready stories, confirm owners and dependencies.
+- **Daily Scrum:** inspect progress toward the goal, state the next action, and expose blockers.
+- **Backlog refinement:** clarify proposed stories and acceptance criteria without silently adding them to the Sprint.
+- **Sprint Review:** demonstrate the integrated increment and collect stakeholder feedback.
+- **Retrospective:** record one owned improvement for the next week.
+
+### Work-in-Progress Rule
+
+Each person has at most one primary item in `In Progress`. Support work may be linked, but starting more work does not take priority over finishing the Sprint Goal.
+
+## Definition of Ready
+
+A story can enter a Sprint when it has an epic, user story, business value, FR/NFR references, testable acceptance criteria, owner, dependency decision, and evidence requirement.
+
 ## Branch Naming Convention
 
 Use short feature branches that describe the work area:
@@ -40,6 +72,8 @@ Done means:
 - The relevant Sprint 2 report section is updated.
 - The demo path still passes a smoke test.
 - Evidence is attached to the issue, pull request, or report.
+- The user story and FR/NFR references are updated in the traceability matrix.
+- Acceptance criteria and relevant allowed/blocked access cases pass.
 
 Working locally is not enough.
 

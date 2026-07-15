@@ -17,9 +17,9 @@ Sprint 2 proof of concept. Next.js 15 (App Router, plain JS) + Firebase (Auth, F
 | `firestore.rules` | Security rules (deployed) — role checks, university scoping, field-level allow-lists, append-only decisions | Dawid |
 | `storage.rules` | IS-07 enforced server-side; owner/scoped-admin reads (IS-04) | Dawid |
 | `scripts/seed.js` | Creates the demo university and admin account | Dawid |
-| `app/page.js` | **Temporary backend test harness** — replaced by Elena's screens; `lib/` stays | Dawid |
+| `app/page.js` | **Temporary backend test harness** — replaced by Alina's screens; `lib/` stays | Dawid |
 
-Front end (Elena), admin module (Ionut), emails (Sorin): build on top of `lib/` — do not call Firebase directly.
+Front end (Alina), admin module (Ionut), emails (Sorin): build on top of `lib/` — do not call Firebase directly.
 
 ---
 
@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. You should see the test harness (until Elena's screens replace it).
+Open http://localhost:3000. You should see the test harness (until Alina's screens replace it).
 
 ---
 

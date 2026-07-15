@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// UAAMS Firestore security rules: FIRST PASS (Sprint 2, Dawid + Ionut, Week 6).
+// UAAMS Firestore security rules: first Sprint 2 pass by Dawid and Ionut.
 // Enforces the two core guarantees of the demo path:
 //   1. Students only ever see their own applications.
 //   2. Admins only see applications for THEIR university (scoping).

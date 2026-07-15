@@ -42,7 +42,24 @@ Sprint 2 must produce a live proof of concept that demonstrates the complete min
 
 | Week | Focus |
 |---|---|
-| Week 4 | Foundations: repository workflow, Firebase setup, Vercel pipeline, schema decisions, initial screens |
-| Week 5 | Features on top: authentication, dashboard, application form, upload, admin views |
-| Week 6 | Wire everything together: scoped admin flow, decisions, emails, status updates, smoke tests |
-| Week 7 | Freeze and present: bug fixes, evidence capture, report completion, final demo path |
+| Week 1 | Foundations: repository workflow, Firebase setup, Vercel pipeline, schema decisions, initial screens |
+| Week 2 | Core increment: authentication, dashboard, application form, upload, admin list/detail views |
+| Week 3 | Integration: university scoping, decisions, emails and status updates |
+| Week 4 | Release and evidence: smoke tests, bug fixes, report completion and final demo path |
+
+## Week 2 Sprint Goal
+
+By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list and open application details.
+
+## Week 2 Epic Selection
+
+| Epic | Week 2 commitment |
+|---|---|
+| EP-01 Identity and access | Complete live authentication and evidence (#7, #8) |
+| EP-02 Catalogue | Use current university reference data; refine course requirements only |
+| EP-03 Student applications | Dashboard and application form (#9, #10) |
+| EP-04 Document management | Enable Storage and connect one-document upload (#6, #11) |
+| EP-07 Admissions review | Admin list and detail views (#12, #13) |
+| EP-08 Notifications and email | Finalise provider decision and basic connection (#16, #17) |
+
+EP-05 Payments and EP-06 Financial compliance remain Sprint 3 proposals. EP-07 decision completion and EP-08 decision email are Week 3 work.
