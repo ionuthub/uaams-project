@@ -30,7 +30,7 @@ The Sprint 2 demo path is:
 |---|---|
 | Ionut | GitHub workflow, repo organisation, GitHub Projects board, pull request reviews, Vercel deployment pipeline, admin module, report assembly |
 | Dawid | Firebase/back-end, Firestore data model, Firebase Storage, authentication, security rules, seed data |
-| Elena | Student front-end screens, registration/login UI, dashboard, form steps and upload screen |
+| Alina | Student front-end screens, registration/login UI, dashboard, form steps and upload screen |
 | Sorin | Email provider decision, SMTP setup, verification and decision emails, email logging |
 | Silvana | Architecture overview, schema documentation, design documentation, Sprint 3 user-testing method |
 | Cornel | Test plan, integration checks, smoke testing, demo-path testing |
@@ -42,6 +42,13 @@ The Sprint 2 demo path is:
 - Open pull requests into `develop`.
 - Merge `develop` into `main` only when the proof-of-concept path is stable.
 - Done means merged, deployed, and smoke-tested, not just working locally.
+
+## Agile and Requirements Documentation
+
+- `docs/user-stories.md` — Product Backlog story catalogue and epic mapping.
+- `docs/software-requirements-specification.md` — Sprint 2 FR/NFR and proposed Sprint 3 requirements.
+- `docs/requirements-traceability-matrix.md` — story-to-requirement-to-issue-to-test evidence.
+- `docs/team-workflow.md` — Scrum cadence, Definition of Ready, and Definition of Done.
 
 ## Repository Layout
 
