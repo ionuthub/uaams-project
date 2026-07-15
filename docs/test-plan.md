@@ -78,10 +78,10 @@ Use a normal browser window for the student and a private/incognito window for t
 |---|---|---|
 | Authentication and student UI | #7, #8 | AUTH-01 to AUTH-10 |
 | Student dashboard | #9 | DASH-01 to DASH-03 |
-| Application form and upload | #10, #11 | APP-01 to APP-08 |
+| Application form and upload | #10, #11 | APP-01 to APP-09 |
 | Admin list/detail and scoping | #12, #13, #14 | ADM-01 to ADM-06 |
 | Decision flow | #15 | DEC-01 to DEC-05 |
-| Email system | #16, #17, #18, #19 | EMAIL-01 to EMAIL-05 |
+| Email system | #16, #17, #18, #19 | EMAIL-01 to EMAIL-06 |
 | Integrated release | #21, #25 | E2E-01 to E2E-03, DEP-01 to DEP-03 |
 
 ## Authentication Tests
@@ -119,6 +119,7 @@ Use a normal browser window for the student and a private/incognito window for t
 | APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type | | Blocked | Storage/Blaze decision |
 | APP-07 | Positive | Valid draft and required document | Submit the application; refresh dashboard | Status changes from `draft` to `submitted`; submitted timestamp exists; admin queue can include it | | Not run | |
 | APP-08 | Access/state | Submitted application | Attempt to change form/document fields or submit again | Firestore rules reject changes outside the allowed transition; stored submission remains unchanged | | Not run | |
+| APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` | Current `submitApplication()` and Firestore rules do not enforce this requirement | Not implemented | Implementation gap |
 
 ## Admin and Scoping Tests
 
@@ -137,7 +138,7 @@ Use a normal browser window for the student and a private/incognito window for t
 |---|---|---|---|---|---|---|---|
 | DEC-01 | Positive | In-scope submitted application | Enter custom message; choose Offer; confirm | Application becomes `offer`; message and timestamp update; one audit record is added atomically | | Not run | |
 | DEC-02 | Positive | In-scope submitted application | Enter custom message; choose Reject; confirm | Application becomes `rejected`; message and timestamp update; one audit record is added atomically | | Not run | |
-| DEC-03 | Validation | Decision form open | Submit missing/whitespace message or invalid decision value | UI blocks invalid input; backend rejects values other than `offer`/`rejected` | | Not run | |
+| DEC-03 | Validation | Decision form open | Submit missing/whitespace message or invalid decision value | UI and backend reject a blank message; backend rejects values other than `offer`/`rejected` | Current `recordDecision()` validates the decision value but does not reject a blank message | Not implemented | Implementation gap |
 | DEC-04 | Audit | Application has a previous decision | Record another valid decision where policy allows | A new append-only history record is added; previous history is unchanged | | Not run | |
 | DEC-05 | Atomic failure | Simulate denied/interrupted write | Attempt decision and inspect application/history | No half-written state: application update and audit record either both exist or neither exists | | Not run | |
 
@@ -145,11 +146,23 @@ Use a normal browser window for the student and a private/incognito window for t
 
 | ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
 |---|---|---|---|---|---|---|---|
-| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger a controlled server-side test email | Email is sent without exposing secrets; provider message ID is returned and logged | | Blocked | #17 and verified domain |
-| EMAIL-02 | Offer | DEC-01 passes | Record an offer and inspect recipient mailbox | Student receives one offer email containing the correct decision and custom message | | Blocked | #17 and verified domain |
-| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection and inspect recipient mailbox | Student receives one rejection email containing the correct decision and custom message | | Blocked | #17 and verified domain |
+| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger a controlled server-side test email | Server verifies the Firebase ID token and admin scope; email is sent without exposing secrets; provider message ID is returned and logged | | Blocked | #17 and verified domain |
+| EMAIL-02 | Offer | DEC-01 passes | Record an offer; invoke the email route with only the application ID; inspect recipient mailbox | Server reads the committed `offer`, message and student email from Firestore; student receives one matching email | | Blocked | #17 and verified domain |
+| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection; invoke the email route with only the application ID; inspect recipient mailbox | Server reads the committed `rejected`, message and student email from Firestore; student receives one matching email | | Blocked | #17 and verified domain |
 | EMAIL-04 | Failure | Use controlled invalid provider configuration/recipient | Trigger send; inspect admin feedback and `emailLogs` | Decision remains recorded; email failure is honest/retryable; failed log contains no secret | | Blocked | #17 |
 | EMAIL-05 | Duplicate prevention | Completed decision email exists | Retry the same request/action | Idempotency prevents duplicate delivery or the UI requires an explicit resend action; log remains understandable | | Blocked | #17 |
+| EMAIL-06 | Authorisation | Student or admin from another university has an application ID | Call the decision-email route using that user's Firebase ID token | Server returns an unauthorised/forbidden response; no email is sent and no false success log is created | | Blocked | #17 |
+
+## Known Implementation Gaps Found During Plan Review
+
+These are findings from comparing this plan with Dawid's current `develop` backend. They are not test passes.
+
+- `submitApplication()` and the Firestore rules currently allow a draft with no `documentPath` to become `submitted`; APP-09 records the required fix.
+- `recordDecision()` rejects invalid decision values but currently accepts a blank decision message; DEC-03 records the required fix.
+- Client-side creation of `emailLogs` is currently allowed for any verified user. Issue #17 should move log creation to a verified server route and then deny client creation in `firestore.rules`.
+- `firebase-admin` is currently a development dependency. Move it to production dependencies if a deployed Next.js email route imports it.
+- Firebase Storage remains blocked by the Blaze-plan decision.
+- Firebase email-action routing is a separate authentication concern. Unmerged `/auth/action` work should be reviewed against the merged `/verify-email` and `/reset-password` routes before use.
 
 ## End-to-End and Deployment Tests
 

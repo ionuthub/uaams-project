@@ -35,7 +35,7 @@ This document records the Sprint 2 architecture for the UAAMS proof of concept. 
 - Firestore for application, status, decision, and message data.
 - Firebase Storage for uploaded documents.
 - Firebase Authentication for verification and password-reset emails.
-- Resend API, planned for decision emails and email logging after issue #17 is implemented.
+- Resend API, planned behind a server-side Next.js route for decision emails and email logging after issue #17 is implemented. The route must verify the Firebase ID token and university scope, then read the committed decision and recipient from Firestore.
 - Vercel for live deployment.
 
 ## Open Architecture Decisions

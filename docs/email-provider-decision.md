@@ -92,15 +92,20 @@ None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must
 
 ## Integration Contract
 
-Issue #17 should provide one server-side function with a contract similar to:
+Issue #17 should add a protected server-side endpoint with a browser-facing contract similar to:
 
 ```text
-sendDecisionEmail({ applicationId, recipient, decision, message })
+POST /api/email/decision
+Authorization: Bearer <Firebase ID token>
+Body: { applicationId }
 ```
 
-The function must:
+The endpoint must:
 
-- accept only `offer` or `rejected` decisions;
+- verify the Firebase ID token, admin role and university scope on the server;
+- read the application, latest decision and student's email from Firestore after `recordDecision()` succeeds;
+- never trust a browser-supplied recipient, decision or message;
+- accept only a committed `offer` or `rejected` decision;
 - send from the configured `EMAIL_FROM` address;
 - include the decision and admin message in both HTML and plain text;
 - return the Resend message ID on success;
@@ -109,6 +114,18 @@ The function must:
 - surface failure to the admin flow instead of showing a false success.
 
 The decision email should be triggered only after `recordDecision()` completes successfully. If email sending fails, the recorded application decision must remain visible and the failure must be available for retry.
+
+## Compatibility with Dawid's Firebase Backend
+
+This design was checked against the current `develop` versions of `lib/auth.js`, `lib/db.js`, `lib/firebase.js`, `firestore.rules` and `package.json`.
+
+- Firebase Authentication continues to own verification and password-reset emails. Resend does not replace the functions in `lib/auth.js`.
+- `recordDecision()` already commits the application status and an append-only decision record in one Firestore batch. The email request runs only after that batch succeeds.
+- The implemented status values are `offer` and `rejected`. The email module must use those exact values.
+- The current Firebase client uses `getAuthClient()` and `getDbClient()` lazy getters. New email code must keep that interface and must not import removed `auth` or `db` constants.
+- Resend and Firebase Admin must be used only in a Next.js server route or other server-only module. If the production route imports `firebase-admin`, move that package from `devDependencies` to `dependencies`.
+- The server should write `emailLogs` through Firebase Admin after verifying the caller and application scope. When that route is implemented, client creation of `emailLogs` in `firestore.rules` should be denied because Admin SDK writes do not depend on client rules.
+- Dawid's separate `/auth/action` branch work concerns Firebase email-action links and is not a dependency of the Resend decision-email flow. The merged `/verify-email` and `/reset-password` routes remain the current integration point unless the team reviews and merges a replacement.
 
 ## Security and Data Handling
 

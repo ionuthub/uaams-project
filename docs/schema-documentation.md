@@ -21,7 +21,7 @@ Suggested Sprint 2 application statuses:
 - `draft`
 - `submitted`
 - `under_review`
-- `offered`
+- `offer`
 - `rejected`
 
 ## Required Schema Decisions
