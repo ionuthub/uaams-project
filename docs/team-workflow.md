@@ -12,6 +12,8 @@ The delivery chain is:
 Product Goal -> Epic -> User Story -> FR/NFR -> Task/PR -> Test -> Evidence
 ```
 
+Canonical user stories have their own GitHub issues. Existing frontend, backend, email, testing and documentation issues are delivery tasks or enablers linked beneath those stories. A delivery task may support multiple stories but has one primary parent for board clarity.
+
 ### Sprint 2 Week 2 Goal
 
 By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list and open application details.
@@ -90,3 +92,11 @@ Every blocker should include:
 - Deadline impact.
 
 Move blocked tasks to the `Blocked` project column until the decision is made.
+
+## Repository Safeguards
+
+- GitHub Actions runs repository integrity checks and a production build on pull requests and pushes to `develop` and `main`.
+- Vercel supplies preview and production deployment checks.
+- The private repository's current GitHub plan does not permit branch protection or repository rulesets. Until that changes, the team must enforce pull-request review and passing checks through process.
+- Merge commits are the only enabled merge strategy so full feature history is preserved.
+- Merged head branches are deleted automatically.
