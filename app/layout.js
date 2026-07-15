@@ -1,7 +1,8 @@
-// app/layout.js — minimal root layout, no styling (functionality only).
+// Shared metadata and document structure for every UAAMS route.
 export const metadata = {
-  title: "UAAMS : backend test harness",
-  description: "Sprint 2 proof of concept backend",
+  title: "UAAMS | University Applications",
+  description:
+    "University Administration and Application Management System proof of concept.",
 };
 
 export default function RootLayout({ children }) {
