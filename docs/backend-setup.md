@@ -53,6 +53,14 @@ npm run dev
 
 Open http://localhost:3000. You should see the test harness (until Alina's screens replace it).
 
+Firebase Authentication uses one custom action-handler URL for verification and password-reset actions:
+
+```text
+https://uaams-project.vercel.app/auth/action
+```
+
+Firebase supplies `mode` and `oobCode`. The handler validates those parameters and routes verification to `/verify-email` and password reset to `/reset-password`, where the existing screens complete the action. Add the stable Vercel domain to Firebase Authentication authorised domains before testing production emails.
+
 ---
 
 ## Test accounts
