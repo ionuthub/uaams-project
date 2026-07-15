@@ -30,9 +30,9 @@ The root route still contains Dawid's temporary integration harness for applicat
 
 | Module | Responsibility | Owner |
 |---|---|---|
-| Student authentication | Register, verify email, log in and reset password | Dawid / Elena |
-| Student dashboard | Show owned applications and status badges | Elena |
-| Application form | Capture required fields and attach one document | Elena / Dawid |
+| Student authentication | Register, verify email, log in and reset password | Dawid / Alina |
+| Student dashboard | Show owned applications and status badges | Alina |
+| Application form | Capture required fields and attach one document | Alina / Dawid |
 | Admin dashboard | List and review applications scoped to the admin university | Ionut |
 | Decision flow | Offer or reject with a custom message and status update | Ionut |
 | Email system | Firebase Auth sends verification/reset emails; Resend is selected for decision emails and email logs | Sorin; Ionut completed the provider decision as catch-up work |

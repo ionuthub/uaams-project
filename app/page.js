@@ -2,10 +2,10 @@
 
 // app/page.js : BACKEND TEST SCAFFOLD (Dawid's lane).
 // Deliberately ugly and unstyled: this page exists so the backend can be
-// proven working end to end BEFORE Elena's real screens land. It walks the
+// proven working end to end BEFORE Alina's real screens land. It walks the
 // exact Sprint 2 demo path: register -> verify -> apply + upload ->
 // admin sees it scoped -> decision -> student sees status.
-// Elena replaces this page; the lib/ functions underneath stay the same.
+// Alina replaces this page; the lib/ functions underneath stay the same.
 
 import { useState, useEffect } from "react";
 import {
