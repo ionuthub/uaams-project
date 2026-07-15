@@ -13,14 +13,17 @@ Done
 
 Recommended fields:
 
-- Epic (`EP-01` to `EP-08` or `Enabler`).
-- User story ID.
-- Sprint week.
-- Priority.
-- Story points (`1`, `2`, `3`, `5`, `8`).
-- Owner.
-- FR/NFR references.
-- Status.
+- `Epic` (`EP-01` to `EP-08`).
+- `Item Type` (`Epic`, `User Story`, `Delivery Task`, `Enabler`, `Bug`).
+- `Story References` (supports more than one ID where necessary).
+- `Requirement References` (FR/NFR IDs).
+- `Sprint Week`.
+- `Priority` (`Must`, `Should`, `Could`).
+- `Delivery Owner` (team-facing accountability, including members without assignable GitHub accounts).
+- GitHub `Assignees` (account-level responsibility where available).
+- `Status`.
+
+Story points are optional and should be introduced only if the team estimates together and uses the values during planning. Do not add unused fields merely to imitate a framework.
 
 Every selected story must have:
 

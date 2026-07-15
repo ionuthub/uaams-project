@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. You should see the test harness (until Alina's screens replace it).
+Set `ENABLE_TEST_HARNESS=true` in `.env.local`, then open http://localhost:3000/dev/harness to use the temporary backend test harness. The route returns Not Found when the server-only flag is absent, including on production by default.
 
 Firebase Authentication uses one custom action-handler URL for verification and password-reset actions:
 

@@ -23,18 +23,18 @@ Story status is one of: `Sprint 2`, `Product backlog`, `Proposed`, `Deferred`, o
 
 ## Sprint 2 Stories
 
-| ID | Epic | User story | GitHub issue(s) | Lead / support | Status |
+| ID | Epic | User story | Story issue | Delivery task(s) | Lead / support | Status |
 |---|---|---|---|---|---|
-| US-01 | EP-01 | As an applicant, I want to register and verify my email so that I can securely use UAAMS. | #7, #8, #18 | Alina / Dawid, Sorin, Cornel | Sprint 2 |
-| US-02 | EP-01 | As an authorised user, I want role-appropriate access so that protected functions and data are not exposed. | #7, #14 | Dawid / Ionut, Cornel | Sprint 2 |
-| US-03 | EP-02 | As an applicant, I want to view available universities so that I can choose where to apply. | #10 | Alina / Dawid | Sprint 2 |
-| US-04 | EP-03 | As an applicant, I want to create and submit an application so that it can be reviewed. | #10 | Alina / Dawid, Cornel | Sprint 2 |
-| US-05 | EP-03 | As an applicant, I want to see my applications and their statuses so that I understand their progress. | #9 | Alina / Dawid, Cornel | Sprint 2 |
-| US-06 | EP-04 | As an applicant, I want to upload one permitted document so that the university can review my evidence. | #6, #11 | Alina, Dawid / Cornel | Sprint 2 |
-| US-07 | EP-07 | As an admissions officer, I want to see only applications for my university so that I can review the correct applicants. | #12, #14 | Ionut, Dawid / Cornel | Sprint 2 |
-| US-08 | EP-07 | As an admissions officer, I want to open an application and see its submitted data and document metadata so that I can prepare a decision. | #13 | Ionut / Dawid, Cornel | Sprint 2 |
-| US-09 | EP-07 | As an admissions officer, I want to offer or reject with a message so that the applicant receives a recorded outcome. | #15 | Ionut / Dawid, Sorin, Cornel | Sprint 2 |
-| US-10 | EP-08 | As an applicant, I want to receive important emails so that I remain informed when I am not using UAAMS. | #16-#19 | Sorin / Dawid, Ionut, Cornel | Sprint 2 |
+| US-01 | EP-01 | As an applicant, I want to register and verify my email so that I can securely use UAAMS. | #45 | #7, #8, #18 | Alina / Dawid, Sorin, Cornel | Sprint 2 |
+| US-02 | EP-01 | As an authorised user, I want role-appropriate access so that protected functions and data are not exposed. | #46 | #7, #14 | Dawid / Ionut, Cornel | Sprint 2 |
+| US-03 | EP-02 | As an applicant, I want to view available universities so that I can choose where to apply. | #47 | #10 | Alina / Dawid | Sprint 2 |
+| US-04 | EP-03 | As an applicant, I want to create and submit an application so that it can be reviewed. | #48 | #10 | Alina / Dawid, Cornel | Sprint 2 |
+| US-05 | EP-03 | As an applicant, I want to see my applications and their statuses so that I understand their progress. | #49 | #9 | Alina / Dawid, Cornel | Sprint 2 |
+| US-06 | EP-04 | As an applicant, I want to upload one permitted document so that the university can review my evidence. | #50 | #6, #11 | Alina, Dawid / Cornel | Sprint 2 |
+| US-07 | EP-07 | As an admissions officer, I want to see only applications for my university so that I can review the correct applicants. | #51 | #12, #14 | Ionut, Dawid / Cornel | Sprint 2 |
+| US-08 | EP-07 | As an admissions officer, I want to open an application and see its submitted data and document metadata so that I can prepare a decision. | #52 | #13 | Ionut / Dawid, Cornel | Sprint 2 |
+| US-09 | EP-07 | As an admissions officer, I want to offer or reject with a message so that the applicant receives a recorded outcome. | #53 | #15 | Ionut / Dawid, Sorin, Cornel | Sprint 2 |
+| US-10 | EP-08 | As an applicant, I want to receive important emails so that I remain informed when I am not using UAAMS. | #54 | #16-#19 | Sorin / Dawid, Ionut, Cornel | Sprint 2 |
 
 ## Sprint 3 Proposed Stories
 
