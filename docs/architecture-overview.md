@@ -13,7 +13,7 @@ This document records the Sprint 2 architecture for the UAAMS proof of concept. 
 | Application form | Capture the Sprint 2 application fields and upload one document | Elena / Dawid |
 | Admin dashboard | List and review applications scoped to the admin university | Ionut |
 | Decision flow | Offer or reject with a custom message and status update | Ionut |
-| Email system | Send verification and decision emails, record email activity | Sorin |
+| Email system | Firebase Auth sends verification/reset emails; Resend will send decision emails and record email activity | Sorin (Ionut completed the Week 1 provider decision as catch-up work) |
 | Data model and security | Firestore collections, rules, seed data, storage permissions | Dawid |
 
 ## Intended Flow
@@ -34,12 +34,13 @@ This document records the Sprint 2 architecture for the UAAMS proof of concept. 
 - Firebase Authentication for identity.
 - Firestore for application, status, decision, and message data.
 - Firebase Storage for uploaded documents.
-- SMTP/email provider for verification and decision messaging.
+- Firebase Authentication for verification and password-reset emails.
+- Resend API, planned for decision emails and email logging after issue #17 is implemented.
 - Vercel for live deployment.
 
 ## Open Architecture Decisions
 
-- Final email provider.
+- Resend sender-domain/DNS access before issue #17 can send live decision emails.
 - Firestore security rule details.
 - Signed or secured URL approach for document downloads.
 - Decision reversibility and audit logging.
