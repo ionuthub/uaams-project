@@ -22,4 +22,4 @@ The Sprint 3 ERD is a proposal derived from US-11 to US-17. It does not replace 
 | IS-04 | Signed or secured URLs for document downloads | Dawid | Open - decide during storage setup |
 | IS-05 | Decision reversibility and how it is logged | Team | Open - decide before decision flow |
 | IS-06 | Email logs after GDPR deletion: anonymise or delete | Tutor / sponsor | Open - raise at Sprint 2 presentation |
-| IS-07 | Upload limits: 10 MB; PDF, JPG, PNG | Team | Open - confirm week 4 |
+| IS-07 | Upload limits: 10 MB; PDF, JPG, PNG | Team | Confirmed for Sprint 2; verify with upload tests |

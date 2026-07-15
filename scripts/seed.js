@@ -1,5 +1,5 @@
 // scripts/seed.js
-// Seed script — Dawid's Week 5 task: "add sample university and admin data".
+// Seed script — Dawid's backend task: add sample university and admin data.
 // Run locally with the Firebase ADMIN SDK (bypasses security rules on purpose;
 // this is why the rules can safely say "admin accounts are seed-only").
 //

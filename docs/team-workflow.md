@@ -2,7 +2,9 @@
 
 ## Agile Delivery Model
 
-UAAMS uses one ordered Product Backlog and a weekly Sprint 2 planning cadence. Epics group long-lived product capabilities; user stories express stakeholder value; technical tasks describe how the team delivers a selected story.
+UAAMS treats Sprint 2 as one four-week Sprint with weekly planning and review checkpoints. It uses one ordered Product Backlog. Epics group long-lived product capabilities; user stories express stakeholder value; technical tasks describe how the team delivers a selected story.
+
+Week 1 to Week 4 are checkpoints inside Sprint 2, not separate Sprints.
 
 The delivery chain is:
 

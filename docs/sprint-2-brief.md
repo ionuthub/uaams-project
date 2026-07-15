@@ -42,10 +42,10 @@ Sprint 2 must produce a live proof of concept that demonstrates the complete min
 
 | Week | Focus |
 |---|---|
-| Week 4 | Foundations: repository workflow, Firebase setup, Vercel pipeline, schema decisions, initial screens |
-| Week 5 | Features on top: authentication, dashboard, application form, upload, admin views |
-| Week 6 | Wire everything together: scoped admin flow, decisions, emails, status updates, smoke tests |
-| Week 7 | Freeze and present: bug fixes, evidence capture, report completion, final demo path |
+| Week 1 | Foundations: repository workflow, Firebase setup, Vercel pipeline, schema decisions, initial screens |
+| Week 2 | Core increment: authentication, dashboard, application form, upload, admin list/detail views |
+| Week 3 | Integration: university scoping, decisions, emails and status updates |
+| Week 4 | Release and evidence: smoke tests, bug fixes, report completion and final demo path |
 
 ## Week 2 Sprint Goal
 
