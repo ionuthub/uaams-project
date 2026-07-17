@@ -26,8 +26,14 @@
   margin: 0;
 }
 
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
   background: #fff;
   border: 1px solid #e2e6ea;
@@ -60,6 +66,7 @@
 .appId {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85rem;
+  overflow-wrap: anywhere;
 }
 
 .srOnly {
@@ -75,9 +82,20 @@
 }
 
 @media (max-width: 640px) {
+  .table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .table th:nth-child(3),
+  .table td:nth-child(3),
   .table th:nth-child(4),
   .table td:nth-child(4) {
     display: none;
   }
-}
 
+  .table th,
+  .table td {
+    padding: 0.6rem;
+  }
+}

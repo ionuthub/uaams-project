@@ -1,18 +1,8 @@
 // app/admin/page.js
 // Route: /admin (issue #12 - build admin list view; US-07, FR-09, NFR-03).
 //
-// Admin application list, scoped to the signed-in admin's university.
-// Scoping is enforced twice: the shared query filters by universityId
-// (lib/db.js getApplicationsForUniversity) and firestore.rules deny
-// out-of-scope reads independently, so this page cannot widen access.
-//
-// Detail navigation: each row exposes a "View details" action pointing at
-// /admin/applications/{id}. It stays disabled until #13 lands (Week 3) -
-// flip DETAIL_ROUTE_READY when that route exists.
-//
-// Sprint 3 ERD note: if applications later gain courseId / financeStatus
-// (evolved ERD), the row shows them automatically when present; nothing
-// here breaks while they are absent.
+// The shared query and Firestore rules both enforce university scoping.
+// Detail navigation remains disabled until issue #13 adds the route.
 
 "use client";
 
@@ -47,38 +37,79 @@ export default function AdminListPage() {
   const [applications, setApplications] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = watchAuth(async (user) => {
-      if (!user) {
-        setPhase("signed-out");
-        return;
-      }
-      try {
-        const userProfile = await getUserProfile(user.uid);
-        if (!userProfile || userProfile.role !== "admin" || !userProfile.universityId) {
-          // Not an admissions officer - firestore.rules would deny the
-          // scoped query anyway; we simply don't attempt it (NFR-03).
-          setPhase("denied");
+    let active = true;
+    let authRun = 0;
+    let unsubscribe = () => {};
+
+    function showLoadError(error) {
+      console.error("Admin list failed to load:", error);
+      if (active) setPhase("error");
+    }
+
+    try {
+      unsubscribe = watchAuth(async (user) => {
+        const run = ++authRun;
+        const isCurrent = () => active && run === authRun;
+
+        if (!user) {
+          if (isCurrent()) {
+            setProfile(null);
+            setApplications([]);
+            setPhase("signed-out");
+          }
           return;
         }
-        setProfile(userProfile);
-        const [apps, universities] = await Promise.all([
-          getApplicationsForUniversity(userProfile.universityId),
-          getUniversities(),
-        ]);
-        const uni = universities.find((u) => u.id === userProfile.universityId);
-        setUniversityName(uni ? uni.name : userProfile.universityId);
-        setApplications(apps);
-        setPhase("ready");
-      } catch (err) {
-        console.error("Admin list failed to load:", err);
-        setPhase("error");
-      }
-    });
-    return unsubscribe;
+
+        if (!isCurrent()) return;
+        setPhase("loading");
+        try {
+          const userProfile = await getUserProfile(user.uid);
+          if (!isCurrent()) return;
+          if (
+            !userProfile ||
+            userProfile.role !== "admin" ||
+            !userProfile.universityId
+          ) {
+            setProfile(null);
+            setApplications([]);
+            setPhase("denied");
+            return;
+          }
+
+          const [apps, universities] = await Promise.all([
+            getApplicationsForUniversity(userProfile.universityId),
+            getUniversities(),
+          ]);
+          if (!isCurrent()) return;
+
+          const university = universities.find(
+            (item) => item.id === userProfile.universityId
+          );
+          setProfile(userProfile);
+          setUniversityName(university ? university.name : userProfile.universityId);
+          setApplications(apps);
+          setPhase("ready");
+        } catch (error) {
+          if (isCurrent()) showLoadError(error);
+        }
+      });
+    } catch (error) {
+      showLoadError(error);
+    }
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
-    await logout();
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Admin logout failed:", error);
+      setPhase("error");
+    }
   }
 
   if (phase === "loading") {
@@ -119,8 +150,7 @@ export default function AdminListPage() {
       <AuthCard title="Admissions">
         <AlertBanner variant="error">
           The application queue could not be loaded. Check your connection
-          and try again; if it keeps failing, report it with the time and
-          your account on issue #12.
+          and try again. If the problem continues, contact the project team.
         </AlertBanner>
         <LoadingButton loading={false} onClick={() => window.location.reload()}>
           Try again
@@ -147,49 +177,45 @@ export default function AdminListPage() {
           appear here automatically, newest first.
         </AlertBanner>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">Application</th>
-              <th scope="col">Status</th>
-              <th scope="col">Submitted</th>
-              <th scope="col">Document</th>
-              <th scope="col"><span className={styles.srOnly}>Actions</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((app) => (
-              <tr key={app.id}>
-                <td>
-                  <span className={styles.appId}>{app.id}</span>
-                  {app.courseId ? (
-                    <span className={styles.muted}> - course {app.courseId}</span>
-                  ) : null}
-                </td>
-                <td>
-                  <StatusBadge status={app.status} />
-                  {app.financeStatus ? (
-                    <span className={styles.muted}> finance: {app.financeStatus}</span>
-                  ) : null}
-                </td>
-                <td>{formatDate(app.submittedAt)}</td>
-                <td>{app.documentPath ? "Attached" : "None"}</td>
-                <td>
-                  {DETAIL_ROUTE_READY ? (
-                    <a href={`/admin/applications/${app.id}`}>View details</a>
-                  ) : (
-                    <span
-                      className={styles.muted}
-                      title="Detail view arrives with issue #13 in Week 3"
-                    >
-                      Details - Week 3 (#13)
-                    </span>
-                  )}
-                </td>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <caption className={styles.srOnly}>
+              Applications submitted to {universityName}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Application</th>
+                <th scope="col">Status</th>
+                <th scope="col">Submitted</th>
+                <th scope="col">Document</th>
+                <th scope="col"><span className={styles.srOnly}>Actions</span></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {applications.map((app) => (
+                <tr key={app.id}>
+                  <td><span className={styles.appId}>{app.id}</span></td>
+                  <td><StatusBadge status={app.status} /></td>
+                  <td>{formatDate(app.submittedAt)}</td>
+                  <td>{app.documentPath ? "Attached" : "None"}</td>
+                  <td>
+                    {DETAIL_ROUTE_READY ? (
+                      <a href={`/admin/applications/${app.id}`}>View details</a>
+                    ) : (
+                      <span
+                        className={styles.muted}
+                        aria-disabled="true"
+                        title="Application details are not available yet"
+                      >
+                        Details unavailable
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );
