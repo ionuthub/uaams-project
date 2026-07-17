@@ -22,6 +22,7 @@ This document explains the Sprint 2 UAAMS proof-of-concept architecture. It sepa
 | Document services | PDF/JPG/PNG validation, Storage upload and application-path update | `lib/storage.js`, `storage.rules` |
 | Security | Verified-user checks, owner access, admin university scoping, field allow-lists and append-only decisions | `firestore.rules`, `storage.rules` |
 | Demo data | Seeded university and verified admin profile using Firebase Admin | `scripts/seed.js` |
+| Decision email backend | Protected admin endpoint, committed-decision validation, Resend send and scoped email logging | `app/api/email/decision`, `lib/firebase-admin.js`, `lib/email.js` |
 | Deployment | GitHub-connected Vercel previews and production deployment | Vercel project and GitHub pull requests |
 
 The root route still contains Dawid's temporary integration harness for application/admin testing. The dedicated student dashboard, application form, upload screen and admin screens are later Sprint 2 work and must not be described as finished UI.
@@ -55,7 +56,7 @@ Firebase Auth   Firestore   Firebase Storage
                      v
              Firestore/Storage rules
 
-Future decision-email path:
+Decision-email path:
 Admin browser -> protected Next.js server route -> Firebase Admin + Resend
 ```
 
@@ -64,7 +65,7 @@ Client pages should use the shared `lib/` functions instead of creating separate
 Server credentials are different:
 
 - `serviceAccountKey.json` is local seed-only data and must never be committed.
-- `RESEND_API_KEY` and any future Firebase Admin server credentials belong only in Vercel server-side environment variables.
+- `RESEND_API_KEY`, `EMAIL_FROM` and `FIREBASE_ADMIN_*` credentials belong only in Vercel server-side environment variables.
 - Server secrets must never use the `NEXT_PUBLIC_` prefix.
 
 ## Authentication Flow
@@ -94,7 +95,7 @@ The current code does not yet require a non-null `documentPath` before submissio
 
 ## Email Flow
 
-Resend is selected for decision emails, but issue #17 has not implemented it yet. The planned path is:
+The protected decision-email backend is implemented in issue #19. Its path is:
 
 1. The admin decision batch completes successfully.
 2. The browser sends only `applicationId` plus the Firebase ID token to a protected Next.js server route.
@@ -103,7 +104,9 @@ Resend is selected for decision emails, but issue #17 has not implemented it yet
 5. Resend sends the decision email.
 6. The server writes a success or failure entry to `emailLogs`.
 
-The server must not trust a browser-supplied recipient, decision or message. A failed email must not undo an already committed application decision.
+The route accepts only `applicationId`. It reads the recipient, decision and message from Firebase, uses one deterministic log per decision, and sends with a Resend idempotency key. Client writes to `emailLogs` are denied; scoped admins can read logs for their own university.
+
+Issue #15 must still call this route after `recordDecision()` succeeds and show an honest email success or failure state. A failed email must not undo an already committed application decision.
 
 ## Deployment Flow
 

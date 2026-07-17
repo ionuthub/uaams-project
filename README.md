@@ -87,7 +87,7 @@ docs/        Product, Sprint, architecture, schema, testing, and workflow docume
 
 - Registration, login, verification guidance, and password-reset screens are implemented.
 - Firebase authentication, Firestore helpers, rules, and the demo backend path are present.
-- The student dashboard, application form, production upload flow, admin screens, and email integration remain active Sprint work.
+- The student dashboard, application form, production upload flow, admin screens, and final decision-email UI connection remain active Sprint work. The protected decision-email backend and logging are implemented on the issue #19 branch.
 - The root page is the public product entry page. The backend test harness is available only at `/dev/harness` when the server-only `ENABLE_TEST_HARNESS=true` variable is set locally.
 
 Use the issue board and milestone status as the source of truth; documentation must not describe planned work as implemented.
