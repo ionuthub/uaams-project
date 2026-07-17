@@ -86,7 +86,7 @@ None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must
 - [ ] Create a sending-only API key.
 - [ ] Add `RESEND_API_KEY` to Vercel Preview and Production environments.
 - [ ] Add `EMAIL_FROM` and, if available, `EMAIL_REPLY_TO`.
-- [ ] Install the Resend Node package in the email-system feature branch.
+- [x] Use the Resend HTTPS API from the server-side email module; no browser package is required.
 - [x] Implement a server-side send function; never expose the API key to client code.
 - [ ] Send a test message to at least two team-controlled addresses.
 - [x] Record provider message ID, type, application ID, status and timestamp in `emailLogs`.

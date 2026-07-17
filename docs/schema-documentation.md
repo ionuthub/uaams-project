@@ -172,7 +172,7 @@ After upload, the exact Storage path is written to `applications.documentPath`. 
 | Storage document | Owner read/write within constraints | Scoped read | Denied |
 | Email logs | No access | Read for own university; no client writes | Denied |
 
-Firebase Admin operations used by the seed script and future email server route bypass client security rules. Those server paths must perform their own authorization checks.
+Firebase Admin operations used by the seed script and decision-email server route bypass client security rules. Those server paths must perform their own authorization checks.
 
 ## Known Gaps and Deferred Decisions
 
