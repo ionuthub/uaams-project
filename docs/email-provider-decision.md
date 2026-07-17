@@ -69,12 +69,15 @@ Add these variables to `.env.local` and Vercel Preview/Production settings. Neve
 |---|---|---|
 | `RESEND_API_KEY` | Yes | Server-side Resend authentication |
 | `EMAIL_FROM` | No | Verified sender, for example `UAAMS <decisions@updates.example.org>` |
+| `FIREBASE_ADMIN_PROJECT_ID` | No | Firebase project used by the protected route |
+| `FIREBASE_ADMIN_CLIENT_EMAIL` | Yes | Firebase service-account identity |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | Yes | Firebase service-account private key |
 | `EMAIL_REPLY_TO` | No | Monitored reply address, if the team has one |
 | `RESEND_WEBHOOK_SECRET` | Yes | Optional verification secret if delivery webhooks are added |
 
 None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must never run in a browser component.
 
-## Setup Checklist for Issue #17
+## Setup Checklist for Issues #17 and #19
 
 - [ ] Create the team Resend account and record who controls it.
 - [ ] Add a dedicated sending subdomain, such as `updates.example.org`.
@@ -84,15 +87,17 @@ None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must
 - [ ] Add `RESEND_API_KEY` to Vercel Preview and Production environments.
 - [ ] Add `EMAIL_FROM` and, if available, `EMAIL_REPLY_TO`.
 - [ ] Install the Resend Node package in the email-system feature branch.
-- [ ] Implement a server-side send function; never expose the API key to client code.
+- [x] Implement a server-side send function; never expose the API key to client code.
 - [ ] Send a test message to at least two team-controlled addresses.
-- [ ] Record provider message ID, type, application ID, status and timestamp in `emailLogs`.
-- [ ] Record a failed attempt without exposing the API key or full provider payload.
-- [ ] Add an idempotency key so retrying a decision does not send duplicate emails.
+- [x] Record provider message ID, type, application ID, status and timestamp in `emailLogs`.
+- [x] Record a failed attempt without exposing the API key or full provider payload.
+- [x] Add an idempotency key so retrying a decision does not send duplicate emails.
+- [ ] Connect the issue #15 admin decision interface to the protected route.
+- [ ] Capture live offer, rejection, duplicate-retry and controlled-failure evidence.
 
 ## Integration Contract
 
-Issue #17 should add a protected server-side endpoint with a browser-facing contract similar to:
+Issue #19 implements this browser-facing contract:
 
 ```text
 POST /api/email/decision

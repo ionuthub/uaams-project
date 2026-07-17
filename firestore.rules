@@ -92,11 +92,11 @@ service cloud.firestore {
       }
     }
 
-    // ---- email logs (written by Sorin's module) ----
+    // ---- email logs (written only by the protected server route) ----
     match /emailLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isVerified(); // tighten in Sprint 3 once send path is final
-      allow update, delete: if false; // anonymise-vs-delete pending IS-06
+      allow read: if isAdmin()
+                  && resource.data.universityId == userDoc().universityId;
+      allow write: if false; // Firebase Admin performs authorised server writes
     }
   }
 }
