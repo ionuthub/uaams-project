@@ -11,7 +11,7 @@ This matrix is updated when a story enters a sprint and again before it is marke
 | US-05 | FR-07; NFR-04–NFR-06 | EP-03 | #49 | #9 | DASH-01–DASH-03 and responsive evidence | Ready Week 2 |
 | US-06 | FR-08; NFR-01, NFR-02 | EP-04 | #50 | #6, #11 | APP-03–APP-06, ADM-02 | Blocked until Storage is enabled |
 | US-07 | FR-09; NFR-03 | EP-07 | #51 | #12, #14 | ADM-01, ADM-02, ADM-04–ADM-06 | Planned Week 2/3 |
-| US-08 | FR-10; NFR-03, NFR-06 | EP-07 | #52 | #13 | ADM-03, ADM-05 and detail-view screenshot | Planned Week 2 |
+| US-08 | FR-10; NFR-03, NFR-06 | EP-07 | #52 | #13 | ADM-03, ADM-05 and detail-view screenshot | Planned Week 3 (re-planned from Week 2 on 15 July) |
 | US-09 | FR-11, FR-12; NFR-03, NFR-07 | EP-07 | #53 | #15 | DEC-01–DEC-05 | Planned Week 3 |
 | US-10 | FR-02, FR-13; NFR-01, NFR-10 | EP-08 | #54 | #16–#19 | AUTH-05–AUTH-09, EMAIL-01–EMAIL-06 | In progress |
 | US-11–US-17 | FR-14–FR-19 | EP-02, EP-04–EP-08 | Sprint 3 backlog | Not scheduled | Not scheduled | Proposed; client validation required |

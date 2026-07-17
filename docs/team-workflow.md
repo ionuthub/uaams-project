@@ -16,7 +16,7 @@ Canonical user stories have their own GitHub issues. Existing frontend, backend,
 
 ### Sprint 2 Week 2 Goal
 
-By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list and open application details.
+By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list. (Opening application details — US-08/#13 — was re-planned to Week 3 on 15 July.)
 
 ### Weekly Events
 
