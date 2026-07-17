@@ -176,7 +176,7 @@ Firebase Admin operations used by the seed script and decision-email server rout
 
 ## Known Gaps and Deferred Decisions
 
-- Storage bucket activation and live upload evidence are blocked by the Blaze-plan decision.
+- The paid Firebase plan decision is resolved; live bucket/rules/upload evidence remains to be completed in issue #6.
 - Required document enforcement before submission is missing.
 - Blank decision-message validation is missing in `recordDecision()`.
 - Duplicate application prevention is not implemented.

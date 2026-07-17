@@ -1,4 +1,8 @@
-# Requirements Traceability Matrix
+# Agile Requirements Traceability Matrix
+
+This matrix traces selected user stories through sprint delivery. It does not replace the original PRD baseline.
+
+Use `docs/prd-compliance-register.md` to verify whether the complete product remains compliant with the client requirements, including requirements not selected for the current sprint.
 
 This matrix is updated when a story enters a sprint and again before it is marked Done.
 
@@ -14,8 +18,10 @@ This matrix is updated when a story enters a sprint and again before it is marke
 | US-08 | FR-10; NFR-03, NFR-06 | EP-07 | #52 | #13 | ADM-03, ADM-05 and detail-view screenshot | Planned Week 3 (re-planned from Week 2 on 15 July) |
 | US-09 | FR-11, FR-12; NFR-03, NFR-07 | EP-07 | #53 | #15 | DEC-01–DEC-05 | Planned Week 3 |
 | US-10 | FR-02, FR-13; NFR-01, NFR-10 | EP-08 | #54 | #16–#19 | AUTH-05–AUTH-09, EMAIL-01–EMAIL-06 | In progress |
-| US-11–US-17 | FR-14–FR-19 | EP-02, EP-04–EP-08 | Sprint 3 backlog | Not scheduled | Not scheduled | Proposed; client validation required |
+| US-11–US-17 | FR-14–FR-19 | EP-02, EP-04–EP-08 | Product Backlog | Not scheduled | Not scheduled | Mixed status: course/intake and notifications originate in the PRD; other additions require client validation. See the PRD compliance register. |
 
 ## Definition of Traceable Done
 
-A story is traceably Done when the linked requirement, issue, pull request, merged commit, test result, screenshot/demo, and report section can be followed in both directions.
+A story is traceably Done when the linked PRD requirement (or approved addition), SRS requirement, issue, pull request, merged commit, test result, screenshot/demo, and report section can be followed in both directions.
+
+Completing a reduced sprint story does not close a broader PRD requirement that the story only partially covers.

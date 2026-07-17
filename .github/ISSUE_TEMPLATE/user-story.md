@@ -18,8 +18,15 @@ As a ... I want ... so that ...
 
 ## Requirement references
 
+- PRD-XX
 - FR-XX
 - NFR-XX
+
+## PRD relationship
+
+- Original requirement / approved change / proposed addition:
+- Compliance-register row(s):
+- Approval evidence if this changes the original PRD:
 
 ## Acceptance criteria
 
@@ -53,3 +60,4 @@ As a ... I want ... so that ...
 - [ ] Relevant build passes
 - [ ] Evidence is attached
 - [ ] SRS/traceability/report references are updated
+- [ ] PRD compliance register is updated

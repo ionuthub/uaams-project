@@ -13,13 +13,13 @@ Story status is one of: `Sprint 2`, `Product backlog`, `Proposed`, `Deferred`, o
 | Epic | Product area | Sprint 2 position |
 |---|---|---|
 | EP-01 | Identity and access | Active |
-| EP-02 | University and course catalogue | University reference data active; course model proposed |
+| EP-02 | University and course catalogue | University reference data active; course/intake are mandatory PRD backlog scope |
 | EP-03 | Student applications | Active |
 | EP-04 | Document management | Basic upload active; request workflow proposed |
-| EP-05 | Payments | Sprint 3 proposal |
-| EP-06 | Financial compliance | Sprint 3 proposal |
+| EP-05 | Payments | Out of original PRD scope; change approval required |
+| EP-06 | Financial compliance | Proposed addition; change approval required |
 | EP-07 | Admissions review and decisions | Active |
-| EP-08 | Notifications and email | Basic email active; notification centre proposed |
+| EP-08 | Notifications and email | Basic email active; PRD notification meaning requires decision/completion |
 
 ## Sprint 2 Stories
 
@@ -36,17 +36,19 @@ Story status is one of: `Sprint 2`, `Product backlog`, `Proposed`, `Deferred`, o
 | US-09 | EP-07 | As an admissions officer, I want to offer or reject with a message so that the applicant receives a recorded outcome. | #53 | #15 | Ionut / Dawid, Sorin, Cornel | Sprint 2 |
 | US-10 | EP-08 | As an applicant, I want to receive important emails so that I remain informed when I am not using UAAMS. | #54 | #16-#19 | Sorin / Dawid, Ionut, Cornel | Sprint 2 |
 
-## Sprint 3 Proposed Stories
+## Product Backlog and Proposed Change Stories
 
 | ID | Epic | User story | Structural consequence | Status |
 |---|---|---|---|---|
-| US-11 | EP-02 | As an applicant, I want to apply to a specific course so that the university knows which programme I selected. | `courses`; `applications.courseId`; university/course consistency | Proposed |
+| US-11 | EP-02 | As an applicant, I want to apply to a specific course and intake so that the university knows which programme and entry point I selected. | `courses`; `applications.courseId`; intake; university/course consistency | Mandatory PRD backlog |
 | US-12 | EP-04 | As an admissions officer, I want to request an additional document so that missing evidence can be supplied. | `documentRequests`; request lifecycle; notifications | Proposed |
 | US-13 | EP-04 | As an applicant, I want to upload a requested document so that review can continue. | `documents`; Storage metadata; request status | Proposed |
-| US-14 | EP-05 | As an applicant, I want to pay an application fee so that my application can enter review. | `payments`; currency; provider reference; lifecycle gate | Proposed |
-| US-15 | EP-06 | As a compliance officer, I want to verify financial evidence so that the financial requirement is recorded. | compliance role; `financeChecks`; retention/security rules | Proposed |
-| US-16 | EP-07 | As an admissions officer, I want to make a conditional offer so that outstanding conditions are clear. | decision type; structured conditions; condition status | Proposed |
-| US-17 | EP-08 | As an applicant, I want to see all notifications in one place so that I do not miss an action. | `notifications`; type; read state; application link | Proposed |
+| US-14 | EP-05 | As an applicant, I want to pay an application fee so that my application can enter review. | `payments`; currency; provider reference; lifecycle gate | Out of original PRD scope; approval required |
+| US-15 | EP-06 | As a compliance officer, I want to verify financial evidence so that the financial requirement is recorded. | compliance role; `financeChecks`; retention/security rules | Proposed addition; approval required |
+| US-16 | EP-07 | As an admissions officer, I want to make a conditional offer so that outstanding conditions are clear. | decision type; structured conditions; condition status | Proposed addition; approval required |
+| US-17 | EP-08 | As an applicant, I want to see all notifications in one place so that I do not miss an action. | `notifications`; type; read state; application link | Mandatory PRD decision/backlog |
+
+Additional corrective delivery work for registration fields, full application data, typed documents, admin search/filter/counts/notes, submission/status emails, pagination and GDPR deletion is tracked in `docs/prd-compliance-register.md`. New GitHub issues must use the PRD IDs from that register.
 
 ## Acceptance-Criteria Example
 

@@ -9,8 +9,10 @@ Week 1 to Week 4 are checkpoints inside Sprint 2, not separate Sprints.
 The delivery chain is:
 
 ```text
-Product Goal -> Epic -> User Story -> FR/NFR -> Task/PR -> Test -> Evidence
+PRD -> Product Goal -> Epic -> User Story -> FR/NFR -> Task/PR -> Test -> Evidence
 ```
+
+The original PRD is the product baseline. Sprint Planning selects an increment from that baseline; it does not silently delete unselected requirements. Proposed additions and technical substitutions use the change-control rule in `docs/prd-compliance-register.md` and the decision format in `docs/prd-change-request-template.md`.
 
 Canonical user stories have their own GitHub issues. Existing frontend, backend, email, testing and documentation issues are delivery tasks or enablers linked beneath those stories. A delivery task may support multiple stories but has one primary parent for board clarity.
 
@@ -32,7 +34,7 @@ Each person has at most one primary item in `In Progress`. Support work may be l
 
 ## Definition of Ready
 
-A story can enter a Sprint when it has an epic, user story, business value, FR/NFR references, testable acceptance criteria, owner, dependency decision, and evidence requirement.
+A story can enter a Sprint when it has an epic, user story, business value, PRD/FR/NFR references, testable acceptance criteria, owner, dependency decision, and evidence requirement. If it changes or adds to the PRD, approval evidence must already exist or the item remains refinement-only.
 
 ## Branch Naming Convention
 
@@ -54,8 +56,9 @@ Use `feature/<short-task-name>` for additional tasks.
 3. Commit only related work for that task.
 4. Open a pull request into `develop`.
 5. Link the issue in the pull request.
-6. Add screenshots, logs, or demo evidence when the task affects the live proof of concept.
-7. Keep the pull request small enough to review.
+6. Link the affected PRD requirement or approved change.
+7. Add screenshots, logs, or demo evidence when the task affects the live proof of concept.
+8. Keep the pull request small enough to review.
 
 ## Review Process
 
@@ -75,6 +78,8 @@ Done means:
 - The demo path still passes a smoke test.
 - Evidence is attached to the issue, pull request, or report.
 - The user story and FR/NFR references are updated in the traceability matrix.
+- The PRD compliance register is updated with the new status and evidence.
+- Any deviation, substitution or added scope has recorded approval.
 - Acceptance criteria and relevant allowed/blocked access cases pass.
 
 Working locally is not enough.
