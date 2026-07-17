@@ -31,7 +31,7 @@ The plan covers:
 - loading, validation, failure and unauthorised-access behaviour;
 - Vercel preview and production smoke checks.
 
-Storage tests remain **Blocked** until Firebase Storage is enabled. Decision-email tests remain **Blocked** until issue #17 is implemented and the sending domain is verified.
+Storage tests remain **Blocked** until Firebase Storage is enabled. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
 
 ## Result Values
 
@@ -146,12 +146,12 @@ Use a normal browser window for the student and a private/incognito window for t
 
 | ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
 |---|---|---|---|---|---|---|---|
-| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger a controlled server-side test email | Server verifies the Firebase ID token and admin scope; email is sent without exposing secrets; provider message ID is returned and logged | | Blocked | #17 and verified domain |
-| EMAIL-02 | Offer | DEC-01 passes | Record an offer; invoke the email route with only the application ID; inspect recipient mailbox | Server reads the committed `offer`, message and student email from Firestore; student receives one matching email | | Blocked | #17 and verified domain |
-| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection; invoke the email route with only the application ID; inspect recipient mailbox | Server reads the committed `rejected`, message and student email from Firestore; student receives one matching email | | Blocked | #17 and verified domain |
-| EMAIL-04 | Failure | Use controlled invalid provider configuration/recipient | Trigger send; inspect admin feedback and `emailLogs` | Decision remains recorded; email failure is honest/retryable; failed log contains no secret | | Blocked | #17 |
-| EMAIL-05 | Duplicate prevention | Completed decision email exists | Retry the same request/action | Idempotency prevents duplicate delivery or the UI requires an explicit resend action; log remains understandable | | Blocked | #17 |
-| EMAIL-06 | Authorisation | Student or admin from another university has an application ID | Call the decision-email route using that user's Firebase ID token | Server returns an unauthorised/forbidden response; no email is sent and no false success log is created | | Blocked | #17 |
+| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger the controlled issue #17 test route | Email is sent without exposing secrets and a provider message ID is returned | | Not run | Repeat on this branch preview |
+| EMAIL-02 | Offer | DEC-01 passes | Record an offer; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `offer`, message and student email from Firebase; student receives one matching email; log is `sent` | | Not run | #15 UI hook and live data required |
+| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `rejected`, message and student email from Firebase; student receives one matching email; log is `sent` | | Not run | #15 UI hook and live data required |
+| EMAIL-04 | Failure | Use controlled invalid provider configuration | Trigger send; inspect admin feedback and `emailLogs` | Decision remains recorded; route returns failure; failed log contains no secret or email body | | Not run | Protected route implemented in #19 |
+| EMAIL-05 | Duplicate prevention | Completed decision email exists | Retry the same request/action | Deterministic log and Resend idempotency key prevent duplicate delivery; response reports `alreadySent` | | Not run | Protected route implemented in #19 |
+| EMAIL-06 | Authorisation | Student or admin from another university has an application ID | Call the decision-email route using that user's Firebase ID token | Server rejects the request; no email is sent and no false success log is created | | Not run | Protected route implemented in #19 |
 
 ## Known Implementation Gaps Found During Plan Review
 
@@ -159,8 +159,8 @@ These are findings from comparing this plan with Dawid's current `develop` backe
 
 - `submitApplication()` and the Firestore rules currently allow a draft with no `documentPath` to become `submitted`; APP-09 records the required fix.
 - `recordDecision()` rejects invalid decision values but currently accepts a blank decision message; DEC-03 records the required fix.
-- Client-side creation of `emailLogs` is currently allowed for any verified user. Issue #17 should move log creation to a verified server route and then deny client creation in `firestore.rules`.
-- `firebase-admin` is currently a development dependency. Move it to production dependencies if a deployed Next.js email route imports it.
+- The protected issue #19 route writes `emailLogs` through Firebase Admin and client writes are denied. The rules still need deployment and live scope evidence.
+- The route is not yet called by the issue #15 admin decision interface.
 - Firebase Storage remains blocked by the Blaze-plan decision.
 - Firebase email-action routing is a separate authentication concern. Unmerged `/auth/action` work should be reviewed against the merged `/verify-email` and `/reset-password` routes before use.
 
