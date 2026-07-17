@@ -48,6 +48,11 @@ service cloud.firestore {
       allow write: if false; // seeded via Admin SDK only
     }
 
+    match /courses/{id} {
+      allow read: if signedIn();
+      allow write: if false; // seeded via Admin SDK only
+    }
+
     // ---- applications ----
     match /applications/{appId} {
       // Student: own applications. Admin: applications for their university.
@@ -67,7 +72,7 @@ service cloud.firestore {
           resource.data.studentUid == request.auth.uid
           && resource.data.status == 'draft'
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['form', 'documentPath', 'status', 'submittedAt', 'updatedAt'])
+               .hasOnly(['form', 'documentPath', 'courseId', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
               || request.resource.data.status == 'submitted')
         )

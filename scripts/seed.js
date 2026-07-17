@@ -30,12 +30,18 @@ const UNIVERSITY = {
   createdAt: admin.firestore.FieldValue.serverTimestamp(),
 };
 
+const COURSES = [
+  { id: "solent-bsc-computing", universityId: "solent", name: "BSc (Hons) Computing", level: "undergraduate" },
+  { id: "solent-msc-cyber", universityId: "solent", name: "MSc Cyber Security", level: "postgraduate" },
+];
+
 const ADMIN_USER = {
   email: "admin@solent.test",
   password: process.env.SEED_ADMIN_PASSWORD,
   fullName: "Admin",
 };
 
+// Check for required environment variables before attempting execution
 if (!ADMIN_USER.password || ADMIN_USER.password.length < 8) {
   console.error("Set SEED_ADMIN_PASSWORD (min 8 chars) before running, e.g.");
   console.error('  PowerShell:  $env:SEED_ADMIN_PASSWORD="your-password"; npm run seed');
@@ -46,6 +52,12 @@ async function seed() {
   // 1. University
   await db.collection("universities").doc(UNIVERSITY.id).set(UNIVERSITY);
   console.log(`✔ University seeded: ${UNIVERSITY.name} (id: ${UNIVERSITY.id})`);
+
+  // 1b. Courses (v2 Phase 0)
+  for (const c of COURSES) {
+    await db.collection("courses").doc(c.id).set({ ...c, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    console.log(`✔ Course seeded: ${c.name}`);
+  }
 
   // 2. Admin auth account (idempotent: reuse if it already exists)
   let user;
