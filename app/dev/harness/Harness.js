@@ -28,6 +28,10 @@ import {
 import { uploadDocument, validateFile } from "../../../lib/storage";
 import { getAuthClient } from "../../../lib/firebase";
 
+// Phase 1 Additions
+import { addDocumentToApplication, getDocumentsForApplication } from "../../../lib/documents";
+import { recordMockPayment } from "../../../lib/payments";
+
 export default function Harness() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -131,6 +135,51 @@ export default function Harness() {
       >
         Submit application
       </button>
+      
+      {/* ---- v2 Phase 1 Testing Controls ---- */}
+      <div style={{ marginTop: "15px", padding: "10px", border: "1px dashed #ccc" }}>
+        <h3>Phase 1 (v2 Additions)</h3>
+        <button
+          onClick={run("upload document record (v2)", async () => {
+            const apps = await getStudentApplications(user.uid);
+            const draft = apps.find((a) => a.status === "draft");
+            if (!draft) throw new Error("NO_DRAFT");
+            // FIXED: Passing draft.universityId in the correct positional order
+            const id = await addDocumentToApplication(draft.id, draft.universityId, user.uid, file);
+            say(`Document record created: ${id}`);
+          })}
+        >
+          v2: Upload document to newest draft
+        </button>
+
+        <button
+          onClick={run("mock payment (v2)", async () => {
+            const apps = await getStudentApplications(user.uid);
+            const draft = apps.find((a) => a.status === "draft");
+            if (!draft) throw new Error("NO_DRAFT");
+            // FIXED: Inserting draft.universityId so the numerical amount parameter isn't shifted
+            const id = await recordMockPayment(draft.id, draft.universityId, user.uid, 2500);
+            say(`Payment recorded: ${id} (£25.00 mock)`);
+          })}
+        >
+          v2: Record mock £25 payment
+        </button>
+
+        <button
+          onClick={run("list documents for newest draft (v2)", async () => {
+            const apps = await getStudentApplications(user.uid);
+            const draft = apps.find((a) => a.status === "draft");
+            if (!draft) throw new Error("NO_DRAFT");
+            // FIXED: Appending user.uid to meet the scoping query requirements
+            const docs = await getDocumentsForApplication(draft.id, user.uid);
+            say(`Documents: ${docs.map((d) => `${d.fileName} [${d.status}]`).join(", ") || "none"}`);
+          })}
+        >
+          v2: List documents
+        </button>
+      </div>
+
+      <br />
       <button onClick={run("refresh my applications", async () => setMyApps(await getStudentApplications(user.uid)))}>
         Refresh my applications
       </button>
