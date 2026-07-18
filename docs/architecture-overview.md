@@ -25,7 +25,7 @@ This document explains the Sprint 2 UAAMS proof-of-concept architecture. It sepa
 | Decision email backend | Protected admin endpoint, committed-decision validation, Resend send and scoped email logging | `app/api/email/decision`, `lib/firebase-admin.js`, `lib/email.js` |
 | Deployment | GitHub-connected Vercel previews and production deployment | Vercel project and GitHub pull requests |
 
-The root route still contains Dawid's temporary integration harness for application/admin testing. The dedicated student dashboard, application form, upload screen and admin screens are later Sprint 2 work and must not be described as finished UI.
+The root route is the public product entry. The implemented applicant routes include `/student` for status tracking and `/apply` for university selection, required application data, draft creation, upload and submission. `/admin` provides the initial university-scoped application list. The internal harness is restricted to `/dev/harness` when explicitly enabled.
 
 ## Module Responsibilities
 
@@ -91,7 +91,7 @@ Firebase Authentication remains responsible for verification and password-reset 
 7. Firestore rules independently enforce the same university boundary.
 8. `recordDecision()` writes the application status/message and a new decision-history entry in one batch.
 
-The current code does not yet require a non-null `documentPath` before submission and does not reject a blank decision message. These are implementation gaps recorded in `docs/test-plan.md`.
+The application client, `submitApplication()` and Firestore rules require a non-empty `documentPath` before submission. Blank decision-message validation remains an implementation gap recorded in `docs/test-plan.md`.
 
 ## Email Flow
 
@@ -134,7 +134,7 @@ Required browser-side Firebase settings are stored in Vercel Preview and Product
 
 | Item | Status |
 |---|---|
-| Firebase Storage bucket | Blocked by the team's Blaze-plan decision; code and rules exist but live upload is not proven |
+| Firebase Storage bucket | Blaze-plan decision resolved; code and rules exist but live bucket/rules/upload evidence is not yet recorded |
 | Student dashboard/form/admin UI | Planned for later Sprint 2 issues; only the temporary harness currently exercises these services |
 | Decision email | Resend selected; domain/DNS access and issue #17 implementation remain |
 | Email logs | Collection is planned; the final server writer and retention policy remain |

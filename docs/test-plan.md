@@ -31,7 +31,7 @@ The plan covers:
 - loading, validation, failure and unauthorised-access behaviour;
 - Vercel preview and production smoke checks.
 
-Storage tests remain **Blocked** until Firebase Storage is enabled. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
+Storage tests remain **Blocked** until the enabled bucket and deployed rules are verified live. The Blaze-plan decision is resolved. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
 
 ## Result Values
 
@@ -119,7 +119,7 @@ Use a normal browser window for the student and a private/incognito window for t
 | APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type | | Blocked | Storage/Blaze decision |
 | APP-07 | Positive | Valid draft and required document | Submit the application; refresh dashboard | Status changes from `draft` to `submitted`; submitted timestamp exists; admin queue can include it | | Not run | |
 | APP-08 | Access/state | Submitted application | Attempt to change form/document fields or submit again | Firestore rules reject changes outside the allowed transition; stored submission remains unchanged | | Not run | |
-| APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` | Current `submitApplication()` and Firestore rules do not enforce this requirement | Not implemented | Implementation gap |
+| APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` | Enforced by the application UI, `submitApplication()` and Firestore rules; live Firebase execution remains pending | Pass (code/build) | Week 2 applicant-journey branch; live evidence pending |
 
 ## Admin and Scoping Tests
 
@@ -157,11 +157,11 @@ Use a normal browser window for the student and a private/incognito window for t
 
 These are findings from comparing this plan with Dawid's current `develop` backend. They are not test passes.
 
-- `submitApplication()` and the Firestore rules currently allow a draft with no `documentPath` to become `submitted`; APP-09 records the required fix.
+- `submitApplication()` and Firestore rules now reject submission without a non-empty `documentPath`; APP-09 still requires a live Firebase execution record.
 - `recordDecision()` rejects invalid decision values but currently accepts a blank decision message; DEC-03 records the required fix.
 - The protected issue #19 route writes `emailLogs` through Firebase Admin and client writes are denied. The rules still need deployment and live scope evidence.
 - The route is not yet called by the issue #15 admin decision interface.
-- Firebase Storage remains blocked by the Blaze-plan decision.
+- The Blaze-plan decision is resolved; Firebase Storage remains blocked only on live bucket/rules/upload evidence.
 - Firebase email-action routing is a separate authentication concern. Unmerged `/auth/action` work should be reviewed against the merged `/verify-email` and `/reset-password` routes before use.
 
 ## End-to-End and Deployment Tests

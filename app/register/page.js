@@ -1,14 +1,8 @@
 // app/register/page.js
 // Route: /register (issue #8).
 //
-// PR review update: nationality, study level and the privacy-consent
-// checkbox have been removed from this screen. They were being collected
-// and validated but never persisted or recorded anywhere, which means
-// students would have been required to fill in fields (including a
-// consent checkbox with no actual privacy-policy page behind it) that
-// were silently discarded. Re-add them once Dawid and Silvana approve a
-// schema change for nationality/studyLevel on /users, and once a real
-// privacy-policy page exists to link consent to.
+// PRD-required registration fields are persisted in the student profile.
+// Privacy consent links to the in-app notice and records a server timestamp.
 
 "use client";
 
@@ -31,9 +25,12 @@ import styles from "../../components/auth/auth.module.css";
 
 const INITIAL_STATE = {
   fullName: "",
+  nationality: "",
+  studyLevel: "",
   email: "",
   password: "",
   confirmPassword: "",
+  privacyConsent: false,
 };
 
 export default function RegisterPage() {
@@ -51,13 +48,18 @@ export default function RegisterPage() {
     const next = {};
     const fullNameErr = validateRequired(form.fullName, "Full name");
     const emailErr = validateEmail(form.email);
+    const nationalityErr = validateRequired(form.nationality, "Nationality");
+    const studyLevelErr = validateRequired(form.studyLevel, "Intended study level");
     const passwordErr = validatePassword(form.password);
     const confirmErr = validateConfirmPassword(form.password, form.confirmPassword);
 
     if (fullNameErr) next.fullName = fullNameErr;
     if (emailErr) next.email = emailErr;
+    if (nationalityErr) next.nationality = nationalityErr;
+    if (studyLevelErr) next.studyLevel = studyLevelErr;
     if (passwordErr) next.password = passwordErr;
     if (confirmErr) next.confirmPassword = confirmErr;
+    if (!form.privacyConsent) next.privacyConsent = "You must agree before creating an account.";
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -70,7 +72,7 @@ export default function RegisterPage() {
 
     setStatus("loading");
     try {
-      await registerStudent(form.email.trim(), form.password, form.fullName.trim());
+      await registerStudent(form.email.trim(), form.password, form.fullName.trim(), form.nationality.trim(), form.studyLevel.trim());
       setStatus("success");
       router.push("/verify-email");
     } catch (err) {
@@ -103,6 +105,22 @@ export default function RegisterPage() {
           autoComplete="name"
         />
         <FormField
+          label="Nationality"
+          name="nationality"
+          value={form.nationality}
+          onChange={(e) => update("nationality", e.target.value)}
+          error={errors.nationality}
+          autoComplete="country-name"
+        />
+        <FormField
+          label="Intended study level"
+          name="studyLevel"
+          placeholder="e.g. Undergraduate"
+          value={form.studyLevel}
+          onChange={(e) => update("studyLevel", e.target.value)}
+          error={errors.studyLevel}
+        />
+        <FormField
           label="Email"
           name="email"
           type="email"
@@ -126,6 +144,19 @@ export default function RegisterPage() {
           onChange={(v) => update("confirmPassword", v)}
           error={errors.confirmPassword}
         />
+
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={form.privacyConsent}
+              onChange={(e) => update("privacyConsent", e.target.checked)}
+              aria-describedby={errors.privacyConsent ? "privacyConsent-error" : undefined}
+            />{" "}
+            I agree to the <a href="/privacy" target="_blank" rel="noreferrer">privacy notice</a> and the processing of my application data.
+          </label>
+          {errors.privacyConsent && <p id="privacyConsent-error" role="alert" className={styles.errorText}>{errors.privacyConsent}</p>}
+        </div>
 
         <LoadingButton loading={status === "loading"}>Create account</LoadingButton>
       </form>

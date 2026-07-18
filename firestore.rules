@@ -35,10 +35,11 @@ service cloud.firestore {
       allow create: if signedIn()
                     && request.auth.uid == uid
                     && request.resource.data.role == 'student'
+                    && request.resource.data.privacyConsent == true
                     && request.resource.data.keys()
-                         .hasOnly(['email', 'fullName', 'role', 'createdAt', 'updatedAt'])
+                         .hasOnly(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
-                         .hasAll(['email', 'fullName', 'role', 'createdAt']);
+                         .hasAll(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt']);
       allow update: if signedIn()
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
@@ -77,7 +78,9 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['form', 'documentPath', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
-              || request.resource.data.status == 'submitted')
+              || (request.resource.data.status == 'submitted'
+                  && request.resource.data.documentPath is string
+                  && request.resource.data.documentPath.size() > 0))
         )
         ||
         (
