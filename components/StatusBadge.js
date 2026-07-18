@@ -6,17 +6,10 @@
 // the auth screens' AlertBanner.
 
 import styles from "./StatusBadge.module.css";
-
-const STATUS_CONFIG = {
-  draft: { label: "Draft", className: "badgeDraft" },
-  submitted: { label: "Submitted", className: "badgeSubmitted" },
-  under_review: { label: "Under review", className: "badgeUnderReview" },
-  offer: { label: "Offer", className: "badgeOffer" },
-  rejected: { label: "Rejected", className: "badgeRejected" },
-};
+import { getApplicationStatusConfig } from "../lib/application-statuses.mjs";
 
 export default function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status] || { label: status, className: "badgeDefault" };
+  const config = getApplicationStatusConfig(status);
   return (
     <span className={`${styles.badge} ${styles[config.className] || ""}`}>
       {config.label}

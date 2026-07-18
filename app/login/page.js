@@ -1,11 +1,7 @@
 // app/login/page.js
 // Route: /login (issue #8, Figure A.2).
 //
-// Dashboard note: /dashboard doesn't exist yet (issue #9). A verified login
-// used to router.push("/dashboard"), which 404'd. Fixed by NOT navigating
-// away at all: on a verified login we show an inline "you're logged in"
-// state with a log-out action. Swap the TODO below for a real redirect
-// once #9 lands.
+// A verified applicant continues to the Week 2 student dashboard.
 
 "use client";
 
@@ -16,7 +12,7 @@ import FormField from "../../components/auth/FormField";
 import PasswordInput from "../../components/auth/PasswordInput";
 import AlertBanner from "../../components/auth/AlertBanner";
 import LoadingButton from "../../components/auth/LoadingButton";
-import { login, logout } from "../../lib/auth";
+import { login } from "../../lib/auth";
 import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../lib/validation";
 import styles from "../../components/auth/auth.module.css";
 
@@ -27,7 +23,6 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [serverError, setServerError] = useState(null);
-  const [loggedInEmail, setLoggedInEmail] = useState(null);
 
   function validate() {
     const emailErr = validateEmail(email);
@@ -48,34 +43,11 @@ export default function LoginPage() {
         router.push("/verify-email");
         return;
       }
-      setLoggedInEmail(user.email);
-      setStatus("success");
+      router.push("/student");
     } catch (err) {
       setServerError(mapAuthErrorToMessage(err.code));
       setStatus("error");
     }
-  }
-
-  async function handleLogout() {
-    await logout();
-    setLoggedInEmail(null);
-    setStatus("idle");
-    setEmail("");
-    setPassword("");
-  }
-
-  if (status === "success" && loggedInEmail) {
-    return (
-      <AuthCard title="You're logged in">
-        <AlertBanner variant="success">
-          Signed in as {loggedInEmail}. The student dashboard (issue #9) isn't
-          built yet - check back once it's live.
-        </AlertBanner>
-        <LoadingButton loading={false} onClick={handleLogout}>
-          Log out
-        </LoadingButton>
-      </AuthCard>
-    );
   }
 
   return (
