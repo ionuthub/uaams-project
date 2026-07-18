@@ -90,7 +90,7 @@ Current enforcement is less strict than the intended lifecycle:
 - admin rules permit `under_review`, `offer` or `rejected` when the admin is correctly scoped, without checking the previous status;
 - `recordDecision()` accepts only `offer` and `rejected`;
 - a new decision can reverse a previous decision because each change adds an audit entry;
-- neither `submitApplication()` nor the current rules require `documentPath` before submission;
+- `submitApplication()` and Firestore rules require a non-empty `documentPath` before submission;
 - `recordDecision()` does not currently reject an empty/whitespace message.
 
 ## Decision History
@@ -158,7 +158,7 @@ applications/{applicationId}/{timestamp}_{sanitisedFilename}
 | Read access | Owning student or admin for the application's university |
 | Delete access | Denied for Sprint 2 clients |
 
-After upload, the exact Storage path is written to `applications.documentPath`. The code and rules exist, but live Storage evidence is blocked until the team resolves the Firebase Blaze-plan decision.
+After upload, the exact Storage path is written to `applications.documentPath`. The Blaze-plan decision is resolved; live bucket, deployed-rules and allowed/denied upload evidence still needs to be recorded.
 
 ## Access-Control Summary
 

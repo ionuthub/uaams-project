@@ -4,15 +4,17 @@ import styles from "./page.module.css";
 const currentCapabilities = [
   "Applicant registration and email-verification guidance",
   "Login and password-reset screens",
+  "Student dashboard, application form and status tracking",
+  "Validated document-upload interface",
+  "University-scoped admissions application list",
   "Firebase authentication and university-scoped data helpers",
   "Vercel preview and production deployment pipeline",
 ];
 
 const sprintWork = [
-  "Student dashboard and application form",
-  "Document upload through Firebase Storage",
-  "Admissions list, detail, scoping and decision screens",
-  "Decision email integration and end-to-end evidence",
+  "Live Firebase Storage rules and upload evidence",
+  "Admissions detail, scoping and decision screens",
+  "Integrated decision-email and end-to-end evidence",
 ];
 
 export default function HomePage() {
@@ -38,7 +40,7 @@ export default function HomePage() {
       <section className={styles.grid} aria-label="Project status">
         <article className={styles.card}>
           <p className={styles.cardLabel}>Available now</p>
-          <h2>Foundation increment</h2>
+          <h2>Implemented increment</h2>
           <ul>
             {currentCapabilities.map((capability) => (
               <li key={capability}>{capability}</li>
