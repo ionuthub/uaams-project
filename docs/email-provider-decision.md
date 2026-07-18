@@ -67,13 +67,15 @@ Add these variables to `.env.local` and Vercel Preview/Production settings. Neve
 
 | Variable | Secret | Purpose |
 |---|---|---|
-| `RESEND_API_KEY` | Yes | Server-side Resend authentication |
+| `RESEND_API_KEY` | Yes | Server-side Resend authentication; the value must start with `re_` and contain no label, quotes or embedded spaces |
 | `EMAIL_FROM` | No | Verified sender, for example `UAAMS <decisions@updates.example.org>` |
 | `FIREBASE_ADMIN_PROJECT_ID` | No | Firebase project used by the protected route |
 | `FIREBASE_ADMIN_CLIENT_EMAIL` | Yes | Firebase service-account identity |
 | `FIREBASE_ADMIN_PRIVATE_KEY` | Yes | Firebase service-account private key |
 | `EMAIL_REPLY_TO` | No | Monitored reply address, if the team has one |
 | `RESEND_WEBHOOK_SECRET` | Yes | Optional verification secret if delivery webhooks are added |
+| `EMAIL_TEST_RECIPIENT` | No | Team-controlled recipient used only by the temporary connection-test route |
+| `ENABLE_EMAIL_TEST` | No | Set to `true` only while the controlled test route is required; remove or disable it after evidence is captured |
 
 None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must never run in a browser component.
 
@@ -94,6 +96,11 @@ None of these variables should use the `NEXT_PUBLIC_` prefix. Email sending must
 - [x] Add an idempotency key so retrying a decision does not send duplicate emails.
 - [ ] Connect the issue #15 admin decision interface to the protected route.
 - [ ] Capture live offer, rejection, duplicate-retry and controlled-failure evidence.
+
+The connection test is implemented as `POST /api/email-test`. It uses only the
+server-configured recipient, is unavailable unless `ENABLE_EMAIL_TEST=true`, and
+must not be treated as the final decision-email endpoint. Disable the route after
+connection evidence is collected. The reusable sender lives in `lib/email.js`.
 
 ## Integration Contract
 

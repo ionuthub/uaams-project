@@ -34,7 +34,11 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
                     && request.auth.uid == uid
-                    && request.resource.data.role == 'student';
+                    && request.resource.data.role == 'student'
+                    && request.resource.data.keys()
+                         .hasOnly(['email', 'fullName', 'role', 'createdAt', 'updatedAt'])
+                    && request.resource.data.keys()
+                         .hasAll(['email', 'fullName', 'role', 'createdAt']);
       allow update: if signedIn()
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
@@ -58,7 +62,11 @@ service cloud.firestore {
       // Only a verified student can create, and only as themselves, in draft.
       allow create: if isVerified()
                     && request.resource.data.studentUid == request.auth.uid
-                    && request.resource.data.status == 'draft';
+                    && request.resource.data.status == 'draft'
+                    && request.resource.data.keys()
+                         .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'createdAt', 'updatedAt'])
+                    && request.resource.data.keys()
+                         .hasAll(['studentUid', 'universityId', 'status', 'form', 'createdAt', 'updatedAt']);
 
       // Student: may edit allowed draft fields only, and may move
       // status draft -> submitted. Admin: may write decision fields only.
@@ -87,7 +95,13 @@ service cloud.firestore {
         allow read: if isVerified()
                     && (get(/databases/$(database)/documents/applications/$(appId)).data.studentUid == request.auth.uid
                         || adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId));
-        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
+                      && request.resource.data.decidedBy == request.auth.uid
+                      && request.resource.data.decision in ['offer', 'rejected']
+                      && request.resource.data.keys()
+                           .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
+                      && request.resource.data.keys()
+                           .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
         allow update, delete: if false; // decisions are never edited or removed
       }
     }
