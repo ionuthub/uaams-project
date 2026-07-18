@@ -29,8 +29,6 @@ service cloud.firestore {
 
     // ---- users ----
     match /users/{uid} {
-      // A user reads/creates their own profile. Role is fixed to "student"
-      // on self-creation — admin accounts are made only by the seed script.
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
                     && request.auth.uid == uid
@@ -44,23 +42,21 @@ service cloud.firestore {
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
                    .hasOnly(['fullName', 'updatedAt']);
-      allow delete: if false; // GDPR delete cascade is a Sprint 3 item (IS-06)
+      allow delete: if false; 
     }
 
     // ---- universities (read-only reference data) ----
     match /universities/{id} {
       allow read: if signedIn();
-      allow write: if false; // seeded via Admin SDK only
+      allow write: if false; 
     }
 
     // ---- applications ----
     match /applications/{appId} {
-      // Student: own applications. Admin: applications for their university.
       allow read: if isVerified()
                   && (resource.data.studentUid == request.auth.uid
                       || adminOf(resource.data.universityId));
 
-      // Only a verified student can create, and only as themselves, in draft.
       allow create: if isVerified()
                     && request.resource.data.studentUid == request.auth.uid
                     && request.resource.data.status == 'draft'
@@ -69,8 +65,6 @@ service cloud.firestore {
                     && request.resource.data.keys()
                          .hasAll(['studentUid', 'universityId', 'status', 'form', 'createdAt', 'updatedAt']);
 
-      // Student: may edit allowed draft fields only, and may move
-      // status draft -> submitted. Admin: may write decision fields only.
       allow update: if isVerified() && (
         (
           resource.data.studentUid == request.auth.uid
@@ -86,14 +80,14 @@ service cloud.firestore {
         (
           adminOf(resource.data.universityId)
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['status', 'latestDecisionMessage', 'updatedAt'])
+               .hasOnly(['status', 'latestDecisionMessage', 'financeStatus', 'updatedAt'])
           && request.resource.data.status in ['under_review', 'offer', 'rejected']
         )
       );
 
-      allow delete: if false; // no deletes in the PoC; GDPR cascade is Sprint 3
+      allow delete: if false; 
 
-      // ---- decision audit log (IS-05): append-only ----
+      // ---- decision audit log (IS-05): append-only subcollection ----
       match /decisions/{decisionId} {
         allow read: if isVerified()
                     && (get(/databases/$(database)/documents/applications/$(appId)).data.studentUid == request.auth.uid
@@ -105,15 +99,40 @@ service cloud.firestore {
                            .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
                       && request.resource.data.keys()
                            .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
-        allow update, delete: if false; // decisions are never edited or removed
+        allow update, delete: if false; 
       }
+    }
+
+    // ---- top-level documents collection (Denormalized for Query Scoping) ----
+    match /documents/{docId} {
+      allow read: if isVerified() 
+                  && (resource.data.uploadedBy == request.auth.uid 
+                      || adminOf(resource.data.universityId));
+      allow create: if isVerified()
+                    && request.resource.data.uploadedBy == request.auth.uid
+                    && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.studentUid == request.auth.uid
+                    && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.status == 'draft'
+                    && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.universityId == request.resource.data.universityId;
+      allow update, delete: if false;
+    }
+
+    // ---- top-level payments collection (Denormalized for Query Scoping) ----
+    match /payments/{paymentId} {
+      allow read: if isVerified() 
+                  && (resource.data.paidBy == request.auth.uid 
+                      || adminOf(resource.data.universityId));
+      allow create: if isVerified()
+                    && request.resource.data.paidBy == request.auth.uid
+                    && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.studentUid == request.auth.uid
+                    && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.universityId == request.resource.data.universityId;
+      allow update, delete: if false;
     }
 
     // ---- email logs (written only by the protected server route) ----
     match /emailLogs/{logId} {
       allow read: if isAdmin()
                   && resource.data.universityId == userDoc().universityId;
-      allow write: if false; // Firebase Admin performs authorised server writes
+      allow write: if false; 
     }
   }
 }
