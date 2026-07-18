@@ -31,7 +31,20 @@ The plan covers:
 - loading, validation, failure and unauthorised-access behaviour;
 - Vercel preview and production smoke checks.
 
-Storage tests remain **Blocked** until the enabled bucket and deployed rules are verified live. The Blaze-plan decision is resolved. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
+Storage tests are ready to run but remain **Not run** until the enabled bucket and deployed rules are verified live. The Blaze-plan decision is resolved. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
+
+## Automated Week 2 Checks
+
+Run `npm run check` before review. The repository suite currently verifies:
+
+- allowed PDF, JPG and PNG uploads at the 10 MB boundary;
+- missing, oversized and unsupported upload rejection;
+- readable text labels for draft, submitted, under-review, offer and rejected statuses;
+- an honest fallback for an unexpected status;
+- decision-email content, validation, bearer-token parsing and idempotency;
+- the complete Next.js production build.
+
+Automated checks support the acceptance evidence but do not replace live Firebase, Storage, email-delivery or access-control tests.
 
 ## Result Values
 
@@ -113,10 +126,10 @@ Use a normal browser window for the student and a private/incognito window for t
 |---|---|---|---|---|---|---|---|
 | APP-01 | Positive | Verified student; universities seeded | Start application; select university; complete required step 1 and step 4 fields; save | Draft is created for the signed-in student/university; entered data is retained | | Not run | |
 | APP-02 | Validation | Application form open | Submit required fields empty or invalid | Field errors appear; no invalid submission is created | | Not run | |
-| APP-03 | Positive | Storage enabled; draft exists | Upload a PDF smaller than 10 MB | Upload succeeds under `applications/{applicationId}/...`; `documentPath` updates | | Blocked | Storage/Blaze decision |
-| APP-04 | Positive | Storage enabled; draft exists | Repeat APP-03 with JPG and PNG files | Each allowed type uploads successfully | | Blocked | Storage/Blaze decision |
-| APP-05 | Negative | Draft exists | Select a file larger than 10 MB | Client and Storage rules reject it; application remains usable | | Blocked | Storage/Blaze decision |
-| APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type | | Blocked | Storage/Blaze decision |
+| APP-03 | Positive | Storage enabled; draft exists | Upload a PDF smaller than 10 MB | Upload succeeds under `applications/{applicationId}/...`; `documentPath` updates | Client policy accepts PDF through the 10 MB boundary; live upload remains pending | Not run | `tests/week2-applicant.test.mjs` |
+| APP-04 | Positive | Storage enabled; draft exists | Repeat APP-03 with JPG and PNG files | Each allowed type uploads successfully | Client policy accepts JPG and PNG through the 10 MB boundary; live uploads remain pending | Not run | `tests/week2-applicant.test.mjs` |
+| APP-05 | Negative | Draft exists | Select a file larger than 10 MB | Client and Storage rules reject it; application remains usable | Automated client-policy rejection passes; deployed-rule execution remains pending | Not run | `tests/week2-applicant.test.mjs` |
+| APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type | Automated unsupported-type rejection passes; deployed-rule execution remains pending | Not run | `tests/week2-applicant.test.mjs` |
 | APP-07 | Positive | Valid draft and required document | Submit the application; refresh dashboard | Status changes from `draft` to `submitted`; submitted timestamp exists; admin queue can include it | | Not run | |
 | APP-08 | Access/state | Submitted application | Attempt to change form/document fields or submit again | Firestore rules reject changes outside the allowed transition; stored submission remains unchanged | | Not run | |
 | APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` | Enforced by the application UI, `submitApplication()` and Firestore rules; live Firebase execution remains pending | Pass (code/build) | Week 2 applicant-journey branch; live evidence pending |
@@ -162,7 +175,7 @@ These are findings from comparing this plan with Dawid's current `develop` backe
 - The protected issue #19 route writes `emailLogs` through Firebase Admin and client writes are denied. The rules still need deployment and live scope evidence.
 - The route is not yet called by the issue #15 admin decision interface.
 - The Blaze-plan decision is resolved; Firebase Storage remains blocked only on live bucket/rules/upload evidence.
-- Firebase email-action routing is a separate authentication concern. Unmerged `/auth/action` work should be reviewed against the merged `/verify-email` and `/reset-password` routes before use.
+- Firebase email-action routing is a separate authentication concern. The shared `/auth/action` route must continue to branch on Firebase's `mode` query parameter and be tested with real verification and reset links.
 
 ## End-to-End and Deployment Tests
 
