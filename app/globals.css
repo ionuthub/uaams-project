@@ -811,6 +811,8 @@ body.is-modal-open { overflow: hidden; }
 .directory-header > nav { margin-right:auto }
 .screen[data-screen="course-detail"] .directory-header .back-link { margin-right:auto }
 =======
+=======
+>>>>>>> origin/develop
 
 body {
   margin: 0;
