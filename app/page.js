@@ -1,67 +1,220 @@
-import Link from "next/link";
-import styles from "./page.module.css";
+"use client";
+import { useState, useEffect } from "react";
+import { watchAuth, getUserProfile, logout } from "../lib/auth";
+import { getUniversities } from "../lib/db";
 
-const currentCapabilities = [
-  "Applicant registration and email-verification guidance",
-  "Login and password-reset screens",
-  "Student dashboard, application form and status tracking",
-  "Validated document-upload interface",
-  "University-scoped admissions application list",
-  "Firebase authentication and university-scoped data helpers",
-  "Vercel preview and production deployment pipeline",
-];
+import PrototypeSwitcher from "../components/PrototypeSwitcher";
+import ToastNotification from "../components/ToastNotification";
+import PublicFooter from "../components/PublicFooter";
+import GlobalModals from "../components/GlobalModals";
 
-const sprintWork = [
-  "Live Firebase Storage rules and upload evidence",
-  "Admissions detail, scoping and decision screens",
-  "Integrated decision-email and end-to-end evidence",
-];
+import LandingScreen from "../components/LandingScreen";
+import UniversitiesScreen from "../components/UniversitiesScreen";
+import CoursesScreen from "../components/CoursesScreen";
+import CourseDetailScreen from "../components/CourseDetailScreen";
+import SupportScreen from "../components/SupportScreen";
 
-export default function HomePage() {
+import LoginScreen from "../components/LoginScreen";
+import RegisterScreen from "../components/RegisterScreen";
+import VerifyEmailScreen from "../components/VerifyEmailScreen";
+
+import StudentPortal from "../components/StudentPortal";
+import StaffPortal from "../components/StaffPortal";
+import SessionTimeoutWarning from "../components/SessionTimeoutWarning";
+
+export default function Home() {
+  const [screen, setScreen] = useState("landing");
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [universities, setUniversities] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+
+  const [toast, setToast] = useState({ visible: false, title: "", message: "" });
+
+  const notify = (title, message) => {
+    setToast({ visible: true, title, message });
+    setTimeout(() => setToast((t) => ({ ...t, visible: false })), 3500);
+  };
+
+  useEffect(() => {
+    // Load initial universities list
+    getUniversities()
+      .then((unis) => setUniversities(unis))
+      .catch((e) => console.error(e));
+
+    // Watch auth state
+    try {
+      const unsub = watchAuth(async (u) => {
+        setUser(u);
+        if (u) {
+          const p = await getUserProfile(u.uid);
+          setProfile(p);
+        } else {
+          setProfile(null);
+        }
+      });
+      return unsub;
+    } catch (err) {
+      console.error(err);
+      return undefined;
+    }
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      setUser(null);
+      setProfile(null);
+      notify("Signed Out", "You have been signed out.");
+      setScreen("landing");
+    } catch (err) {
+      notify("Error", err.message);
+    }
+  };
+
+  const handleStartApplication = (course) => {
+    if (course) setSelectedCourse(course);
+    setScreen("form");
+  };
+
+  const isPublicScreen = ["landing", "universities", "courses", "course-detail", "support"].includes(screen);
+  const isStudentPortalRoute = ["dashboard", "applications", "form", "documents", "payments", "notifications", "account", "confirmation", "decision-outcome"].includes(screen);
+  const isStaffPortalRoute = ["staff-overview", "admissions", "detail", "staff-documents", "staff-decisions", "admin"].includes(screen);
+
   return (
-    <main className={styles.page}>
-      <section className={styles.hero}>
-        <p className={styles.eyebrow}>University Administration and Application Management System</p>
-        <h1>One application journey, clearly managed.</h1>
-        <p className={styles.summary}>
-          UAAMS is a Sprint 2 proof of concept for applicant identity, university applications,
-          admissions decisions and status communication.
-        </p>
-        <div className={styles.actions}>
-          <Link className={styles.primaryAction} href="/register">
-            Create applicant account
-          </Link>
-          <Link className={styles.secondaryAction} href="/login">
-            Log in
-          </Link>
-        </div>
-      </section>
+    <main>
+      {/* 1. Prototype Nav Switcher & Toast Notifications */}
+      <PrototypeSwitcher
+        currentScreen={screen}
+        setScreen={setScreen}
+        user={user}
+        profile={profile}
+        onSignOut={handleSignOut}
+      />
+      <ToastNotification toast={toast} />
 
-      <section className={styles.grid} aria-label="Project status">
-        <article className={styles.card}>
-          <p className={styles.cardLabel}>Available now</p>
-          <h2>Implemented increment</h2>
-          <ul>
-            {currentCapabilities.map((capability) => (
-              <li key={capability}>{capability}</li>
-            ))}
-          </ul>
-        </article>
+      {/* 2. Public Screens */}
+      {screen === "landing" && (
+        <LandingScreen
+          setScreen={setScreen}
+          universities={universities}
+          onSelectCourse={(c) => setSelectedCourse(c)}
+          user={user}
+          onSignOut={handleSignOut}
+        />
+      )}
 
-        <article className={styles.card}>
-          <p className={styles.cardLabel}>Active Sprint work</p>
-          <h2>Core application journey</h2>
-          <ul>
-            {sprintWork.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </article>
-      </section>
+      {screen === "universities" && (
+        <UniversitiesScreen
+          setScreen={setScreen}
+          universities={universities}
+          user={user}
+          onSignOut={handleSignOut}
+        />
+      )}
 
-      <p className={styles.notice}>
-        This is an educational proof of concept. Do not enter real personal or financial information.
-      </p>
+      {screen === "courses" && (
+        <CoursesScreen
+          setScreen={setScreen}
+          user={user}
+          onSignOut={handleSignOut}
+          onSelectCourse={(c) => setSelectedCourse(c)}
+        />
+      )}
+
+      {screen === "course-detail" && (
+        <CourseDetailScreen
+          setScreen={setScreen}
+          selectedCourse={selectedCourse}
+          user={user}
+          onStartApplication={handleStartApplication}
+        />
+      )}
+
+      {screen === "support" && (
+        <SupportScreen
+          setScreen={setScreen}
+          user={user}
+          onSignOut={handleSignOut}
+          onOpenModal={(name) => setActiveModal(name)}
+        />
+      )}
+
+      {/* 3. Auth Screens */}
+      {screen === "login" && (
+        <LoginScreen
+          setScreen={setScreen}
+          onLoginSuccess={async (u) => {
+            const p = await getUserProfile(u.uid);
+            setProfile(p);
+            if (p?.role === "admin") setScreen("staff-overview");
+            else setScreen("dashboard");
+          }}
+          notify={notify}
+        />
+      )}
+
+      {screen === "register" && (
+        <RegisterScreen
+          setScreen={setScreen}
+          onRegisterSuccess={() => setScreen("verify-email")}
+          notify={notify}
+        />
+      )}
+
+      {screen === "verify-email" && (
+        <VerifyEmailScreen
+          setScreen={setScreen}
+          user={user}
+          notify={notify}
+        />
+      )}
+
+      {/* 4. Student Applicant Portal */}
+      {isStudentPortalRoute && (
+        <StudentPortal
+          subRoute={screen}
+          setScreen={setScreen}
+          user={user}
+          profile={profile}
+          onSignOut={handleSignOut}
+          notify={notify}
+          onOpenModal={(name) => setActiveModal(name)}
+        />
+      )}
+
+      {/* 5. Staff Admissions Workspace */}
+      {isStaffPortalRoute && (
+        <StaffPortal
+          subRoute={screen}
+          setScreen={setScreen}
+          user={user}
+          profile={profile}
+          onSignOut={handleSignOut}
+          notify={notify}
+        />
+      )}
+
+      {/* 6. Public Footer & Modals */}
+      {isPublicScreen && (
+        <PublicFooter
+          setScreen={setScreen}
+          onOpenModal={(name) => setActiveModal(name)}
+        />
+      )}
+
+      <GlobalModals
+        activeModal={activeModal}
+        onCloseModal={() => setActiveModal(null)}
+        notify={notify}
+      />
+
+      <SessionTimeoutWarning
+        user={user}
+        onSignOut={handleSignOut}
+        onExtendSession={() => notify("Session Extended", "Your active session has been renewed.")}
+      />
     </main>
   );
 }

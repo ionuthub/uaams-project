@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UAAMS — Figma Design Export Kit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/globals.css" />
+    <style>
+      /* Figma Export Canvas Styles: displays all screens sequentially for 1-click Figma conversion */
+      body { background: #0c1a29; margin: 0; padding: 40px; color: #fff; font-family: 'Inter', sans-serif; }
+      .figma-export-header { max-width: 1280px; margin: 0 auto 40px; padding: 24px 32px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+      .figma-export-header h1 { margin: 0 0 8px; font-size: 28px; }
+      .figma-export-header p { margin: 0; color: #9bb1c5; font-size: 14px; }
+      .figma-board { display: grid; gap: 60px; max-width: 1400px; margin: 0 auto; }
+      .figma-frame-wrapper { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); }
+      .figma-frame-title { padding: 14px 24px; background: #071827; color: var(--gold); font-size: 14px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.08em; }
+      .screen { display: block !important; opacity: 1 !important; position: static !important; }
+      .auth-story .brand-mark.light-mark::after { content: "UAAMS"; }
+    </style>
+  </head>
+  <body>
+    <div class="figma-export-header">
+      <h1>UAAMS — Figma Complete UI Design Export Canvas</h1>
+      <p>This standalone provisional canvas renders all prototype screens simultaneously for 1-click import into Figma using the <strong>"html to design"</strong> or <strong>"HTML to Figma"</strong> plugin.</p>
+    </div>
+
+    <div class="figma-board">
+
+      <!-- 1. LANDING SCREEN -->
+      <div class="figma-frame-wrapper">
+        <div class="figma-frame-title">Screen 01 · Public Landing Page</div>
+        <div class="screen">
+          <header class="public-header">
+            <span class="brand"><span class="brand-mark">U</span><span class="brand-name">UAAMS</span></span>
+            <nav class="public-nav">
+              <a href="#">Universities</a>
+              <a href="#">Courses</a>
+              <a href="#">How it works</a>
+              <a href="#">Support</a>
+            </nav>
+            <div class="header-actions">
+              <button class="button button-quiet">Sign in</button>
+              <button class="button button-primary">Create account</button>
+            </div>
+          </header>
+          <div class="hero-shell">
+            <div class="hero-copy">
+              <p class="eyebrow">University applications, made clearer</p>
+              <h1>Your next chapter starts with one confident application.</h1>
+              <p class="hero-intro">Discover courses, submit evidence and follow every decision from one secure, transparent service.</p>
+              <div class="hero-actions">
+                <button class="button button-primary button-large">Start an application</button>
+                <button class="button button-secondary button-large">Explore applicant portal</button>
+              </div>
+            </div>
+            <div class="hero-visual">
+              <div class="preview-card">
+                <div class="preview-header">
+                  <div><span class="micro-label">Current application</span><strong>Ashworth University</strong></div>
+                  <span class="status status-warning">Action needed</span>
+                </div>
+                <h2>BSc Computer Science</h2>
+                <p className="preview-reference">UAAMS-2026-0417</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. REGISTER APPLICANT SCREEN -->
+      <div class="figma-frame-wrapper">
+        <div class="figma-frame-title">Screen 02 · Register Applicant Account</div>
+        <div class="screen">
+          <div class="auth-shell">
+            <aside class="auth-story">
+              <div class="auth-story-main">
+                <button class="back-link light-link">← Back to UAAMS</button>
+                <span class="brand-mark light-mark">U</span>
+                <p class="eyebrow">Create your account</p>
+                <h2>Start your university journey with confidence.</h2>
+                <p>One account lets you apply to multiple universities, upload evidence securely and track outcomes.</p>
+              </div>
+            </aside>
+            <div class="auth-panel">
+              <form class="auth-card">
+                <div class="auth-heading">
+                  <p class="eyebrow">Create account</p>
+                  <h1>Register as an applicant</h1>
+                  <p>Please complete all fields below. Upfront details are provided per field.</p>
+                </div>
+                <label>
+                  <span class="label-text">Full legal name <span style="color:var(--error);margin-left:4px;">*</span></span>
+                  <input type="text" placeholder="e.g. Amara Osei" value="Amara Osei" />
+                </label>
+                <label>
+                  <span class="label-text">Email address <span style="color:var(--error);margin-left:4px;">*</span></span>
+                  <input type="email" placeholder="you@example.com" value="amara.osei@example.com" />
+                </label>
+                <label>
+                  <span class="label-text">Password <span style="color:var(--error);margin-left:4px;">*</span></span>
+                  <input type="password" value="••••••••••••" />
+                </label>
+                <div class="field-grid">
+                  <label>
+                    <span class="label-text">Nationality <span style="color:var(--error);margin-left:4px;">*</span></span>
+                    <select><option>British</option></select>
+                  </label>
+                  <label>
+                    <span class="label-text">Intended level of study <span style="color:var(--error);margin-left:4px;">*</span></span>
+                    <select><option>Bachelor</option></select>
+                  </label>
+                </div>
+                <button class="button button-primary button-large button-full" type="button">Create account</button>
+                <div class="auth-footer-links" style="text-align:center;margin-top:16px;">
+                  <span style="color:var(--muted);font-size:14px;">Already have an account? </span>
+                  <button class="text-button" style="color:var(--blue-600);font-weight:600;">Sign in</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. LOGIN SCREEN -->
+      <div class="figma-frame-wrapper">
+        <div class="figma-frame-title">Screen 03 · Sign In Workspace</div>
+        <div class="screen">
+          <div class="auth-shell">
+            <aside class="auth-story">
+              <div class="auth-story-main">
+                <button class="back-link light-link">← Back to UAAMS</button>
+                <span class="brand-mark light-mark">U</span>
+                <p class="eyebrow">Applicant & staff portal</p>
+                <h2>One secure sign-in for all your applications.</h2>
+                <p>Follow status updates, respond to document requests and view decisions across all universities.</p>
+              </div>
+            </aside>
+            <div class="auth-panel">
+              <form class="auth-card">
+                <div class="auth-heading">
+                  <p class="eyebrow">Sign in</p>
+                  <h1>Welcome back to UAAMS</h1>
+                  <p>Enter your account credentials to access your applicant or staff portal.</p>
+                </div>
+                <label>
+                  <span class="label-text">Email address <span style="color:var(--error);margin-left:4px;">*</span></span>
+                  <input type="email" value="amara.osei@example.com" />
+                </label>
+                <label>
+                  <span class="label-text">Password <span style="color:var(--error);margin-left:4px;">*</span></span>
+                  <input type="password" value="••••••••••••" />
+                </label>
+                <button class="button button-primary button-large button-full" type="button">Sign in</button>
+                <div class="auth-footer-links" style="text-align:center;margin-top:16px;">
+                  <span style="color:var(--muted);font-size:14px;">Need an account? </span>
+                  <button class="text-button" style="color:var(--blue-600);font-weight:600;">Create one</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. APPLICANT PORTAL DASHBOARD -->
+      <div class="figma-frame-wrapper">
+        <div class="figma-frame-title">Screen 04 · Applicant Portal Workspace</div>
+        <div class="screen">
+          <div class="portal-shell">
+            <aside class="compact-sidebar">
+              <div class="sidebar-brand"><span class="brand-mark">U</span><strong>UAAMS</strong></div>
+              <nav class="sidebar-nav">
+                <button class="is-current"><span>❖</span> Dashboard</button>
+                <button><span>📄</span> Applications</button>
+                <button><span>📁</span> Documents</button>
+                <button><span>💳</span> Payments</button>
+              </nav>
+            </aside>
+            <div class="portal-page">
+              <header class="app-topbar">
+                <nav class="breadcrumb"><span>Applicant portal</span> / <strong>Dashboard</strong></nav>
+              </header>
+              <div class="workspace-content" style="padding:24px;">
+                <div class="page-header">
+                  <div><p class="eyebrow">Friday, 17 July</p><h1>Welcome back, Amara</h1></div>
+                  <button class="button button-primary">New application</button>
+                </div>
+                <section class="action-panel">
+                  <div class="action-marker">!</div>
+                  <div>
+                    <p class="micro-label">Your next action</p>
+                    <h2>Upload bank statement by 19 July</h2>
+                    <p>Ashworth University needs proof of funds before compliance review.</p>
+                  </div>
+                  <button class="button button-dark">Upload document</button>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. STAFF PORTAL ADMISSIONS QUEUE -->
+      <div class="figma-frame-wrapper">
+        <div class="figma-frame-title">Screen 05 · Admissions Staff Workspace</div>
+        <div class="screen">
+          <div class="staff-shell">
+            <aside class="compact-sidebar staff-sidebar">
+              <div class="sidebar-brand"><span class="brand-mark">U</span><strong>UAAMS Staff</strong></div>
+            </aside>
+            <div class="portal-page">
+              <header class="app-topbar">
+                <nav class="breadcrumb"><span>Admissions portal</span> / <strong>Ashworth University Queue</strong></nav>
+              </header>
+              <div class="workspace-content" style="padding:24px;">
+                <div class="stat-grid">
+                  <article><span>Queue Total</span><strong>42</strong></article>
+                  <article><span>Pending Review</span><strong>18</strong></article>
+                  <article><span>Offers Issued</span><strong>24</strong></article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>
