@@ -1,18 +1,17 @@
 // components/StatusBadge.js
-// Prepared for #9 (Week 2 student dashboard) - not wired into anything yet.
-// Small, reusable status pill matching db.js's APPLICATION_STATUSES
-// (draft, submitted, under_review, offer, rejected). Kept text + colour
-// together (not colour alone) per NFR4 accessibility, same principle as
-// the auth screens' AlertBanner.
-
+// Maps lib/db.js APPLICATION_STATUSES to a plain-language label and a
+// colour. Status is always readable as text, per WCAG "not by colour alone".
 import styles from "./StatusBadge.module.css";
-import { getApplicationStatusConfig } from "../lib/application-statuses.mjs";
+
+const STATUS_META = {
+  draft: { label: "Draft", tone: "neutral" },
+  submitted: { label: "Submitted", tone: "info" },
+  under_review: { label: "Under review", tone: "warning" },
+  offer: { label: "Offer made", tone: "success" },
+  rejected: { label: "Not successful", tone: "error" },
+};
 
 export default function StatusBadge({ status }) {
-  const config = getApplicationStatusConfig(status);
-  return (
-    <span className={`${styles.badge} ${styles[config.className] || ""}`}>
-      {config.label}
-    </span>
-  );
+  const meta = STATUS_META[status] || { label: status, tone: "neutral" };
+  return <span className={`${styles.badge} ${styles[meta.tone]}`}>{meta.label}</span>;
 }

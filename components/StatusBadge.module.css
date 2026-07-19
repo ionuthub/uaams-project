@@ -1,44 +1,16 @@
 .badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid transparent;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
 }
-
-.badgeDraft {
-  background: #f1f5f9;
-  color: #334155;
-  border-color: #cbd5e1;
-}
-
-.badgeSubmitted {
-  background: #eef2ff;
-  color: #3730a3;
-  border-color: #a5b4fc;
-}
-
-.badgeUnderReview {
-  background: #fffbeb;
-  color: #92400e;
-  border-color: #fcd34d;
-}
-
-.badgeOffer {
-  background: #f0fdf4;
-  color: #166534;
-  border-color: #86efac;
-}
-
-.badgeRejected {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fca5a5;
-}
-
-.badgeDefault {
-  background: #f1f5f9;
-  color: #334155;
-  border-color: #cbd5e1;
-}
+.neutral { color: var(--quiet); background: var(--border); }
+.info { color: var(--info); background: var(--info-bg); }
+.warning { color: var(--warning); background: var(--warning-bg); }
+.success { color: var(--success); background: var(--success-bg); }
+.error { color: var(--error); background: var(--error-bg); }
