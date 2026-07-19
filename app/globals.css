@@ -810,3 +810,26 @@ body.is-modal-open { overflow: hidden; }
 .directory-header .brand { margin-right:0 }
 .directory-header > nav { margin-right:auto }
 .screen[data-screen="course-detail"] .directory-header .back-link { margin-right:auto }
+=======
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+>>>>>>> ac338d5 (feat(dashboard): add student dashboard with status badges (#9))
