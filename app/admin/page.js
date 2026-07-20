@@ -15,7 +15,7 @@ import { watchAuth, getUserProfile, logout } from "../../lib/auth";
 import { getApplicationsForUniversity, getUniversities } from "../../lib/db";
 import styles from "./admin.module.css";
 
-const DETAIL_ROUTE_READY = false; // flip when #13 (admin detail view) merges
+const DETAIL_ROUTE_READY = true; // #13 admin detail view is live at /admin/applications/[id]
 
 function formatDate(ts) {
   if (!ts) return "-";
