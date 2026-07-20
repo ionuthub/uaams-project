@@ -67,14 +67,14 @@ Open http://localhost:3000 after the development server starts.
 
 ## Agile and Requirements Documentation
 
-- `docs/prd-compliance-register.md` — original PRD baseline, implementation status, deviations and corrective actions.
-- `docs/prd-change-request-template.md` — approval record for removing, substituting or adding PRD scope.
-- `docs/user-stories.md` — Product Backlog story catalogue and epic mapping.
-- `docs/software-requirements-specification.md` — Sprint 2 FR/NFR and proposed Sprint 3 requirements.
-- `docs/requirements-traceability-matrix.md` — story-to-requirement-to-issue-to-test evidence for selected Agile work.
-- `docs/team-workflow.md` — Scrum cadence, Definition of Ready, and Definition of Done.
+- `docs/prd-compliance-register.md` - original PRD baseline, implementation status, deviations and corrective actions.
+- `docs/prd-change-request-template.md` - approval record for removing, substituting or adding PRD scope.
+- `docs/user-stories.md` - Product Backlog story catalogue and epic mapping.
+- `docs/software-requirements-specification.md` - Sprint 2 FR/NFR and proposed Sprint 3 requirements.
+- `docs/requirements-traceability-matrix.md` - story-to-requirement-to-issue-to-test evidence for selected Agile work.
+- `docs/team-workflow.md` - Scrum cadence, Definition of Ready, and Definition of Done.
 
-The original PRD remains the product baseline. A reduced sprint increment does not remove unselected PRD requirements. Proposed additions—especially payments and new roles—require an approved change before implementation.
+The original PRD remains the product baseline. A reduced sprint increment does not remove unselected PRD requirements. Proposed additions, especially payments and new roles, require an approved change before implementation.
 
 ## Repository Layout
 

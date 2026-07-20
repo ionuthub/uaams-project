@@ -1,19 +1,19 @@
 // scripts/seed.js
-// Seed script — Dawid's backend task: add sample university and admin data.
+// Seed script - Dawid's backend task: add sample university and admin data.
 // Run locally with the Firebase ADMIN SDK (bypasses security rules on purpose;
 // this is why the rules can safely say "admin accounts are seed-only").
 //
 // Setup:
 //   1. Firebase console -> Project settings -> Service accounts ->
 //      Generate new private key -> save as serviceAccountKey.json
-//      (NEVER commit this file — add it to .gitignore immediately)
+//      (NEVER commit this file - add it to .gitignore immediately)
 //   2. npm install firebase-admin
 //   3. Set the seed admin password (never committed):
 //      PowerShell:  $env:SEED_ADMIN_PASSWORD="your-password"
 //   4. npm run seed
 //
 // The console output IS the evidence for the Sprint 2 report
-// ("Foundations live... seed output" milestone) — screenshot it.
+// ("Foundations live... seed output" milestone) - screenshot it.
 
 const admin = require("firebase-admin");
 const serviceAccount = require("../serviceAccountKey.json");

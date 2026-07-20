@@ -26,7 +26,7 @@ service firebase.storage {
           && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.universityId == appData().universityId;
       }
 
-      // IS-07 enforced here — cannot be bypassed by skipping the UI:
+      // IS-07 enforced here - cannot be bypassed by skipping the UI:
       allow write: if isOwner()
                    && request.resource.size <= 10 * 1024 * 1024
                    && request.resource.contentType.matches('application/pdf|image/jpeg|image/png');

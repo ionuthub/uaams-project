@@ -8,7 +8,7 @@ assignees: ""
 
 ## Epic
 
-EP-XX —
+EP-XX -
 
 ## User story
 

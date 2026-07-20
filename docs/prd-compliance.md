@@ -1,10 +1,10 @@
 # PRD Compliance
 
-This page shows, at a glance, how UAAMS tracks against the Project Requirements Document (`PRD — University Administration & Application Management System`). It is the single visual place to answer one question: **are we building what the PRD asked for?**
+This page shows, at a glance, how UAAMS tracks against the Project Requirements Document (`PRD - University Administration & Application Management System`). It is the single visual place to answer one question: **are we building what the PRD asked for?**
 
 - Source of truth: the PRD (sections referenced below as PRD 4.1, 4.2.1, etc.).
 - Status reflects code merged into `develop` plus recorded evidence on the linked issues/PRs.
-- This document is maintained when a feature or its acceptance evidence changes. It does not mark work "Met" from compilation alone — live acceptance is called out separately.
+- This document is maintained when a feature or its acceptance evidence changes. It does not mark work "Met" from compilation alone - live acceptance is called out separately.
 
 ## Legend
 
@@ -89,5 +89,5 @@ The interface and this map are designed to always answer four questions for any 
 3. What needs to happen next? (next required action)
 4. Who needs to take the next action? (student vs admin)
 
-When a status here moves from Pending to Met, it means the live acceptance evidence (a real applicant login and the seeded admin login) has been captured and attached to the linked issue — not that the code merely compiles.
+When a status here moves from Pending to Met, it means the live acceptance evidence (a real applicant login and the seeded admin login) has been captured and attached to the linked issue - not that the code merely compiles.
 
