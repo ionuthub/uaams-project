@@ -3,59 +3,25 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Heart } from "lucide-react";
+import { SOLENT_COURSES } from "../lib/course-catalog.mjs";
+
+// Course search over the real catalogue for the participating university
+// (lib/course-catalog.mjs). The placeholder multi-university course list
+// from the design prototype is gone.
 
 export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCourse }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevels, setSelectedLevels] = useState([]);
   const [savedCourses, setSavedCourses] = useState({});
 
-  const courses = [
-    {
-      id: "cs-ashworth",
-      title: "BSc (Hons) Computer Science",
-      university: "Ashworth University",
-      code: "AU",
-      location: "Leeds",
-      level: "Undergraduate",
-      mode: "Full time",
-      duration: "3 years",
-      deadline: "31 Jan 2027",
-      subject: "computing",
-      description: "Build strong foundations in software engineering, data structures and responsible computing."
-    },
-    {
-      id: "ds-ashworth",
-      title: "MSc Data Science",
-      university: "Ashworth University",
-      code: "AU",
-      location: "Leeds",
-      level: "Postgraduate",
-      mode: "Full time",
-      duration: "1 year",
-      deadline: "30 Apr 2027",
-      subject: "data-science",
-      description: "Combine statistics, machine learning and real-world analytics in an industry-led programme."
-    },
-    {
-      id: "bm-harborview",
-      title: "BA Business Management",
-      university: "Harborview University",
-      code: "HU",
-      location: "Bristol",
-      level: "Undergraduate",
-      mode: "Full time",
-      duration: "3 years",
-      deadline: "31 Jan 2027",
-      subject: "business",
-      description: "Develop commercial judgment through live briefs, placements and global business perspectives."
-    }
-  ];
-
-  const filteredCourses = courses.filter((c) => {
-    const matchesQuery = searchQuery === "" ||
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.university.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.subject.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCourses = SOLENT_COURSES.filter((c) => {
+    const q = searchQuery.trim().toLowerCase();
+    const matchesQuery =
+      q === "" ||
+      c.title.toLowerCase().includes(q) ||
+      c.university.toLowerCase().includes(q) ||
+      c.subject.toLowerCase().includes(q) ||
+      c.school.toLowerCase().includes(q);
     const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(c.level.toLowerCase());
     return matchesQuery && matchesLevel;
   });
@@ -71,13 +37,13 @@ export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCour
       <div className="directory-hero">
         <p className="eyebrow">Explore programmes</p>
         <h1 id="courses-title">Find a course that fits your ambition.</h1>
-        <p>Compare entry requirements, study modes and application deadlines across participating universities.</p>
+        <p>Compare entry requirements, study modes and application deadlines at Southampton Solent University.</p>
         <form className="directory-search" onSubmit={(e) => e.preventDefault()}>
           <span className="directory-search-icon"><Search className="w-4 h-4" /></span>
           <input
             type="search"
-            aria-label="Search courses, subjects or universities"
-            placeholder="Course, subject or university"
+            aria-label="Search courses, subjects or schools"
+            placeholder="Course, subject or school"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
