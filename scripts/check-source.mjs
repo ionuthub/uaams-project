@@ -21,7 +21,7 @@ const requiredFiles = [
 
 const jsonFiles = ["package.json", "firebase.json", "firestore.indexes.json"];
 const ignoredDirectories = new Set([".git", ".next", "node_modules", "coverage"]);
-const textExtensions = new Set([".js", ".mjs", ".json", ".md", ".yml", ".yaml", ".rules"]);
+const textExtensions = new Set([".js", ".jsx", ".mjs", ".json", ".css", ".md", ".yml", ".yaml", ".rules"]);
 
 async function exists(relativePath) {
   try {
