@@ -24,7 +24,7 @@ export default function CourseDetailScreen({ setScreen, selectedCourse, user, on
         <button className="back-link" type="button" onClick={() => setScreen("courses")} style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>
           ← All courses
         </button>
-        <button className="button button-quiet" type="button" onClick={() => setScreen("login")}>
+        <button className="button button-quiet" type="button" onClick={() => { window.location.href = "/login"; }}>
           Sign in
         </button>
       </header>

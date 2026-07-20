@@ -77,7 +77,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       <div className="header-actions">
         {user ? (
           <>
-            <button className="button button-quiet" type="button" onClick={() => go(() => setScreen("dashboard"))}>
+            <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/student"; })}>
               Portal Dashboard
             </button>
             <button className="button button-secondary" type="button" onClick={() => go(onSignOut)}>
@@ -86,10 +86,10 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
           </>
         ) : (
           <>
-            <button className="button button-quiet" type="button" onClick={() => go(() => setScreen("login"))}>
+            <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/login"; })}>
               Sign in
             </button>
-            <button className="button button-primary" type="button" onClick={() => go(() => setScreen("register"))}>
+            <button className="button button-primary" type="button" onClick={() => go(() => { window.location.href = "/register"; })}>
               Create account
             </button>
           </>

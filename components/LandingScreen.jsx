@@ -24,10 +24,10 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
             Discover courses, submit evidence and follow every decision from one secure, transparent service.
           </p>
           <div className="hero-actions">
-            <button className="button button-primary button-large" type="button" onClick={() => setScreen("register")}>
+            <button className="button button-primary button-large" type="button" onClick={() => { window.location.href = "/register"; }}>
               Start an application
             </button>
-            <button className="button button-secondary button-large" type="button" onClick={() => setScreen("dashboard")}>
+            <button className="button button-secondary button-large" type="button" onClick={() => { window.location.href = "/student"; }}>
               Explore the applicant portal
             </button>
           </div>
@@ -56,7 +56,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
               <li className="current"><span>3</span><div><strong>Documents</strong><small>1 requested</small></div></li>
               <li><span>4</span><div><strong>Review</strong><small>Not started</small></div></li>
             </ol>
-            <button className="button button-primary button-full" type="button" onClick={() => setScreen("dashboard")}>
+            <button className="button button-primary button-full" type="button" onClick={() => { window.location.href = "/student"; }}>
               View next action
             </button>
           </div>
