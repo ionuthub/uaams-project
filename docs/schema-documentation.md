@@ -18,7 +18,7 @@ This document records the Firestore and Storage structures currently used by the
 /applications/{applicationId}
 /applications/{applicationId}/decisions/{decisionId}
 
-/emailLogs/{logId}  (planned writer/schema in issue #17)
+/emailLogs/{logId}
 ```
 
 There are no implemented top-level `documents`, `messages` or `decisions` collections. A document is represented by `applications.documentPath`; the latest student-facing message is stored in `applications.latestDecisionMessage`; full decision history is stored below each application.
@@ -90,7 +90,7 @@ Current enforcement is less strict than the intended lifecycle:
 - admin rules permit `under_review`, `offer` or `rejected` when the admin is correctly scoped, without checking the previous status;
 - `recordDecision()` accepts only `offer` and `rejected`;
 - a new decision can reverse a previous decision because each change adds an audit entry;
-- neither `submitApplication()` nor the current rules require `documentPath` before submission;
+- `submitApplication()` and Firestore rules require a non-empty `documentPath` before submission;
 - `recordDecision()` does not currently reject an empty/whitespace message.
 
 ## Decision History
@@ -108,11 +108,26 @@ Path: `/applications/{applicationId}/decisions/{decisionId}`.
 
 ## Email Logs
 
-Path: `/emailLogs/{logId}` is reserved for issue #17. No application code currently writes a final log schema.
+Path: `/emailLogs/{logId}`. Decision emails use the deterministic ID `decision-{applicationId}-{decisionId}`, so retrying the same decision updates one log instead of creating duplicates.
 
-The email implementation should define at least the application reference, event type, provider, provider message ID, send status and server timestamp. It should avoid storing email bodies, secrets or unnecessary personal data. Final fields and retention remain planned until the server-side Resend route and IS-06 decision are complete.
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `eventType` | string | Yes | `decision` |
+| `provider` | string | Yes | `resend` |
+| `applicationId` | string | Yes | Related application |
+| `decisionId` | string | Yes | Related append-only decision record |
+| `decision` | string | Yes | `offer` or `rejected` |
+| `studentUid` | string | Yes | Student account reference; no email address is stored in the log |
+| `universityId` | string | Yes | Scope used for admin log reads |
+| `requestedBy` | string | Yes | Admin Firebase user ID |
+| `status` | string | Yes | `sending`, `sent` or `failed` |
+| `attempts` | number | Yes | Number of claimed send attempts |
+| `providerMessageId` | string | After success | Resend message ID |
+| `lastErrorCode`, `providerStatus` | string/number or null | After attempt | Limited failure evidence without provider payload or secrets |
+| `createdAt`, `startedAt`, `updatedAt` | timestamp | Yes | Server-side lifecycle timestamps |
+| `sentAt`, `failedAt` | timestamp | When applicable | Latest outcome timestamp |
 
-The current client rule allows any verified user to create an email log. Issue #17 should write logs through a verified server route/Firebase Admin and then deny client creation.
+The protected route writes logs with Firebase Admin after verifying the caller and application scope. Firestore client writes are denied. Admin reads are limited to logs with the same `universityId` as the admin profile. Email addresses, bodies, API keys and private keys are not stored.
 
 ## Composite Indexes
 
@@ -143,7 +158,7 @@ applications/{applicationId}/{timestamp}_{sanitisedFilename}
 | Read access | Owning student or admin for the application's university |
 | Delete access | Denied for Sprint 2 clients |
 
-After upload, the exact Storage path is written to `applications.documentPath`. The code and rules exist, but live Storage evidence is blocked until the team resolves the Firebase Blaze-plan decision.
+After upload, the exact Storage path is written to `applications.documentPath`. The Blaze-plan decision is resolved; live bucket, deployed-rules and allowed/denied upload evidence still needs to be recorded.
 
 ## Access-Control Summary
 
@@ -155,19 +170,19 @@ After upload, the exact Storage path is written to `applications.documentPath`. 
 | Other student's application | Denied | Read/update only for admin university | Denied |
 | Decision history | Verified owner read | Scoped read/create | Denied |
 | Storage document | Owner read/write within constraints | Scoped read | Denied |
-| Email logs | No read; current broad create rule must be tightened | Read; current create rule also permits verified users | Denied |
+| Email logs | No access | Read for own university; no client writes | Denied |
 
-Firebase Admin operations used by the seed script and future email server route bypass client security rules. Those server paths must perform their own authorization checks.
+Firebase Admin operations used by the seed script and decision-email server route bypass client security rules. Those server paths must perform their own authorization checks.
 
 ## Known Gaps and Deferred Decisions
 
-- Storage bucket activation and live upload evidence are blocked by the Blaze-plan decision.
+- The paid Firebase plan decision is resolved; live bucket/rules/upload evidence remains to be completed in issue #6.
 - Required document enforcement before submission is missing.
 - Blank decision-message validation is missing in `recordDecision()`.
 - Duplicate application prevention is not implemented.
 - Final `form` subfields depend on the issue #10 UI/schema agreement.
-- Final `emailLogs` fields and retention depend on issue #17 and IS-06.
+- Email-log retention still depends on IS-06.
 - GDPR delete/anonymise behaviour and App Check are deferred.
 - Automated emulator tests for rules are not yet present.
 
-This document must be updated when issues #10, #11, #14, #15 or #17 change the implemented schema.
+This document must be updated when issues #10, #11, #14, #15 or #19 change the implemented schema.

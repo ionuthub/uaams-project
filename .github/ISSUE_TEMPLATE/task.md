@@ -15,8 +15,15 @@ assignees: ""
 
 ## Requirement references
 
+- PRD-XX
 - FR-XX
 - NFR-XX
+
+## PRD compliance impact
+
+- Status: Aligned / Partial / Missing / Substituted / Deferred / Approved addition
+- Compliance-register row(s):
+- Approved change/waiver (if applicable):
 
 ## Owner
 
@@ -35,3 +42,9 @@ assignees: ""
 ## Related report section
 
 ## Dependencies / blockers
+
+## PRD traceability checklist
+
+- [ ] The original PRD requirement or approved change is linked.
+- [ ] This task does not silently reduce or expand product scope.
+- [ ] `docs/prd-compliance-register.md` will be updated with the result/evidence.

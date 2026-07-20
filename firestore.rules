@@ -34,7 +34,12 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
                     && request.auth.uid == uid
-                    && request.resource.data.role == 'student';
+                    && request.resource.data.role == 'student'
+                    && request.resource.data.privacyConsent == true
+                    && request.resource.data.keys()
+                         .hasOnly(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt', 'updatedAt'])
+                    && request.resource.data.keys()
+                         .hasAll(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt']);
       allow update: if signedIn()
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
@@ -58,7 +63,11 @@ service cloud.firestore {
       // Only a verified student can create, and only as themselves, in draft.
       allow create: if isVerified()
                     && request.resource.data.studentUid == request.auth.uid
-                    && request.resource.data.status == 'draft';
+                    && request.resource.data.status == 'draft'
+                    && request.resource.data.keys()
+                         .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'createdAt', 'updatedAt'])
+                    && request.resource.data.keys()
+                         .hasAll(['studentUid', 'universityId', 'status', 'form', 'createdAt', 'updatedAt']);
 
       // Student: may edit allowed draft fields only, and may move
       // status draft -> submitted. Admin: may write decision fields only.
@@ -69,7 +78,9 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['form', 'documentPath', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
-              || request.resource.data.status == 'submitted')
+              || (request.resource.data.status == 'submitted'
+                  && request.resource.data.documentPath is string
+                  && request.resource.data.documentPath.size() > 0))
         )
         ||
         (
@@ -87,16 +98,22 @@ service cloud.firestore {
         allow read: if isVerified()
                     && (get(/databases/$(database)/documents/applications/$(appId)).data.studentUid == request.auth.uid
                         || adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId));
-        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
+                      && request.resource.data.decidedBy == request.auth.uid
+                      && request.resource.data.decision in ['offer', 'rejected']
+                      && request.resource.data.keys()
+                           .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
+                      && request.resource.data.keys()
+                           .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
         allow update, delete: if false; // decisions are never edited or removed
       }
     }
 
-    // ---- email logs (written by Sorin's module) ----
+    // ---- email logs (written only by the protected server route) ----
     match /emailLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isVerified(); // tighten in Sprint 3 once send path is final
-      allow update, delete: if false; // anonymise-vs-delete pending IS-06
+      allow read: if isAdmin()
+                  && resource.data.universityId == userDoc().universityId;
+      allow write: if false; // Firebase Admin performs authorised server writes
     }
   }
 }

@@ -11,14 +11,17 @@ service firebase.storage {
       function signedIn() {
         return request.auth != null;
       }
+      function isVerified() {
+        return signedIn() && request.auth.token.email_verified == true;
+      }
       function appData() {
         return firestore.get(/databases/(default)/documents/applications/$(applicationId)).data;
       }
       function isOwner() {
-        return signedIn() && appData().studentUid == request.auth.uid;
+        return isVerified() && appData().studentUid == request.auth.uid;
       }
       function isScopedAdmin() {
-        return signedIn()
+        return isVerified()
           && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'
           && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.universityId == appData().universityId;
       }

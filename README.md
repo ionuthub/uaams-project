@@ -31,7 +31,7 @@ The Sprint 2 demo path is:
 - Firestore
 - Firebase Storage
 - Vercel deployment
-- SMTP/email provider
+- Resend transactional email service
 
 ## Team Roles
 
@@ -67,10 +67,14 @@ Open http://localhost:3000 after the development server starts.
 
 ## Agile and Requirements Documentation
 
+- `docs/prd-compliance-register.md` — original PRD baseline, implementation status, deviations and corrective actions.
+- `docs/prd-change-request-template.md` — approval record for removing, substituting or adding PRD scope.
 - `docs/user-stories.md` — Product Backlog story catalogue and epic mapping.
 - `docs/software-requirements-specification.md` — Sprint 2 FR/NFR and proposed Sprint 3 requirements.
-- `docs/requirements-traceability-matrix.md` — story-to-requirement-to-issue-to-test evidence.
+- `docs/requirements-traceability-matrix.md` — story-to-requirement-to-issue-to-test evidence for selected Agile work.
 - `docs/team-workflow.md` — Scrum cadence, Definition of Ready, and Definition of Done.
+
+The original PRD remains the product baseline. A reduced sprint increment does not remove unselected PRD requirements. Proposed additions—especially payments and new roles—require an approved change before implementation.
 
 ## Repository Layout
 
@@ -87,7 +91,7 @@ docs/        Product, Sprint, architecture, schema, testing, and workflow docume
 
 - Registration, login, verification guidance, and password-reset screens are implemented.
 - Firebase authentication, Firestore helpers, rules, and the demo backend path are present.
-- The student dashboard, application form, production upload flow, admin screens, and email integration remain active Sprint work.
+- The student dashboard, application form, upload interface and admin list are implemented. Live Firebase upload evidence, admin detail/scoping/decision UI and final end-to-end evidence remain active Sprint work.
 - The root page is the public product entry page. The backend test harness is available only at `/dev/harness` when the server-only `ENABLE_TEST_HARNESS=true` variable is set locally.
 
 Use the issue board and milestone status as the source of truth; documentation must not describe planned work as implemented.

@@ -1,9 +1,12 @@
 import { access, readFile, readdir } from "node:fs/promises";
+import { execFile } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
+import { promisify } from "node:util";
 
 const root = process.cwd();
 const errors = [];
+const execFileAsync = promisify(execFile);
 
 const requiredFiles = [
   "README.md",
@@ -60,7 +63,17 @@ for (const relativePath of jsonFiles) {
 }
 
 for (const secretPath of [".env.local", "serviceAccountKey.json"]) {
-  if (await exists(secretPath)) errors.push(`Sensitive local file must not be committed: ${secretPath}`);
+  try {
+    await execFileAsync("git", ["ls-files", "--error-unmatch", secretPath], {
+      cwd: root,
+    });
+    errors.push(`Sensitive local file is tracked by Git: ${secretPath}`);
+  } catch (error) {
+    // Exit code 1 means the file is not tracked, which is the expected state.
+    if (error.code !== 1) {
+      errors.push(`Could not verify Git tracking for ${secretPath}: ${error.message}`);
+    }
+  }
 }
 
 for (const absolutePath of await collectFiles()) {
@@ -73,6 +86,13 @@ for (const absolutePath of await collectFiles()) {
 
   if (/\bElena\b/.test(contents)) {
     errors.push(`Stale team-member name in ${relativePath}: use Alina`);
+  }
+
+  if (
+    relativePath !== "scripts/check-source.mjs" &&
+    /\b(?:ChatGPT|Claude|Codex|GitHub Copilot)\b|\b(?:generated|written) by (?:an )?AI\b/i.test(contents)
+  ) {
+    errors.push(`Assistant attribution found in ${relativePath}: rewrite as project-owned content`);
   }
 
   if (/\bWeek (5|6|7)\b/.test(contents)) {

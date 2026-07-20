@@ -17,6 +17,8 @@ Sprint 2 proof of concept. Next.js 15 (App Router, plain JS) + Firebase (Auth, F
 | `firestore.rules` | Security rules (deployed) — role checks, university scoping, field-level allow-lists, append-only decisions | Dawid |
 | `storage.rules` | IS-07 enforced server-side; owner/scoped-admin reads (IS-04) | Dawid |
 | `scripts/seed.js` | Creates the demo university and admin account | Dawid |
+| `lib/firebase-admin.js` | Server-only Firebase Admin connection for protected routes | Ionut (email catch-up) |
+| `app/api/email/decision/route.js` | Scoped decision-email send and `emailLogs` writer | Ionut (email catch-up) |
 | `app/page.js` | **Temporary backend test harness** — replaced by Alina's screens; `lib/` stays | Dawid |
 
 Front end (Alina), admin module (Ionut), emails (Sorin): build on top of `lib/` — do not call Firebase directly.
@@ -42,6 +44,18 @@ npm install
    (PowerShell equivalent: `Copy-Item .env.local.example .env.local`)
 2. Ask Dawid for the six Firebase config values, or get them yourself: Firebase console → gear icon → Project settings → Your apps → `uaams-web` → SDK setup and configuration.
 3. Paste each value against its variable name in `.env.local`. No quotes, no spaces around `=`.
+
+The decision-email route also needs these server-only values locally and in Vercel Preview/Production:
+
+```text
+FIREBASE_ADMIN_PROJECT_ID
+FIREBASE_ADMIN_CLIENT_EMAIL
+FIREBASE_ADMIN_PRIVATE_KEY
+RESEND_API_KEY
+EMAIL_FROM
+```
+
+Obtain the Firebase service-account values from Dawid or a Firebase project owner. Preserve the private key's line breaks; escaped `\n` values are also accepted. These values must never use the `NEXT_PUBLIC_` prefix.
 
 **Never commit `.env.local` or `serviceAccountKey.json`.** Both are gitignored — keep it that way. Do not paste them into the group chat.
 
@@ -83,7 +97,7 @@ To test the full demo path you need both roles at once: use a normal window for 
 3. Admin logs in → sees the application, scoped to their university only
 4. Admin clicks Offer or Reject with a message → the status update and the audit-log entry are written together in one atomic batch
 5. Student refreshes → status has flipped and the message is visible
-6. (Sorin) Decision email is sent and logged — hook point: after `recordDecision()` in `lib/db.js`
+6. The issue #15 interface calls `POST /api/email/decision` after `recordDecision()` succeeds; the route sends the committed decision and writes `emailLogs`
 
 ---
 
@@ -132,7 +146,7 @@ firebase deploy --only firestore:rules,storage
 - `/universities` — seeded reference data, read-only from the client.
 - `/applications` — `{ studentUid, universityId, status, form, documentPath, latestDecisionMessage, timestamps }`. Status: `draft → submitted → under_review → offer | rejected`. Students may edit draft fields only and may move draft → submitted; admins may write decision fields only (field-level allow-lists in the rules).
 - `/applications/{id}/decisions` — append-only audit log `{ decision, message, decidedBy, decidedAt }`. Written atomically with the status update; never edited or deleted (IS-05).
-- `/emailLogs` — one doc per send, written by the email module (retention pending IS-06).
+- `/emailLogs` — one server-written document per decision email, including scope, status, attempts and provider message ID; client writes are denied (retention pending IS-06).
 
 Composite indexes (required, exported to `firestore.indexes.json`): `applications(studentUid, createdAt)` and `applications(status, universityId, submittedAt)`.
 
