@@ -14,6 +14,8 @@ import {
   Upload,
   CreditCard,
   Bell,
+  Menu,
+  X,
   Settings,
   HelpCircle,
   LogOut,
@@ -32,6 +34,11 @@ export default function StudentPortal({
   notify,
   onOpenModal,
 }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const goScreen = (id) => {
+    setMobileNavOpen(false);
+    setScreen(id);
+  };
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [universities, setUniversities] = useState([]);
@@ -150,36 +157,45 @@ export default function StudentPortal({
     <section className="screen app-screen is-active" data-screen={subRoute}>
       <div className="portal-shell">
         {/* Sidebar */}
-        <aside className="compact-sidebar">
-          <button className="sidebar-brand" type="button" onClick={() => setScreen("dashboard")}>
+        <aside className={mobileNavOpen ? "compact-sidebar is-mobile-open" : "compact-sidebar"}>
+          <button className="sidebar-brand" type="button" onClick={() => goScreen("dashboard")}>
             <span className="brand-mark">U</span>
             <div>
               <strong>UAAMS</strong>
               <small>Applicant portal</small>
             </div>
           </button>
+          <button
+            className="mobile-nav-toggle"
+            type="button"
+            aria-expanded={mobileNavOpen}
+            aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            {mobileNavOpen ? <X /> : <Menu />}
+          </button>
           <nav className="sidebar-nav" aria-label="Applicant navigation">
-            <button className={subRoute === "dashboard" ? "is-current" : ""} type="button" onClick={() => setScreen("dashboard")}>
+            <button className={subRoute === "dashboard" ? "is-current" : ""} type="button" onClick={() => goScreen("dashboard")}>
               <span><LayoutDashboard className="w-4 h-4" /></span>Dashboard
             </button>
-            <button className={subRoute === "applications" ? "is-current" : ""} type="button" onClick={() => setScreen("applications")}>
+            <button className={subRoute === "applications" ? "is-current" : ""} type="button" onClick={() => goScreen("applications")}>
               <span><FileText className="w-4 h-4" /></span>My applications
             </button>
-            <button className={subRoute === "documents" ? "is-current" : ""} type="button" onClick={() => setScreen("documents")}>
+            <button className={subRoute === "documents" ? "is-current" : ""} type="button" onClick={() => goScreen("documents")}>
               <span><Upload className="w-4 h-4" /></span>Documents <b>{applications.filter(a => a.documentPath).length}</b>
             </button>
-            <button className={subRoute === "payments" ? "is-current" : ""} type="button" onClick={() => setScreen("payments")}>
+            <button className={subRoute === "payments" ? "is-current" : ""} type="button" onClick={() => goScreen("payments")}>
               <span><CreditCard className="w-4 h-4" /></span>Payments
             </button>
-            <button className={subRoute === "notifications" ? "is-current" : ""} type="button" onClick={() => setScreen("notifications")}>
+            <button className={subRoute === "notifications" ? "is-current" : ""} type="button" onClick={() => goScreen("notifications")}>
               <span><Bell className="w-4 h-4" /></span>Notifications <b>2</b>
             </button>
           </nav>
           <div className="sidebar-footer" style={{ marginTop: "auto", paddingTop: "16px" }}>
-            <button type="button" onClick={() => setScreen("support")}>
+            <button type="button" onClick={() => goScreen("support")}>
               <span><HelpCircle className="w-4 h-4" /></span>Help & support
             </button>
-            <button type="button" onClick={() => setScreen("account")}>
+            <button type="button" onClick={() => goScreen("account")}>
               <span><Settings className="w-4 h-4" /></span>Account settings
             </button>
             <div className="user-chip" style={{ marginTop: "12px" }}>
