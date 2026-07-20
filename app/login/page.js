@@ -12,7 +12,7 @@ import FormField from "../../components/auth/FormField";
 import PasswordInput from "../../components/auth/PasswordInput";
 import AlertBanner from "../../components/auth/AlertBanner";
 import LoadingButton from "../../components/auth/LoadingButton";
-import { login } from "../../lib/auth";
+import { login, getUserProfile } from "../../lib/auth";
 import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../lib/validation";
 import styles from "../../components/auth/auth.module.css";
 
@@ -43,7 +43,14 @@ export default function LoginPage() {
         router.push("/verify-email");
         return;
       }
-      router.push("/student");
+      let destination = "/student";
+      try {
+        const profile = await getUserProfile(user.uid);
+        if (profile?.role === "admin") destination = "/admin";
+      } catch {
+        // profile lookup is a routing nicety; the dashboard guards handle the rest
+      }
+      router.push(destination);
     } catch (err) {
       setServerError(mapAuthErrorToMessage(err.code));
       setStatus("error");
