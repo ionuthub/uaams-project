@@ -1,6 +1,13 @@
 "use client";
 
 import PublicHeader from "./PublicHeader";
+import { SOLENT, coursesForUniversity } from "../lib/course-catalog.mjs";
+
+// The directory is driven by the real university list from Firestore
+// (loaded in app/page.js). Catalogue presentation extras such as the campus
+// image and blurb come from lib/course-catalog.mjs for the seeded
+// university; any additional university added later still renders with a
+// sensible plain card.
 
 export default function UniversitiesScreen({ setScreen, universities, user, onSignOut }) {
   return (
@@ -9,67 +16,44 @@ export default function UniversitiesScreen({ setScreen, universities, user, onSi
 
       <div className="directory-hero compact-directory-hero">
         <p className="eyebrow">Participating institutions</p>
-        <h1 id="universities-title">Compare universities with clarity.</h1>
-        <p>Explore locations, programmes and student support before beginning an application.</p>
+        <h1 id="universities-title">Study somewhere that moves you forward.</h1>
+        <p>Explore the participating university, its programmes and student support before beginning an application.</p>
       </div>
 
       <div className="university-directory">
-        <article className="university-feature">
-          <div className="campus-art">
-            <img src="/assets/campuses/ashworth-campus.webp" alt="Ashworth University's Leeds campus" />
-          </div>
-          <div>
-            <p className="micro-label">Leeds · Established 1964</p>
-            <h2>Ashworth University</h2>
-            <p>Technology-led teaching, close industry partnerships and a supportive international community.</p>
-            <ul className="university-facts">
-              <li><strong>42</strong><span>Courses available</span></li>
-              <li><strong>Campus-based</strong><span>Study experience</span></li>
-              <li><strong>Available</strong><span>Scholarship support</span></li>
-            </ul>
-            <button className="button button-secondary" type="button" onClick={() => setScreen("courses")}>
-              Explore courses
-            </button>
-          </div>
-        </article>
-
-        <article className="university-feature">
-          <div className="campus-art">
-            <img src="/assets/campuses/harborview-campus.webp" alt="Harborview University's Bristol campus" />
-          </div>
-          <div>
-            <p className="micro-label">Bristol · Established 1908</p>
-            <h2>Harborview University</h2>
-            <p>Research-informed programmes beside one of the UK's most creative and connected cities.</p>
-            <ul className="university-facts">
-              <li><strong>31</strong><span>Courses available</span></li>
-              <li><strong>Integrated</strong><span>Placement options</span></li>
-              <li><strong>Waterside</strong><span>City campus</span></li>
-            </ul>
-            <button className="button button-secondary" type="button" onClick={() => setScreen("courses")}>
-              Explore courses
-            </button>
-          </div>
-        </article>
-
-        <article className="university-feature">
-          <div className="campus-art">
-            <img src="/assets/campuses/st-eddas-campus.webp" alt="St Edda's historic collegiate courtyard in York" />
-          </div>
-          <div>
-            <p className="micro-label">York · Established 1881</p>
-            <h2>St Edda's College</h2>
-            <p>A close-knit academic community with tutorial-led teaching and specialist programmes.</p>
-            <ul className="university-facts">
-              <li><strong>18</strong><span>Courses available</span></li>
-              <li><strong>Tutorial-led</strong><span>Collegiate teaching</span></li>
-              <li><strong>Historic</strong><span>York campus</span></li>
-            </ul>
-            <button className="button button-secondary" type="button" onClick={() => setScreen("courses")}>
-              Explore courses
-            </button>
-          </div>
-        </article>
+        {universities.length === 0 ? (
+          <p role="status" style={{ padding: "40px 8px", color: "#5a6472" }}>
+            Loading participating universities...
+          </p>
+        ) : (
+          universities.map((uni) => {
+            const isSolent = uni.id === SOLENT.id;
+            const courseCount = coursesForUniversity(uni.id).length;
+            return (
+              <article className="university-feature" key={uni.id}>
+                <div className="campus-art">
+                  <img
+                    src={SOLENT.campusImage}
+                    alt={isSolent ? SOLENT.campusAlt : `${uni.name} campus`}
+                  />
+                </div>
+                <div>
+                  <p className="micro-label">{isSolent ? SOLENT.statusLine : uni.city || "United Kingdom"}</p>
+                  <h2>{uni.name}</h2>
+                  <p>{isSolent ? SOLENT.blurb : "Participating university on the UAAMS service."}</p>
+                  <ul className="university-facts">
+                    <li><strong>{courseCount || "New"}</strong><span>{courseCount ? "Courses listed" : "Catalogue coming soon"}</span></li>
+                    <li><strong>Campus based</strong><span>Study experience</span></li>
+                    <li><strong>{uni.city || "UK"}</strong><span>City campus</span></li>
+                  </ul>
+                  <button className="button button-secondary" type="button" onClick={() => setScreen("courses")}>
+                    Explore courses
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
       </div>
     </section>
   );
