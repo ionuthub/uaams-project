@@ -78,9 +78,9 @@ export default function RegisterPage() {
 
     setStatus("loading");
     try {
-      await registerStudent(form.email.trim(), form.password, form.fullName.trim(), form.nationality.trim(), form.studyLevel.trim());
+      const { verificationEmailSent } = await registerStudent(form.email.trim(), form.password, form.fullName.trim(), form.nationality.trim(), form.studyLevel.trim());
       setStatus("success");
-      router.push("/verify-email");
+      router.push(verificationEmailSent ? "/verify-email" : "/verify-email?sent=0");
     } catch (err) {
       setServerError(mapAuthErrorToMessage(err.code));
       setStatus("error");

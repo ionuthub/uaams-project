@@ -23,7 +23,7 @@ export default function RegisterScreen({ setScreen, onRegisterSuccess, notify })
     setLoading(true);
     setErrorMsg("");
     try {
-      const user = await registerStudent(email, password, name, {
+      const { user } = await registerStudent(email, password, name, {
         nationality,
         studyLevel,
       });
