@@ -31,6 +31,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   const oobCode = searchParams.get("oobCode");
+  const initialSendFailed = searchParams.get("sent") === "0";
 
   const [confirmStatus, setConfirmStatus] = useState(
     mode === "verifyEmail" && oobCode ? "loading" : "idle"
@@ -102,8 +103,17 @@ function VerifyEmailContent() {
   return (
     <AuthCard
       title="Verify your email"
-      subtitle="We've sent a confirmation link to your email address. Click it to activate your account."
+      subtitle={
+        initialSendFailed
+          ? "Confirm your email address to activate your account."
+          : "We've sent a confirmation link to your email address. Click it to activate your account."
+      }
     >
+      {initialSendFailed && resendStatus === "idle" && (
+        <AlertBanner variant="error">
+          Your account was created, but the confirmation email could not be sent. Resend it below, and check your spam folder too.
+        </AlertBanner>
+      )}
       {resendStatus === "success" && (
         <AlertBanner variant="success">Verification email resent. Check your inbox.</AlertBanner>
       )}
