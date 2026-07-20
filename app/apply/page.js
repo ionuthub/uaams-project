@@ -38,7 +38,10 @@ export default function ApplicationPage() {
     catch (error) { console.error("University list failed:", error); setPhase("error"); }
   }), []);
 
-  function update(name, value) { setForm((current) => ({ ...current, [name]: value })); }
+  function update(name, value) {
+    setForm((current) => ({ ...current, [name]: value }));
+    setErrors((current) => { if (!current[name]) return current; const next = { ...current }; delete next[name]; return next; });
+  }
   function validate() {
     const next = {};
     for (const name of ["universityId", "fullName", "dateOfBirth", "nationality", "phone", "address", "previousQualification", "studyLevel", "intake", "personalStatement"]) if (!String(form[name]).trim()) next[name] = "This field is required.";
