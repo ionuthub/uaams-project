@@ -10,6 +10,8 @@ import {
   BadgeCheck,
   Settings,
   HelpCircle,
+  Menu,
+  X,
   Users,
   Search,
   CheckCircle,
@@ -24,6 +26,11 @@ export default function StaffPortal({
   onSignOut,
   notify,
 }) {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const goScreen = (id) => {
+    setMobileNavOpen(false);
+    setScreen(id);
+  };
   const [adminApps, setAdminApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState(null);
@@ -146,28 +153,37 @@ export default function StaffPortal({
     <section className="screen app-screen is-active" data-screen={subRoute}>
       <div className="portal-shell staff-shell">
         {/* Sidebar */}
-        <aside className="compact-sidebar staff-sidebar">
-          <button className="sidebar-brand" type="button" onClick={() => setScreen("staff-overview")}>
+        <aside className={mobileNavOpen ? "compact-sidebar staff-sidebar is-mobile-open" : "compact-sidebar staff-sidebar"}>
+          <button className="sidebar-brand" type="button" onClick={() => goScreen("staff-overview")}>
             <span className="brand-mark">{uniInitials}</span>
             <div>
               <strong>{universityName.split(" ")[0]}</strong>
               <small>University workspace</small>
             </div>
           </button>
+          <button
+            className="mobile-nav-toggle"
+            type="button"
+            aria-expanded={mobileNavOpen}
+            aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            {mobileNavOpen ? <X /> : <Menu />}
+          </button>
           <nav className="sidebar-nav" aria-label="Staff navigation">
-            <button className={subRoute === "staff-overview" ? "is-current" : ""} type="button" onClick={() => setScreen("staff-overview")}>
+            <button className={subRoute === "staff-overview" ? "is-current" : ""} type="button" onClick={() => goScreen("staff-overview")}>
               <span><LayoutDashboard className="w-4 h-4" /></span>Overview
             </button>
-            <button className={subRoute === "admissions" ? "is-current" : ""} type="button" onClick={() => setScreen("admissions")}>
+            <button className={subRoute === "admissions" ? "is-current" : ""} type="button" onClick={() => goScreen("admissions")}>
               <span><FileText className="w-4 h-4" /></span>Applications queue <b>{totalAppsCount}</b>
             </button>
-            <button className={subRoute === "staff-documents" ? "is-current" : ""} type="button" onClick={() => setScreen("staff-documents")}>
+            <button className={subRoute === "staff-documents" ? "is-current" : ""} type="button" onClick={() => goScreen("staff-documents")}>
               <span><Upload className="w-4 h-4" /></span>Document requests <b>{docReviewCount}</b>
             </button>
-            <button className={subRoute === "staff-decisions" ? "is-current" : ""} type="button" onClick={() => setScreen("staff-decisions")}>
+            <button className={subRoute === "staff-decisions" ? "is-current" : ""} type="button" onClick={() => goScreen("staff-decisions")}>
               <span><BadgeCheck className="w-4 h-4" /></span>Decisions <b>{decisionsCount}</b>
             </button>
-            <button className={subRoute === "admin" ? "is-current" : ""} type="button" onClick={() => setScreen("admin")}>
+            <button className={subRoute === "admin" ? "is-current" : ""} type="button" onClick={() => goScreen("admin")}>
               <span><Settings className="w-4 h-4" /></span>Administration
             </button>
           </nav>

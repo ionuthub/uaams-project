@@ -1,12 +1,20 @@
 "use client";
 
+import { useState } from "react";
+
 export default function PublicHeader({ setScreen, currentScreen, user, onSignOut }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const go = (action) => {
+    setMenuOpen(false);
+    action();
+  };
+
   return (
-    <header className="public-header" data-public-header>
+    <header className={menuOpen ? "public-header is-mobile-open" : "public-header"} data-public-header>
       <button
         className="brand"
         type="button"
-        onClick={() => setScreen("landing")}
+        onClick={() => go(() => setScreen("landing"))}
         aria-label="UAAMS home"
         style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
       >
@@ -14,11 +22,21 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         <span className="brand-name">UAAMS</span>
       </button>
 
-      <nav className="public-nav" aria-label="Primary navigation">
+      <button
+        className="mobile-menu"
+        type="button"
+        aria-expanded={menuOpen}
+        aria-controls="public-header-nav"
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        {menuOpen ? "Close" : "Menu"}
+      </button>
+
+      <nav className="public-nav" id="public-header-nav" aria-label="Primary navigation">
         <button
           className={currentScreen === "universities" ? "is-current" : ""}
           type="button"
-          onClick={() => setScreen("universities")}
+          onClick={() => go(() => setScreen("universities"))}
           aria-current={currentScreen === "universities" ? "page" : undefined}
         >
           Universities
@@ -27,7 +45,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         <button
           className={currentScreen === "courses" ? "is-current" : ""}
           type="button"
-          onClick={() => setScreen("courses")}
+          onClick={() => go(() => setScreen("courses"))}
           aria-current={currentScreen === "courses" ? "page" : undefined}
         >
           Courses
@@ -37,7 +55,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
           className={currentScreen === "landing" ? "is-current" : ""}
           type="button"
           onClick={() => {
-            setScreen("landing");
+            go(() => setScreen("landing"));
             setTimeout(() => {
               document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
             }, 100);
@@ -49,7 +67,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         <button
           className={currentScreen === "support" ? "is-current" : ""}
           type="button"
-          onClick={() => setScreen("support")}
+          onClick={() => go(() => setScreen("support"))}
           aria-current={currentScreen === "support" ? "page" : undefined}
         >
           Support
@@ -59,19 +77,19 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       <div className="header-actions">
         {user ? (
           <>
-            <button className="button button-quiet" type="button" onClick={() => setScreen("dashboard")}>
+            <button className="button button-quiet" type="button" onClick={() => go(() => setScreen("dashboard"))}>
               Portal Dashboard
             </button>
-            <button className="button button-secondary" type="button" onClick={onSignOut}>
+            <button className="button button-secondary" type="button" onClick={() => go(onSignOut)}>
               Sign out
             </button>
           </>
         ) : (
           <>
-            <button className="button button-quiet" type="button" onClick={() => setScreen("login")}>
+            <button className="button button-quiet" type="button" onClick={() => go(() => setScreen("login"))}>
               Sign in
             </button>
-            <button className="button button-primary" type="button" onClick={() => setScreen("register")}>
+            <button className="button button-primary" type="button" onClick={() => go(() => setScreen("register"))}>
               Create account
             </button>
           </>
