@@ -137,7 +137,7 @@ export default function Harness() {
       <ul>
         {myApps.map((a) => (
           <li key={a.id}>
-            {a.id} | <b>{a.status}</b> | doc: {a.documentPath || "none"} | message: {a.latestDecisionMessage || "—"}
+            {a.id} | <b>{a.status}</b> | doc: {a.documentPath || "none"} | message: {a.latestDecisionMessage || "-"}
           </li>
         ))}
       </ul>

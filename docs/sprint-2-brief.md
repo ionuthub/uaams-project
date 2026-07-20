@@ -49,7 +49,7 @@ Sprint 2 must produce a live proof of concept that demonstrates the complete min
 
 ## Week 2 Sprint Goal
 
-By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list. (Opening application details — US-08/#13 — was re-planned to Week 3 on 15 July.)
+By the end of Week 2, a verified applicant can log in, view the dashboard, enter the required application information, and upload one permitted document, while an admissions officer can view the application list. (Opening application details - US-08/#13 - was re-planned to Week 3 on 15 July.)
 
 ## Week 2 Epic Selection
 

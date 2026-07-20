@@ -2,7 +2,7 @@ import "./globals.css";
 
 // Shared metadata and document structure for every UAAMS route.
 export const metadata = {
-  title: "UAAMS — Unified Academic Application Management System",
+  title: "UAAMS - Unified Academic Application Management System",
   description:
     "Discover courses, submit evidence and follow every decision from one secure, transparent service.",
 };

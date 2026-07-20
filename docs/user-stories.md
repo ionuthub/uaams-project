@@ -52,7 +52,7 @@ Additional corrective delivery work for registration fields, full application da
 
 ## Acceptance-Criteria Example
 
-### US-05 — View application status
+### US-05 - View application status
 
 - **Given** I am logged in as an applicant,
 - **When** I open my dashboard,
