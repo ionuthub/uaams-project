@@ -42,6 +42,12 @@ export default function RegisterPage() {
 
   function update(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }
 
   function validate() {

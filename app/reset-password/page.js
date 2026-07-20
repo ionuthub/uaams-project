@@ -73,7 +73,10 @@ function RequestResetForm() {
         name="email"
         type="email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          if (error) setError(null);
+        }}
         error={status !== "error" ? error : undefined}
         autoComplete="email"
       />
@@ -163,7 +166,10 @@ function ConfirmResetForm({ oobCode }) {
         label="New password"
         name="password"
         value={password}
-        onChange={setPassword}
+        onChange={(value) => {
+          setPassword(value);
+          setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
+        }}
         error={errors.password}
         showStrength
       />
@@ -171,7 +177,10 @@ function ConfirmResetForm({ oobCode }) {
         label="Confirm new password"
         name="confirmPassword"
         value={confirmPasswordValue}
-        onChange={setConfirmPasswordValue}
+        onChange={(value) => {
+          setConfirmPasswordValue(value);
+          setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev));
+        }}
         error={errors.confirmPassword}
       />
       <LoadingButton loading={submitStatus === "loading"}>Update password</LoadingButton>

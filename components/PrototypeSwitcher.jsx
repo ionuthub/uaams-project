@@ -17,8 +17,14 @@ import {
   ChevronUp,
 } from "lucide-react";
 
+const PROTOTYPE_NAV_ENABLED =
+  process.env.NODE_ENV !== "production" ||
+  process.env.NEXT_PUBLIC_ENABLE_PROTOTYPE_NAV === "true";
+
 export default function PrototypeSwitcher({ currentScreen, setScreen, user, profile, onSignOut }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  if (!PROTOTYPE_NAV_ENABLED) return null;
 
   const screens = [
     { group: "Public", items: [
