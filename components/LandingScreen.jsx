@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Check } from "lucide-react";
-import { coursesForUniversity } from "../lib/course-catalog.mjs";
+import { SOLENT, coursesForUniversity } from "../lib/course-catalog.mjs";
 
 export default function LandingScreen({ setScreen, universities, onSelectCourse, user, onSignOut }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,8 +130,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           </div>
         </div>
         <div className="institution-list">
-          {universities.length > 0 ? (
-            universities.slice(0, 3).map((uni) => (
+          {[{ id: SOLENT.id, name: SOLENT.name, city: SOLENT.city }].map((uni) => (
               <article key={uni.id || uni.name}>
                 <span className="institution-mark">{uni.code || uni.name.substring(0, 2).toUpperCase()}</span>
                 <div>
@@ -142,10 +141,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
                   View university <span aria-hidden="true">→</span>
                 </button>
               </article>
-            ))
-          ) : (
-            <p role="status" style={{ color: "#9fb2c1", padding: "16px 0" }}>Loading participating universities...</p>
-          )}
+            ))}
         </div>
       </section>
 

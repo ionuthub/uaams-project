@@ -3,13 +3,17 @@
 import PublicHeader from "./PublicHeader";
 import { SOLENT, coursesForUniversity } from "../lib/course-catalog.mjs";
 
-// The directory is driven by the real university list from Firestore
-// (loaded in app/page.js). Catalogue presentation extras such as the campus
-// image and blurb come from lib/course-catalog.mjs for the seeded
-// university; any additional university added later still renders with a
-// sensible plain card.
+// Public visitors cannot read the /universities collection (the security
+// rules require sign in), so the public directory renders the participating
+// university from lib/course-catalog.mjs, which mirrors the seeded record.
+// Signed in flows such as the apply form still read Firestore directly.
 
-export default function UniversitiesScreen({ setScreen, universities, user, onSignOut }) {
+const PUBLIC_UNIVERSITIES = [
+  { id: SOLENT.id, name: SOLENT.name, city: SOLENT.city },
+];
+
+export default function UniversitiesScreen({ setScreen, user, onSignOut }) {
+  const universities = PUBLIC_UNIVERSITIES;
   return (
     <section className="screen directory-screen is-active" data-screen="universities">
       <PublicHeader setScreen={setScreen} currentScreen="universities" user={user} onSignOut={onSignOut} />
@@ -21,12 +25,7 @@ export default function UniversitiesScreen({ setScreen, universities, user, onSi
       </div>
 
       <div className="university-directory">
-        {universities.length === 0 ? (
-          <p role="status" style={{ padding: "40px 8px", color: "#5a6472" }}>
-            Loading participating universities...
-          </p>
-        ) : (
-          universities.map((uni) => {
+        {universities.map((uni) => {
             const isSolent = uni.id === SOLENT.id;
             const courseCount = coursesForUniversity(uni.id).length;
             return (
@@ -52,8 +51,7 @@ export default function UniversitiesScreen({ setScreen, universities, user, onSi
                 </div>
               </article>
             );
-          })
-        )}
+          })}
       </div>
     </section>
   );
