@@ -62,7 +62,10 @@ export default function LoginPage() {
           name="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setErrors((prev) => (prev.email ? { ...prev, email: null } : prev));
+          }}
           error={errors.email}
           autoComplete="email"
         />
@@ -70,7 +73,10 @@ export default function LoginPage() {
           label="Password"
           name="password"
           value={password}
-          onChange={setPassword}
+          onChange={(value) => {
+            setPassword(value);
+            setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
+          }}
           error={errors.password}
           autoComplete="current-password"
         />
