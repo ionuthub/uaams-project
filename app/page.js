@@ -75,7 +75,7 @@ export default function Home() {
 
   const handleStartApplication = (course) => {
     if (course) setSelectedCourse(course);
-    setScreen("form");
+    window.location.href = "/apply";
   };
 
   const isPublicScreen = ["landing", "universities", "courses", "course-detail", "support"].includes(screen);

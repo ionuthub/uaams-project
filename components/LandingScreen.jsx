@@ -3,6 +3,7 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Check } from "lucide-react";
+import { coursesForUniversity } from "../lib/course-catalog.mjs";
 
 export default function LandingScreen({ setScreen, universities, onSelectCourse, user, onSignOut }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +45,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
             <div className="preview-header">
               <div>
                 <span className="micro-label">Current application</span>
-                <strong>Ashworth University</strong>
+                <strong>Southampton Solent University</strong>
               </div>
               <span className="status status-warning">Action needed</span>
             </div>
@@ -92,7 +93,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           <button type="button" onClick={() => setScreen("courses")}>Computer science</button>
           <button type="button" onClick={() => setScreen("courses")}>Business</button>
           <button type="button" onClick={() => setScreen("courses")}>Data science</button>
-          <button type="button" onClick={() => setScreen("courses")}>Psychology</button>
+          <button type="button" onClick={() => setScreen("courses")}>Maritime</button>
         </div>
       </section>
 
@@ -135,7 +136,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
                 <span className="institution-mark">{uni.code || uni.name.substring(0, 2).toUpperCase()}</span>
                 <div>
                   <h3>{uni.name}</h3>
-                  <p>{uni.location || "United Kingdom"} · {uni.coursesCount || 42} courses</p>
+                  <p>{uni.city || uni.location || "United Kingdom"} · {coursesForUniversity(uni.id).length} courses</p>
                 </div>
                 <button className="institution-link" type="button" onClick={() => setScreen("universities")}>
                   View university <span aria-hidden="true">→</span>
@@ -143,23 +144,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
               </article>
             ))
           ) : (
-            <>
-              <article>
-                <span className="institution-mark">AU</span>
-                <div><h3>Ashworth University</h3><p>Leeds · 42 courses</p></div>
-                <button className="institution-link" type="button" onClick={() => setScreen("universities")}>View university <span aria-hidden="true">→</span></button>
-              </article>
-              <article>
-                <span className="institution-mark">HU</span>
-                <div><h3>Harborview University</h3><p>Bristol · 31 courses</p></div>
-                <button className="institution-link" type="button" onClick={() => setScreen("universities")}>View university <span aria-hidden="true">→</span></button>
-              </article>
-              <article>
-                <span className="institution-mark">SE</span>
-                <div><h3>St Edda's College</h3><p>York · 18 courses</p></div>
-                <button className="institution-link" type="button" onClick={() => setScreen("universities")}>View university <span aria-hidden="true">→</span></button>
-              </article>
-            </>
+            <p role="status" style={{ color: "#9fb2c1", padding: "16px 0" }}>Loading participating universities...</p>
           )}
         </div>
       </section>
