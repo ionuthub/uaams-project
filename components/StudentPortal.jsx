@@ -483,7 +483,7 @@ export default function StudentPortal({
                   <div className="checkout-preview">
                     <div><span>Application fee</span><strong>£25.00</strong></div>
                     <button className="button button-dark button-large button-full" type="button" onClick={() => notify("Payment Processed", "Application fee of £25.00 confirmed.")}>
-                      Pay securely — £25.00
+                      Pay securely - £25.00
                     </button>
                   </div>
                 </section>

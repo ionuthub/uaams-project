@@ -27,7 +27,7 @@ UAAMS supports the complete product scope defined by the original PRD. Sprint 2 
 | FR-10 | The system shall allow an admissions officer to view the full authorised application/profile, securely access documents and maintain approved internal notes. | US-08 | Part Sprint 2; corrective backlog required |
 | FR-11 | The system shall allow an admissions officer to record an offer or rejection with a message. | US-09 | Sprint 2 |
 | FR-12 | The system shall preserve an append-only decision history. | US-09 | Sprint 2 |
-| FR-13 | The system shall send the retained PRD email events—including verification, submission, status and decision notifications—and record appropriate delivery/failure evidence. | US-10 | Part Sprint 2; corrective backlog required |
+| FR-13 | The system shall send the retained PRD email events, including verification, submission, status and decision notifications, and record appropriate delivery/failure evidence. | US-10 | Part Sprint 2; corrective backlog required |
 | FR-14 | The system shall allow an applicant to select a course and intended intake belonging to a university. | US-11 | Mandatory Product Backlog requirement |
 | FR-15 | The system shall support additional-document requests and their requested/received/verified lifecycle. | US-12, US-13 | Proposed Sprint 3 |
 | FR-16 | If separately approved as a PRD scope change, the system shall record an application-fee payment and its lifecycle. | US-14 | Out of original PRD scope; approval required |

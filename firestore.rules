@@ -30,7 +30,7 @@ service cloud.firestore {
     // ---- users ----
     match /users/{uid} {
       // A user reads/creates their own profile. Role is fixed to "student"
-      // on self-creation — admin accounts are made only by the seed script.
+      // on self-creation - admin accounts are made only by the seed script.
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
                     && request.auth.uid == uid
