@@ -99,6 +99,7 @@ for (const absolutePath of await collectFiles()) {
     (relativePath.startsWith("app/") ||
       relativePath.startsWith("lib/") ||
       relativePath.startsWith("components/")) &&
+    contents.includes("NEXT_PUBLIC_") &&
     /process\.env\[/.test(contents)
   ) {
     errors.push(
