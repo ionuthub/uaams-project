@@ -99,7 +99,7 @@ for (const absolutePath of await collectFiles()) {
     (relativePath.startsWith("app/") ||
       relativePath.startsWith("lib/") ||
       relativePath.startsWith("components/")) &&
-    contents.includes("NEXT_PUBLIC_") &&
+    !["lib/email.js", "lib/firebase-admin.js"].includes(relativePath) &&
     /process\.env\[/.test(contents)
   ) {
     errors.push(
