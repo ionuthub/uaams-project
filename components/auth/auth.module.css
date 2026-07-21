@@ -3,8 +3,70 @@
    (the repo doesn't have Tailwind installed yet, see package.json).
    Mobile-first: base styles are single-column; .card widens from 480px up. */
 
+/* Site header for standalone auth routes (login, register, reset, verify). */
+.authTopBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  padding: 0 max(24px, calc((100vw - 1200px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid #e2e8f0;
+  backdrop-filter: blur(12px);
+}
+
+.authBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.authBrandMark {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 46% 46%;
+  display: inline-grid;
+  place-items: center;
+  color: #fff;
+  background: #0b2235;
+  font-family: Georgia, serif;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.authBrandName {
+  color: #0b2235;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+}
+
+.authBackLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: #445362;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 7px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.authBackLink:hover {
+  background: #f1f5f9;
+  color: #0b2235;
+}
+
+.authBackLink:focus-visible {
+  outline: 3px solid rgba(39, 72, 196, 0.28);
+  outline-offset: 2px;
+}
+
 .page {
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   display: flex;
   justify-content: center;
   align-items: flex-start;
