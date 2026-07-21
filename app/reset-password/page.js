@@ -2,35 +2,40 @@
 // Route: /reset-password (issue #8, Figure A.2).
 //
 // Build fix: same Suspense requirement as /verify-email - useSearchParams()
-// needs a Suspense boundary or the production build fails. See that file's
-// header comment for the doc reference.
+// needs a Suspense boundary or the production build fails.
 //
 // Two-stage screen driven by the oobCode query param:
 //   - No oobCode: "request" stage - resetPassword() emails the link.
-//     Always shows success, even if the account doesn't exist, so we don't
+//     Always shows success, even if the account does not exist, so we do not
 //     leak which emails are registered.
 //   - oobCode present: "confirm" stage - verifyResetCode() checks the link
 //     and returns the account email, then confirmPasswordReset() sets the
-//     new password. Reached once Dawid/Ionut point the Firebase Console
-//     "Password reset" template's action URL at this route.
+//     new password.
+//
+// Presentation uses the shared two-column AuthShell so this route matches
+// login and register. The logic is unchanged.
 
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import AuthCard from "../../components/auth/AuthCard";
-import FormField from "../../components/auth/FormField";
-import PasswordInput from "../../components/auth/PasswordInput";
-import AlertBanner from "../../components/auth/AlertBanner";
-import LoadingButton from "../../components/auth/LoadingButton";
+import AuthShell from "../../components/auth/AuthShell";
 import { resetPassword, verifyResetCode, confirmPasswordReset } from "../../lib/auth";
 import {
   validateEmail,
   validatePassword,
   validateConfirmPassword,
+  passwordStrength,
   mapAuthErrorToMessage,
 } from "../../lib/validation";
-import styles from "../../components/auth/auth.module.css";
+
+const RESET_STORY = {
+  eyebrow: "Account recovery",
+  headline: "Reset your password securely.",
+  subtext: "We will email you a secure link so you can set a new password for your UAAMS account.",
+};
+
+const STRENGTH_LABEL = { weak: "Weak", medium: "Okay", strong: "Strong" };
 
 function RequestResetForm() {
   const [email, setEmail] = useState("");
@@ -59,28 +64,50 @@ function RequestResetForm() {
 
   if (status === "success") {
     return (
-      <AlertBanner variant="success">
-        If an account exists for that email, a password reset link is on its way.
-      </AlertBanner>
+      <div className="auth-card">
+        <div className="auth-heading">
+          <p className="eyebrow">Reset password</p>
+          <h1>Check your email</h1>
+        </div>
+        <div className="auth-alert is-success" role="status">
+          If an account exists for that email, a password reset link is on its way.
+        </div>
+        <p className="auth-footer-links"><a href="/login">Back to sign in</a></p>
+      </div>
     );
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      {status === "error" && error && <AlertBanner variant="error">{error}</AlertBanner>}
-      <FormField
-        label="Email"
-        name="email"
-        type="email"
-        value={email}
-        onChange={(e) => {
-          setEmail(e.target.value);
-          if (error) setError(null);
-        }}
-        error={status !== "error" ? error : undefined}
-        autoComplete="email"
-      />
-      <LoadingButton loading={status === "loading"}>Send reset link</LoadingButton>
+    <form className="auth-card" onSubmit={handleSubmit} noValidate>
+      <div className="auth-heading">
+        <p className="eyebrow">Reset password</p>
+        <h1>Reset your password</h1>
+        <p>Enter your email and we will send you a link to reset your password.</p>
+      </div>
+
+      {status === "error" && error && <div className="auth-alert is-error" role="alert">{error}</div>}
+
+      <label htmlFor="reset-email">
+        <span className="label-text">Email address<span className="req" aria-hidden="true">*</span></span>
+        <input
+          id="reset-email"
+          type="email"
+          value={email}
+          autoComplete="email"
+          aria-invalid={status !== "error" && !!error}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError(null);
+          }}
+        />
+        {status !== "error" && error && <span className="field-error" role="alert">{error}</span>}
+      </label>
+
+      <button className="button button-primary button-large button-full" type="submit" disabled={status === "loading"}>
+        {status === "loading" ? "Sending..." : "Send reset link"}
+      </button>
+
+      <p className="auth-footer-links"><a href="/login">Back to sign in</a></p>
     </form>
   );
 }
@@ -93,6 +120,8 @@ function ConfirmResetForm({ oobCode }) {
 
   const [password, setPassword] = useState("");
   const [confirmPasswordValue, setConfirmPasswordValue] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState("idle");
   const [submitError, setSubmitError] = useState(null);
@@ -127,63 +156,98 @@ function ConfirmResetForm({ oobCode }) {
   }
 
   if (checkStatus === "loading") {
-    return <AlertBanner variant="info">Checking your reset link...</AlertBanner>;
+    return (
+      <div className="auth-card">
+        <div className="auth-heading"><h1>Set a new password</h1></div>
+        <div className="auth-alert is-info" role="status">Checking your reset link...</div>
+      </div>
+    );
   }
 
   if (checkStatus === "error") {
     return (
-      <>
-        <AlertBanner variant="error">{checkError}</AlertBanner>
-        <a href="/reset-password" className={styles.link}>
-          Request a new reset link
-        </a>
-      </>
+      <div className="auth-card">
+        <div className="auth-heading"><h1>Reset link problem</h1></div>
+        <div className="auth-alert is-error" role="alert">{checkError}</div>
+        <p className="auth-footer-links"><a href="/reset-password">Request a new reset link</a></p>
+      </div>
     );
   }
 
   if (submitStatus === "success") {
     return (
-      <>
-        <AlertBanner variant="success">
+      <div className="auth-card">
+        <div className="auth-heading"><h1>Password updated</h1></div>
+        <div className="auth-alert is-success" role="status">
           Password updated for {accountEmail}. You can now log in.
-        </AlertBanner>
-        <LoadingButton loading={false} onClick={() => router.push("/login")}>
+        </div>
+        <button className="button button-primary button-large button-full" type="button" onClick={() => router.push("/login")}>
           Go to login
-        </LoadingButton>
-      </>
+        </button>
+      </div>
     );
   }
 
+  const strength = password ? passwordStrength(password) : null;
+
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <p className={styles.footerText} style={{ textAlign: "left" }}>
-        Setting a new password for <strong>{accountEmail}</strong>.
-      </p>
-      {submitStatus === "error" && submitError && (
-        <AlertBanner variant="error">{submitError}</AlertBanner>
-      )}
-      <PasswordInput
-        label="New password"
-        name="password"
-        value={password}
-        onChange={(value) => {
-          setPassword(value);
-          setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
-        }}
-        error={errors.password}
-        showStrength
-      />
-      <PasswordInput
-        label="Confirm new password"
-        name="confirmPassword"
-        value={confirmPasswordValue}
-        onChange={(value) => {
-          setConfirmPasswordValue(value);
-          setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev));
-        }}
-        error={errors.confirmPassword}
-      />
-      <LoadingButton loading={submitStatus === "loading"}>Update password</LoadingButton>
+    <form className="auth-card" onSubmit={handleSubmit} noValidate>
+      <div className="auth-heading">
+        <p className="eyebrow">Reset password</p>
+        <h1>Set a new password</h1>
+        <p>Setting a new password for <strong>{accountEmail}</strong>.</p>
+      </div>
+
+      {submitStatus === "error" && submitError && <div className="auth-alert is-error" role="alert">{submitError}</div>}
+
+      <label htmlFor="reset-new-password">
+        <span className="label-text">New password<span className="req" aria-hidden="true">*</span></span>
+        <span className="password-field">
+          <input
+            id="reset-new-password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            autoComplete="new-password"
+            aria-invalid={!!errors.password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
+            }}
+          />
+          <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </span>
+        {errors.password && <span className="field-error" role="alert">{errors.password}</span>}
+        {!errors.password && strength && (
+          <span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>
+        )}
+      </label>
+
+      <label htmlFor="reset-confirm-password">
+        <span className="label-text">Confirm new password<span className="req" aria-hidden="true">*</span></span>
+        <span className="password-field">
+          <input
+            id="reset-confirm-password"
+            type={showConfirm ? "text" : "password"}
+            value={confirmPasswordValue}
+            autoComplete="new-password"
+            aria-invalid={!!errors.confirmPassword}
+            onChange={(e) => {
+              setConfirmPasswordValue(e.target.value);
+              setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev));
+            }}
+          />
+          <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"}>
+            {showConfirm ? "Hide" : "Show"}
+          </button>
+        </span>
+        {errors.confirmPassword && <span className="field-error" role="alert">{errors.confirmPassword}</span>}
+      </label>
+
+      <button className="button button-primary button-large button-full" type="submit" disabled={submitStatus === "loading"}>
+        {submitStatus === "loading" ? "Updating..." : "Update password"}
+      </button>
     </form>
   );
 }
@@ -191,24 +255,21 @@ function ConfirmResetForm({ oobCode }) {
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const oobCode = searchParams.get("oobCode");
-
   return (
-    <AuthCard
-      title={oobCode ? "Set a new password" : "Reset your password"}
-      subtitle={
-        oobCode ? undefined : "Enter your email and we'll send you a link to reset your password."
-      }
-    >
+    <AuthShell story={RESET_STORY}>
       {oobCode ? <ConfirmResetForm oobCode={oobCode} /> : <RequestResetForm />}
-    </AuthCard>
+    </AuthShell>
   );
 }
 
 function ResetPasswordFallback() {
   return (
-    <AuthCard title="Reset your password">
-      <AlertBanner variant="info">Loading...</AlertBanner>
-    </AuthCard>
+    <AuthShell story={RESET_STORY}>
+      <div className="auth-card">
+        <div className="auth-heading"><h1>Reset your password</h1></div>
+        <div className="auth-alert is-info" role="status">Loading...</div>
+      </div>
+    </AuthShell>
   );
 }
 
