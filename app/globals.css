@@ -812,6 +812,24 @@ body.is-modal-open { overflow: hidden; }
   color: #b8c9d7 !important;
   margin: 0 !important;
 }
+
+/* Standalone auth route form helpers (login and register pages). */
+.auth-card .req { margin-left: 4px; color: var(--error); }
+.auth-card .field-error { margin: 2px 0 0; color: var(--error); font-size: 12px; font-weight: 600; }
+.auth-card .auth-strength { margin: 2px 0 0; font-size: 12px; font-weight: 600; }
+.auth-card .auth-strength.is-weak { color: #b42318; }
+.auth-card .auth-strength.is-medium { color: #b26a00; }
+.auth-card .auth-strength.is-strong { color: #12805c; }
+.auth-alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+.auth-alert.is-error { color: var(--error); background: var(--error-bg); }
+.auth-alert.is-success { color: #12805c; background: #e7f6ef; }
+.auth-inline-link { margin: 0; text-align: right; font-size: 13px; }
+.auth-inline-link a { color: var(--blue-600); font-weight: 600; text-decoration: none; }
+.auth-inline-link a:hover { text-decoration: underline; }
+.auth-footer-links { margin: 4px 0 0; text-align: center; color: var(--muted); font-size: 14px; }
+.auth-footer-links a { color: var(--blue-600); font-weight: 600; text-decoration: none; }
+.auth-footer-links a:hover { text-decoration: underline; }
+
 .directory-header .brand { margin-right:0 }
 .directory-header > nav { margin-right:auto }
 .screen[data-screen="course-detail"] .directory-header .back-link { margin-right:auto }
