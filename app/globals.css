@@ -257,7 +257,7 @@ p { color: var(--muted); }
 
 .form-shell { min-height: calc(100vh - 32px); display: grid; grid-template-columns: 310px 1fr; background: var(--white); }
 .form-rail { min-height: 100vh; padding: 28px 30px 40px; border-right: 1px solid var(--border); background: var(--slate-50); }
-.back-link { padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
+.back-link { padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; text-decoration: none; }
 .form-brand { margin: 34px 0 52px; display: flex; align-items: center; gap: 10px; }
 .form-brand strong { letter-spacing: .08em; }
 .form-rail h2 { margin: 0 0 4px; font-size: 18px; }
