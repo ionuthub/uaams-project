@@ -34,6 +34,12 @@ As a ... I want ... so that ...
 - When ...
 - Then ...
 
+For any create, save, submit or upload action, the criteria must also state:
+
+- Repeat case: running the action twice updates the same record instead of creating a duplicate.
+- Resume case: returning to the page shows existing progress, not a blank form.
+- Missing-input case: the exact error state shown when a required input or dependency is unavailable.
+
 ## Delivery ownership
 
 - Story lead:
