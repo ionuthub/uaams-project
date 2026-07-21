@@ -1,0 +1,41 @@
+name: Preview boot smoke
+
+# Runs after a deployment (Vercel Preview or Production) reports success, loads
+# the deployed URL, and fails if the app cannot boot in the browser - for
+# example when the Firebase config was not inlined into the client bundle.
+# Non-gating: this is a separate workflow and is not a required status check.
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Boot smoke check against deployment
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Resolve deployment URL
+        id: url
+        run: |
+          URL="${{ github.event.deployment_status.environment_url }}"
+          if [ -z "$URL" ]; then
+            URL="${{ github.event.deployment_status.target_url }}"
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployment URL: $URL"
+
+      - name: Run boot smoke check
+        run: node scripts/smoke.mjs "${{ steps.url.outputs.url }}"
