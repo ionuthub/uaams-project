@@ -95,6 +95,19 @@ for (const absolutePath of await collectFiles()) {
     errors.push(`Assistant attribution found in ${relativePath}: rewrite as project-owned content`);
   }
 
+  if (
+    (relativePath.startsWith("app/") ||
+      relativePath.startsWith("lib/") ||
+      relativePath.startsWith("components/")) &&
+    /process\.env\[/.test(contents)
+  ) {
+    errors.push(
+      `Dynamic process.env[...] in ${relativePath}: Next.js only inlines static ` +
+        `process.env.NEXT_PUBLIC_X reads into the client bundle, so dynamic lookups ` +
+        `are undefined in the browser. Read each variable statically.`
+    );
+  }
+
   if (/\bWeek (5|6|7)\b/.test(contents)) {
     errors.push(`Stale Sprint checkpoint numbering in ${relativePath}`);
   }
