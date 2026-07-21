@@ -49,7 +49,8 @@ export default function LoginPage() {
       }
       router.push(destination);
     } catch (err) {
-      setServerError(mapAuthErrorToMessage(err.code));
+      console.error("Login failed:", err);
+      setServerError(mapAuthErrorToMessage(err.code || err.message));
       setStatus("error");
     }
   }
