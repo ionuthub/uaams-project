@@ -70,7 +70,9 @@ function VerifyEmailContent() {
       await resendVerification(currentUser);
       setResendStatus("success");
     } catch (err) {
-      setResendError(mapAuthErrorToMessage(err.code));
+      const friendly = mapAuthErrorToMessage(err.code);
+      const code = err.code ? ` (${err.code})` : "";
+      setResendError(friendly + code);
       setResendStatus("error");
     }
   }
@@ -106,7 +108,7 @@ function VerifyEmailContent() {
       subtitle={
         initialSendFailed
           ? "Confirm your email address to activate your account."
-          : "We've sent a confirmation link to your email address. Click it to activate your account."
+          : "Your account is ready. Check your inbox for a confirmation link and click it to activate."
       }
     >
       {initialSendFailed && resendStatus === "idle" && (
@@ -131,6 +133,25 @@ function VerifyEmailContent() {
           Log in
         </a>
       </p>
+      {currentUser && (
+        <p className={styles.footerText}>
+          Wrong email?{" "}
+          <button
+            type="button"
+            className={styles.link}
+            style={{ background: "none", border: "none", cursor: "pointer", font: "inherit", padding: 0 }}
+            onClick={async () => {
+              try {
+                const { logout } = await import("../../lib/auth");
+                await logout();
+              } catch (_) { /* ignore */ }
+              window.location.href = "/register";
+            }}
+          >
+            Sign out and register again
+          </button>
+        </p>
+      )}
     </AuthCard>
   );
 }
