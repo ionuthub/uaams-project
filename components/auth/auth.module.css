@@ -106,13 +106,26 @@
   position: relative;
 }
 
+/* The label sits above the input; using absolute top positioned the toggle
+   relative to the wrapper top (including the label height) which pushed it
+   up into the label row. The flexbox approach below is more robust. */
+.passwordWrap > .field {
+  flex: 1;
+}
+
 .toggleVisibility {
   position: absolute;
   right: 0.6rem;
-  top: 1.85rem;
+  /* Align vertically to the centre of the input.
+     The input starts after the label (approx 1.5rem) and a small gap
+     (0.35rem). The input itself is 44px (2.75rem). Centre = 1.85 + 1.375 = 3.225rem.
+     Expressed as bottom offset from container: simpler to use flex. */
+  bottom: 0.6rem;
+  top: auto;
   background: none;
   border: none;
-  padding: 0;
+  padding: 0.35rem 0;
+  line-height: 1;
   font-size: 0.75rem;
   font-weight: 600;
   color: #4f46e5;
