@@ -3,28 +3,30 @@
 //
 // Build fix: useSearchParams() must be wrapped in a Suspense boundary or
 // `next build` fails during static generation with "Missing Suspense
-// boundary with useSearchParams" (confirmed against the Next.js docs for
-// useSearchParams). The default export below only renders the Suspense
-// wrapper; all the actual logic lives in VerifyEmailContent.
+// boundary with useSearchParams".
 //
 // Two purposes in one screen:
 //   1. Landing page after registration / a blocked login: "check your
 //      inbox", with a resend button.
-//   2. Target of the emailed link: once Dawid/Ionut set the Firebase
-//      Console action URL for the "Email address verification" template to
-//      this route, the link will carry ?mode=verifyEmail&oobCode=... and we
-//      apply it directly.
+//   2. Target of the emailed link: with ?mode=verifyEmail&oobCode=... we
+//      apply the action code directly.
+//
+// Presentation uses the shared two-column AuthShell so this route matches
+// login and register. The logic is unchanged.
 
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import AuthCard from "../../components/auth/AuthCard";
-import AlertBanner from "../../components/auth/AlertBanner";
-import LoadingButton from "../../components/auth/LoadingButton";
+import AuthShell from "../../components/auth/AuthShell";
 import { confirmEmailVerification, resendVerification, watchAuth } from "../../lib/auth";
 import { mapAuthErrorToMessage } from "../../lib/validation";
-import styles from "../../components/auth/auth.module.css";
+
+const VERIFY_STORY = {
+  eyebrow: "Secure account setup",
+  headline: "One quick check protects your applications.",
+  subtext: "We verify every applicant email before personal information or documents can be submitted.",
+};
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -80,87 +82,96 @@ function VerifyEmailContent() {
   // Case 1: user arrived via the emailed link with an action code.
   if (mode === "verifyEmail" && oobCode) {
     return (
-      <AuthCard title="Confirming your email">
-        {confirmStatus === "loading" && (
-          <AlertBanner variant="info">Confirming your email address...</AlertBanner>
-        )}
-        {confirmStatus === "success" && (
-          <>
-            <AlertBanner variant="success">
-              Your email is verified. You can now log in.
-            </AlertBanner>
-            <LoadingButton loading={false} onClick={() => router.push("/login")}>
-              Go to login
-            </LoadingButton>
-          </>
-        )}
-        {confirmStatus === "error" && confirmError && (
-          <AlertBanner variant="error">{confirmError}</AlertBanner>
-        )}
-      </AuthCard>
+      <AuthShell story={VERIFY_STORY}>
+        <div className="auth-card">
+          <div className="auth-heading">
+            <p className="eyebrow">Email verification</p>
+            <h1>Confirming your email</h1>
+          </div>
+          {confirmStatus === "loading" && (
+            <div className="auth-alert is-info" role="status">Confirming your email address...</div>
+          )}
+          {confirmStatus === "success" && (
+            <>
+              <div className="auth-alert is-success" role="status">Your email is verified. You can now log in.</div>
+              <button className="button button-primary button-large button-full" type="button" onClick={() => router.push("/login")}>
+                Go to login
+              </button>
+            </>
+          )}
+          {confirmStatus === "error" && confirmError && (
+            <div className="auth-alert is-error" role="alert">{confirmError}</div>
+          )}
+        </div>
+      </AuthShell>
     );
   }
 
   // Case 2: user just registered / tried to log in before verifying.
   return (
-    <AuthCard
-      title="Verify your email"
-      subtitle={
-        initialSendFailed
-          ? "Confirm your email address to activate your account."
-          : "Your account is ready. Check your inbox for a confirmation link and click it to activate."
-      }
-    >
-      {initialSendFailed && resendStatus === "idle" && (
-        <AlertBanner variant="error">
-          Your account was created, but the confirmation email could not be sent. Resend it below, and check your spam folder too.
-        </AlertBanner>
-      )}
-      {resendStatus === "success" && (
-        <AlertBanner variant="success">Verification email resent. Check your inbox.</AlertBanner>
-      )}
-      {resendStatus === "error" && resendError && (
-        <AlertBanner variant="error">{resendError}</AlertBanner>
-      )}
+    <AuthShell story={VERIFY_STORY}>
+      <div className="auth-card">
+        <div className="auth-heading">
+          <p className="eyebrow">Check your inbox</p>
+          <h1>Verify your email</h1>
+          <p>
+            {initialSendFailed
+              ? "Confirm your email address to activate your account."
+              : "Your account is ready. Check your inbox for a confirmation link and click it to activate."}
+          </p>
+        </div>
 
-      <LoadingButton loading={resendStatus === "loading"} onClick={handleResend}>
-        Resend verification email
-      </LoadingButton>
+        {initialSendFailed && resendStatus === "idle" && (
+          <div className="auth-alert is-error" role="alert">
+            Your account was created, but the confirmation email could not be sent. Resend it below, and check your spam folder too.
+          </div>
+        )}
+        {resendStatus === "success" && (
+          <div className="auth-alert is-success" role="status">Verification email resent. Check your inbox.</div>
+        )}
+        {resendStatus === "error" && resendError && (
+          <div className="auth-alert is-error" role="alert">{resendError}</div>
+        )}
 
-      <p className={styles.footerText}>
-        Already verified?{" "}
-        <a href="/login" className={styles.link}>
-          Log in
-        </a>
-      </p>
-      {currentUser && (
-        <p className={styles.footerText}>
-          Wrong email?{" "}
-          <button
-            type="button"
-            className={styles.link}
-            style={{ background: "none", border: "none", cursor: "pointer", font: "inherit", padding: 0 }}
-            onClick={async () => {
-              try {
-                const { logout } = await import("../../lib/auth");
-                await logout();
-              } catch (_) { /* ignore */ }
-              window.location.href = "/register";
-            }}
-          >
-            Sign out and register again
-          </button>
+        <button className="button button-primary button-large button-full" type="button" disabled={resendStatus === "loading"} onClick={handleResend}>
+          {resendStatus === "loading" ? "Sending..." : "Resend verification email"}
+        </button>
+
+        <p className="auth-footer-links">
+          Already verified?{" "}
+          <a href="/login">Log in</a>
         </p>
-      )}
-    </AuthCard>
+        {currentUser && (
+          <p className="auth-footer-links">
+            Wrong email?{" "}
+            <button
+              type="button"
+              className="auth-linkbutton"
+              onClick={async () => {
+                try {
+                  const { logout } = await import("../../lib/auth");
+                  await logout();
+                } catch (_) { /* ignore */ }
+                window.location.href = "/register";
+              }}
+            >
+              Sign out and register again
+            </button>
+          </p>
+        )}
+      </div>
+    </AuthShell>
   );
 }
 
 function VerifyEmailFallback() {
   return (
-    <AuthCard title="Verify your email">
-      <AlertBanner variant="info">Loading...</AlertBanner>
-    </AuthCard>
+    <AuthShell story={VERIFY_STORY}>
+      <div className="auth-card">
+        <div className="auth-heading"><h1>Verify your email</h1></div>
+        <div className="auth-alert is-info" role="status">Loading...</div>
+      </div>
+    </AuthShell>
   );
 }
 
