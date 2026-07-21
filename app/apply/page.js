@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import FormField from "../../components/auth/FormField";
 import LoadingButton from "../../components/auth/LoadingButton";
 import { watchAuth } from "../../lib/auth";
-import { createApplication, findDraftApplication, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
+import { createApplication, findDraftApplication, getLatestDraft, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
 import { uploadDocument, validateFile } from "../../lib/storage";
 import styles from "./apply.module.css";
 
@@ -29,13 +29,26 @@ export default function ApplicationPage() {
   const [documentPath, setDocumentPath] = useState(null);
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
+  const hydratedRef = useRef(false);
 
   useEffect(() => watchAuth(async (current) => {
     if (!current) { setPhase("signed-out"); return; }
     if (!current.emailVerified) { setPhase("unverified"); return; }
     setUser(current);
     try { setUniversities(await getUniversities()); setPhase("ready"); }
-    catch (error) { console.error("University list failed:", error); setPhase("error"); }
+    catch (error) { console.error("University list failed:", error); setPhase("error"); return; }
+    if (!hydratedRef.current) {
+      try {
+        const draft = await getLatestDraft(current.uid);
+        if (draft) {
+          hydratedRef.current = true;
+          setApplicationId(draft.id);
+          setForm(() => ({ ...INITIAL_FORM, ...(draft.form || {}) }));
+          if (draft.documentPath) setDocumentPath(draft.documentPath);
+          setMessage({ type: "info", text: "We resumed your saved draft. Review it, then keep editing or submit." });
+        }
+      } catch (error) { console.error("Draft resume failed:", error); }
+    }
   }), []);
 
   function update(name, value) {
