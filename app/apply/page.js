@@ -7,7 +7,7 @@ import AuthCard from "../../components/auth/AuthCard";
 import FormField from "../../components/auth/FormField";
 import LoadingButton from "../../components/auth/LoadingButton";
 import { watchAuth } from "../../lib/auth";
-import { createApplication, getUniversities, submitApplication } from "../../lib/db";
+import { createApplication, findDraftApplication, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
 import { uploadDocument, validateFile } from "../../lib/storage";
 import styles from "./apply.module.css";
 
@@ -49,10 +49,22 @@ export default function ApplicationPage() {
     return Object.keys(next).length === 0;
   }
   async function ensureDraft() {
-    if (applicationId) return applicationId;
     if (!validate()) throw new Error("FORM_INVALID");
     const university = universities.find((item) => item.id === form.universityId);
-    const id = await createApplication(user.uid, form.universityId, { ...form, universityName: university?.name || form.universityId });
+    const formData = { ...form, universityName: university?.name || form.universityId };
+    // Persist the current form on an already-known draft (no lost edits).
+    if (applicationId) {
+      await updateApplicationDraft(applicationId, formData);
+      return applicationId;
+    }
+    // Resume an existing draft for this university instead of creating a duplicate.
+    const existing = await findDraftApplication(user.uid, form.universityId);
+    if (existing) {
+      setApplicationId(existing.id);
+      await updateApplicationDraft(existing.id, formData);
+      return existing.id;
+    }
+    const id = await createApplication(user.uid, form.universityId, formData);
     setApplicationId(id);
     return id;
   }
