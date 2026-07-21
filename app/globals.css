@@ -146,7 +146,7 @@ p { color: var(--muted); }
 .institutions-section h2 { color: var(--white); }
 .light-eyebrow { color: #c5a86e; }
 .light-link { color: #dbe8f3; }
-.institution-list { border-top: 1px solid rgba(255,255,255,.16); }
+.institution-list { margin-top: 36px; border-top: 1px solid rgba(255,255,255,.16); }
 .institution-list article { min-height: 122px; display: grid; grid-template-columns: 60px 1fr auto; gap: 24px; align-items: center; border-bottom: 1px solid rgba(255,255,255,.16); }
 .institution-list h3 { margin: 0 0 5px; font-family: var(--font-editorial); font-size: 25px; font-weight: 500; }
 .institution-list p { margin: 0; color: #9fb0c0; }
