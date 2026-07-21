@@ -34,7 +34,7 @@ Each person has at most one primary item in `In Progress`. Support work may be l
 
 ## Definition of Ready
 
-A story can enter a Sprint when it has an epic, user story, business value, PRD/FR/NFR references, testable acceptance criteria, owner, dependency decision, and evidence requirement. If it changes or adds to the PRD, approval evidence must already exist or the item remains refinement-only.
+A story can enter a Sprint when it has an epic, user story, business value, PRD/FR/NFR references, testable acceptance criteria (including the repeat, resume, and missing-input cases for any state-changing action), owner, dependency decision, and evidence requirement. If it changes or adds to the PRD, approval evidence must already exist or the item remains refinement-only.
 
 ## Branch Naming Convention
 
@@ -68,6 +68,20 @@ Use `feature/<short-task-name>` for additional tasks.
 - The reviewer checks that the work matches the issue, does not include secrets, and has enough evidence.
 - If a pull request affects another team member's area, request their review before merging.
 
+## Engineering Standards For State-Changing Code
+
+Most defects in this project have been missing failure cases, not wrong happy-path code. Before writing any function that creates, saves, uploads or otherwise changes state, answer three questions in the pull request description:
+
+- What happens if this runs twice?
+- What happens if the resource already exists?
+- What happens if a dependency (env var, network, file) is missing?
+
+If the answer to any of these is "I do not know", that is the bug waiting to happen. Resolve it before merging. The rules that follow from this:
+
+- Design the read path before the write path. On load, check for existing data first; a feature that only ever creates will produce duplicates.
+- Never write a fallback value for required config (API keys, project IDs, URLs). Throw immediately with a clear error naming what is missing. The `appUrl()` helper in `lib/auth.js` and the config check in `lib/firebase.js` are the house style.
+- Treat "the UI says success" as a claim that must be true. Show a success state only after the write is confirmed, never because the handler ran.
+
 ## Definition of Done
 
 Done means:
@@ -81,6 +95,7 @@ Done means:
 - The PRD compliance register is updated with the new status and evidence.
 - Any deviation, substitution or added scope has recorded approval.
 - Acceptance criteria and relevant allowed/blocked access cases pass.
+- For state-changing features, the repeat-action, resume and missing-dependency cases are handled, not just the happy path.
 
 Working locally is not enough.
 
