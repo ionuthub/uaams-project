@@ -26,5 +26,6 @@ Closes #
 - [ ] I updated the Sprint 2 report if this affects my section
 - [ ] I updated `docs/prd-compliance-register.md` if compliance status or evidence changed
 - [ ] This PR does not implement an out-of-scope/proposed addition without recorded approval
+- [ ] Repeat-action and missing-dependency cases considered: runs twice, resource already exists, dependency (env var, network, file) missing
 - [ ] A second person approved this PR, or the reason for a solo merge is stated in a comment
 - [ ] All checks pass, or the failing check and why it is safe to merge are stated in a comment
