@@ -12,10 +12,18 @@ const NAV = [
 
 // Shared shell for the signed-in applicant portal: fixed sidebar (brand, nav,
 // real user profile, log out) plus a main content area. Pages pass their own
-// content as children and mark the active nav item with current.
+// content as children and mark the active nav item with `current`.
 export default function PortalShell({ user, current, children }) {
   const who = user?.displayName || user?.email || "Applicant";
   const avatar = who.slice(0, 2).toUpperCase();
+
+  // Signing out is a deliberate action, not an error. Redirect to the login
+  // screen as soon as Firebase clears the session, so the applicant never lands
+  // on a signed-out page rendering its "please sign in" error state.
+  async function handleLogout() {
+    await logout();
+    window.location.assign("/login");
+  }
 
   return (
     <div className={styles.shell}>
@@ -50,7 +58,7 @@ export default function PortalShell({ user, current, children }) {
               <small>Applicant</small>
             </div>
           </div>
-          <button className={styles.logout} type="button" onClick={() => logout()}>Log out</button>
+          <button className={styles.logout} type="button" onClick={handleLogout}>Log out</button>
         </div>
       </aside>
 
