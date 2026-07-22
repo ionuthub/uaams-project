@@ -34,31 +34,6 @@
 }
 .lead { margin: 0; max-width: 560px; color: var(--muted); }
 
-.buttonPrimary,
-.buttonSecondary {
-  min-height: 44px;
-  padding: 10px 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-}
-.buttonPrimary { color: var(--white); background: var(--blue-600); }
-.buttonPrimary:hover { background: var(--blue-700); transform: translateY(-1px); }
-.buttonSecondary {
-  min-width: 150px;
-  color: var(--navy-900);
-  background: var(--white);
-  border-color: var(--border-strong);
-}
-.buttonSecondary:hover { background: var(--slate-50); border-color: #aab6c1; }
-
 .empty {
   padding: 64px 32px;
   display: grid;
