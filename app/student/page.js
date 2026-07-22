@@ -78,7 +78,7 @@ export default function StudentDashboardPage() {
             <h1>My applications</h1>
             <p className={styles.lead}>Track your drafts, submissions and university decisions in one place.</p>
           </div>
-          <a className={styles.buttonPrimary} href="/apply">New application</a>
+          <a className="button button-primary" href="/apply">New application</a>
         </header>
 
         {applications.length === 0 ? (
@@ -86,7 +86,7 @@ export default function StudentDashboardPage() {
             <span className={styles.emptySeal}>U</span>
             <h2>No applications yet</h2>
             <p>Choose a university and create your first application. You can save a draft and return to it any time.</p>
-            <a className={styles.buttonPrimary} href="/apply">Start an application</a>
+            <a className="button button-primary" href="/apply">Start an application</a>
           </section>
         ) : (
           <section className={styles.stack} aria-label="Your applications">
@@ -129,7 +129,7 @@ export default function StudentDashboardPage() {
                       <div><dt>Submitted</dt><dd>{formatDate(application.submittedAt)}</dd></div>
                       <div><dt>Document</dt><dd>{application.documentPath ? "Attached" : "Not attached"}</dd></div>
                     </dl>
-                    <a className={styles.buttonSecondary} href="/apply">Open application</a>
+                    <a className="button button-secondary" href="/apply">Open application</a>
                   </div>
 
                   {application.latestDecisionMessage && (
