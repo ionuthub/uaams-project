@@ -1,9 +1,16 @@
 // components/auth/LoadingButton.js
-// Added for #8. Submit button that visibly reflects the loading state
-// (spinner + disabled) rather than leaving students unsure whether their
-// click registered.
+// Design-system button with a loading state (spinner + disabled). Uses the
+// global .button / .button-* classes from app/globals.css so every screen
+// shares one button implementation. Pass `variant` to pick the look and
+// `full` (default true) for a full-width button.
 
-import styles from "./auth.module.css";
+const VARIANTS = {
+  primary: "button-primary",
+  secondary: "button-secondary",
+  dark: "button-dark",
+  quiet: "button-quiet",
+  danger: "button-danger",
+};
 
 export default function LoadingButton({
   loading,
@@ -11,16 +18,21 @@ export default function LoadingButton({
   type = "submit",
   onClick,
   disabled,
+  variant = "primary",
+  full = true,
 }) {
+  const classes = ["button", VARIANTS[variant] || VARIANTS.primary];
+  if (full) classes.push("button-full");
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={loading || disabled}
       aria-busy={loading}
-      className={styles.button}
+      className={classes.join(" ")}
     >
-      {loading && <span className={styles.spinner} aria-hidden="true" />}
+      {loading && <span className="button-spinner" aria-hidden="true" />}
       {children}
     </button>
   );

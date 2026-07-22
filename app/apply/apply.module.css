@@ -1,17 +1,28 @@
-.page { min-height: 100vh; padding: 2rem 1rem 4rem; background: transparent; color: #172033; }
+.page { min-height: 100vh; padding: 2rem 1rem 4rem; background: transparent; color: var(--ink); }
 .form { max-width: 52rem; margin: 0 auto; }
 .form > header { margin-bottom: 1.5rem; }
-.form h1 { margin: .2rem 0 .5rem; font-size: clamp(2rem, 5vw, 3rem); }
-.eyebrow { margin: 0; color: #174a82; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-.form section { margin: 1rem 0; padding: 1.4rem; border: 1px solid #dce2ec; border-radius: .9rem; background: white; box-shadow: 0 8px 22px rgba(28,44,74,.05); }
-.form section h2 { margin-top: 0; font-size: 1.25rem; }
+.form h1 { margin: .2rem 0 .5rem; font-size: clamp(2rem, 5vw, 3rem); color: var(--navy-900); }
+.eyebrow { margin: 0; color: var(--blue-600); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.form section { margin: 1rem 0; padding: 1.4rem; border: 1px solid var(--border); border-radius: .9rem; background: var(--white); box-shadow: var(--shadow-sm); }
+.form section h2 { margin-top: 0; font-size: 1.25rem; color: var(--navy-900); }
 .twoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
 .label { display: block; margin: .8rem 0 .4rem; font-weight: 700; }
-.form select, .form textarea { width: 100%; box-sizing: border-box; border: 1px solid #aeb8c8; border-radius: .5rem; padding: .75rem; font: inherit; background: white; }
-.form select:focus, .form textarea:focus { outline: 3px solid rgba(23,74,130,.2); border-color: #174a82; }
+.form select, .form textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border-strong); border-radius: .5rem; padding: .75rem; font: inherit; background: var(--white); color: var(--ink); }
+.form select:focus, .form textarea:focus { outline: 3px solid var(--blue-100); border-color: var(--blue-600); }
 .form input[type="file"] { display: block; width: 100%; margin: .8rem 0 1rem; }
-.error { color: #a11919; font-size: .9rem; }
-.success { color: #176b3b; font-weight: 700; }
-.actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
-.actions a { color: #174a82; font-weight: 700; }
-@media (max-width: 40rem) { .twoColumns { grid-template-columns: 1fr; } .form section { padding: 1rem; } .actions > * { width: 100%; text-align: center; } }
+.error { color: var(--error); font-size: .9rem; }
+.success { color: var(--success); font-weight: 700; }
+
+/* Action row: Save draft (secondary) + Submit (primary) inline; Cancel (text
+   link) pushed to the end on desktop. Buttons come from the global .button-*
+   classes; this only lays them out. Stacks full-width on small screens. */
+.actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 1.5rem; }
+.actions > a { margin-left: auto; }
+
+@media (max-width: 40rem) {
+  .twoColumns { grid-template-columns: 1fr; }
+  .form section { padding: 1rem; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions > * { width: 100%; text-align: center; }
+  .actions > a { margin-left: 0; }
+}
