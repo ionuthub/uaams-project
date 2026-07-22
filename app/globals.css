@@ -83,6 +83,10 @@ p { color: var(--muted); }
 .text-link, .text-button { border: 0; background: transparent; padding: 0; color: var(--blue-600); text-decoration: none; font-weight: 600; cursor: pointer; }
 .text-link span { transition: margin .18s ease; }
 .text-link:hover span { margin-left: 4px; }
+.button:disabled { opacity: .6; cursor: not-allowed; }
+.button:disabled:hover { transform: none; }
+.button-spinner { width: 14px; height: 14px; flex: 0 0 auto; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-top-color: currentColor; animation: button-spin .7s linear infinite; }
+@keyframes button-spin { to { transform: rotate(360deg); } }
 
 .hero-shell { max-width: 1280px; min-height: 690px; margin: auto; padding: 112px 32px 120px; display: grid; grid-template-columns: 1.03fr .97fr; gap: 96px; align-items: center; overflow: hidden; }
 .hero-copy h1 { max-width: 720px; margin-bottom: 28px; font-family: var(--font-editorial); font-weight: 600; color: var(--navy-900); }
