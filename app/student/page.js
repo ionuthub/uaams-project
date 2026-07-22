@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import LoadingButton from "../../components/auth/LoadingButton";
-import { logout, watchAuth } from "../../lib/auth";
+import PortalShell from "../../components/portal/PortalShell";
+import { watchAuth } from "../../lib/auth";
 import { getStudentApplications } from "../../lib/db";
 import styles from "./student.module.css";
 
-// Human labels + visual tone for each real application status. No status here
-// is invented: it always reflects the value stored on the application.
 const STATUS_META = {
   draft: { label: "Draft", tone: "neutral" },
   submitted: { label: "Submitted", tone: "info" },
@@ -18,8 +17,6 @@ const STATUS_META = {
   rejected: { label: "Not successful", tone: "rejected" },
 };
 
-// The four journey stages and, per real status, whether each stage is done,
-// current or upcoming. Derived only from the stored status.
 const STAGES = ["Draft", "Submitted", "Under review", "Decision"];
 const JOURNEY = {
   draft: ["current", "upcoming", "upcoming", "upcoming"],
@@ -38,21 +35,23 @@ function formatDate(value) {
 export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
   const [applications, setApplications] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     let active = true;
-    const unsubscribe = watchAuth(async (user) => {
+    const unsubscribe = watchAuth(async (current) => {
       if (!active) return;
-      if (!user) {
+      if (!current) {
         setPhase("signed-out");
         return;
       }
-      if (!user.emailVerified) {
+      if (!current.emailVerified) {
         setPhase("unverified");
         return;
       }
+      setUser(current);
       try {
-        setApplications(await getStudentApplications(user.uid));
+        setApplications(await getStudentApplications(current.uid));
         if (active) setPhase("ready");
       } catch (error) {
         console.error("Student dashboard failed to load:", error);
@@ -71,7 +70,7 @@ export default function StudentDashboardPage() {
   if (phase === "error") return <AuthCard title="My applications"><AlertBanner variant="error">We could not load your applications. Please try again.</AlertBanner><LoadingButton loading={false} onClick={() => window.location.reload()}>Try again</LoadingButton></AuthCard>;
 
   return (
-    <main className={styles.page}>
+    <PortalShell user={user} current="dashboard">
       <div className={styles.container}>
         <header className={styles.pageHeader}>
           <div>
@@ -79,10 +78,7 @@ export default function StudentDashboardPage() {
             <h1>My applications</h1>
             <p className={styles.lead}>Track your drafts, submissions and university decisions in one place.</p>
           </div>
-          <div className={styles.headerActions}>
-            <a className={styles.buttonPrimary} href="/apply">New application</a>
-            <button className={styles.textButton} type="button" onClick={() => logout()}>Log out</button>
-          </div>
+          <a className={styles.buttonPrimary} href="/apply">New application</a>
         </header>
 
         {applications.length === 0 ? (
@@ -148,6 +144,6 @@ export default function StudentDashboardPage() {
           </section>
         )}
       </div>
-    </main>
+    </PortalShell>
   );
 }

@@ -6,6 +6,7 @@ import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import FormField from "../../components/auth/FormField";
 import LoadingButton from "../../components/auth/LoadingButton";
+import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth } from "../../lib/auth";
 import { createApplication, findDraftApplication, getLatestDraft, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
 import { uploadDocument, validateFile } from "../../lib/storage";
@@ -110,7 +111,7 @@ export default function ApplicationPage() {
   if (phase === "unverified") return <AuthCard title="New application"><AlertBanner variant="info">Verify your email before applying.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="New application"><AlertBanner variant="error">University information could not be loaded.</AlertBanner></AuthCard>;
 
-  return <main className={styles.page}><form className={styles.form} onSubmit={(event) => event.preventDefault()} noValidate>
+  return <PortalShell user={user} current="apply"><div className={styles.page}><form className={styles.form} onSubmit={(event) => event.preventDefault()} noValidate>
     <header><p className={styles.eyebrow}>Student application</p><h1>Apply to a university</h1><p>Complete the required details, save a draft, attach evidence and submit.</p></header>
     {message && <AlertBanner variant={message.type}>{message.text}</AlertBanner>}
     <section><h2>1. University and intake</h2><label className={styles.label} htmlFor="universityId">University</label><select id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className={styles.error}>{errors.universityId}</p>}<div className={styles.twoColumns}><FormField label="Intended study level" name="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} error={errors.studyLevel} /><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div></section>
@@ -118,5 +119,5 @@ export default function ApplicationPage() {
     <section><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><label className={styles.label} htmlFor="personalStatement">Personal statement</label><textarea id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className={styles.error}>{errors.personalStatement}</p>}</section>
     <section><h2>4. Supporting document</h2><p>Upload one PDF, JPG or PNG file, no larger than 10 MB.</p><input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(e) => { setFile(e.target.files?.[0] || null); setDocumentPath(null); }} /><LoadingButton type="button" loading={busy} onClick={upload}>Upload document</LoadingButton>{documentPath && <p className={styles.success} role="status">Document attached.</p>}</section>
     <div className={styles.actions}><LoadingButton type="button" loading={busy} onClick={saveDraft}>Save draft</LoadingButton><LoadingButton type="button" loading={busy} onClick={submit} disabled={!documentPath}>Submit application</LoadingButton><a href="/student">Cancel</a></div>
-  </form></main>;
+  </form></div></PortalShell>;
 }
