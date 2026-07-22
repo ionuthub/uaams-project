@@ -99,21 +99,6 @@
 }
 .reference { margin: 0; color: var(--muted); font-size: 12px; }
 
-.status {
-  padding: 4px 11px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.status_warning { color: var(--warning); background: var(--warning-bg); border: 1px solid #efd09e; }
-.status_success { color: var(--success); background: var(--success-bg); border: 1px solid #b9dfc9; }
-.status_info { color: var(--info); background: var(--info-bg); border: 1px solid #bfd3fa; }
-.status_neutral { color: #536170; background: #eef1f3; border: 1px solid #d9dfe4; }
-.status_rejected { color: var(--error); background: var(--error-bg); border: 1px solid #f2c1bc; }
-
 .journey {
   margin: 0;
   padding: 30px 28px 28px;
