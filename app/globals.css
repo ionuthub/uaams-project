@@ -228,6 +228,7 @@ p { color: var(--muted); }
 .status-success { color: var(--success); background: var(--success-bg); border: 1px solid #b9dfc9; }
 .status-info { color: var(--info); background: var(--info-bg); border: 1px solid #bfd3fa; }
 .status-neutral { color: #536170; background: #eef1f3; border: 1px solid #d9dfe4; }
+.status-error { color: var(--error); background: var(--error-bg); border: 1px solid #f2c1bc; }
 .journey { margin: 0; padding: 34px 36px 32px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); list-style: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: #fbfcfd; }
 .journey li { min-width: 0; position: relative; display: flex; align-items: center; flex-direction: column; gap: 12px; text-align: center; }
 .journey li:not(:last-child)::before { content: ""; position: absolute; z-index: 0; left: calc(50% + 15px); right: calc(-50% + 15px); top: 14px; height: 2px; background: var(--border); }
