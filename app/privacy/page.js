@@ -1,8 +1,12 @@
-export const metadata = { title: "Privacy notice | UAAMS" };
+"use client";
 
-export default function PrivacyPage() {
+import { useEffect, useState } from "react";
+import PortalShell from "../../components/portal/PortalShell";
+import { watchAuth } from "../../lib/auth";
+
+function PrivacyContent() {
   return (
-    <main style={{ maxWidth: "760px", margin: "0 auto", padding: "48px 20px", lineHeight: 1.65 }}>
+    <div style={{ maxWidth: "760px", margin: "0 auto", padding: "48px 20px", lineHeight: 1.65 }}>
       <h1>UAAMS privacy notice</h1>
       <p>UAAMS is a university application proof of concept. It collects account, contact, academic, application and supporting-document information so an authorised university admissions officer can review an application and record a decision.</p>
       <h2>How information is used</h2>
@@ -12,6 +16,34 @@ export default function PrivacyPage() {
       <h2>Your choices</h2>
       <p>Do not submit real sensitive evidence during development testing. Requests to correct or remove test data should be sent to the project owner. The production-ready retention and deletion process must be approved before real-world use.</p>
       <p><a href="/register">Return to registration</a></p>
+    </div>
+  );
+}
+
+export default function PrivacyPage() {
+  const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = watchAuth((current) => {
+      setUser(current);
+      setReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Signed-in applicants see the notice inside the portal shell; public visitors
+  // (for example arriving from registration) see the plain notice with no portal chrome.
+  if (ready && user) {
+    return (
+      <PortalShell user={user} current="privacy">
+        <PrivacyContent />
+      </PortalShell>
+    );
+  }
+  return (
+    <main>
+      <PrivacyContent />
     </main>
   );
 }
