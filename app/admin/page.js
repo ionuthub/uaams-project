@@ -127,7 +127,7 @@ export default function AdminListPage() {
           You need to sign in with an admissions account to view this page.
         </AlertBanner>
         <p className={styles.muted}>
-          <a href="/login">Go to login</a>
+          <a className="text-link" href="/login">Go to login</a>
         </p>
       </AuthCard>
     );
@@ -200,7 +200,7 @@ export default function AdminListPage() {
                   <td>{app.documentPath ? "Attached" : "None"}</td>
                   <td>
                     {DETAIL_ROUTE_READY ? (
-                      <a href={`/admin/applications/${app.id}`}>View details</a>
+                      <a className="text-link" href={`/admin/applications/${app.id}`}>View details</a>
                     ) : (
                       <span
                         className={styles.muted}

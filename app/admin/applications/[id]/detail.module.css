@@ -1,4 +1,5 @@
-/* app/admin/applications/[id]/detail.module.css - admin detail and decision view (#13). */
+/* app/admin/applications/[id]/detail.module.css - admin detail and decision
+   view (#13). Uses the shared design tokens from app/globals.css. */
 
 .page {
   max-width: 860px;
@@ -19,7 +20,7 @@
 .breadcrumb {
   margin: 0 0 0.35rem;
   font-size: 0.85rem;
-  color: #5a6472;
+  color: var(--muted);
 }
 
 .breadcrumb a {
@@ -29,30 +30,34 @@
 .title {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
+  color: var(--navy-900);
+  font-family: var(--font-editorial);
 }
 
 .muted {
-  color: #5a6472;
+  color: var(--muted);
   font-size: 0.9rem;
   margin: 0.25rem 0;
 }
 
 .mutedSmall {
-  color: #5a6472;
+  color: var(--muted);
   font-size: 0.8rem;
   margin: 0.2rem 0 0;
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e6ea;
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.25rem 1.4rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .card h2 {
   margin: 0 0 0.9rem;
   font-size: 1.1rem;
+  color: var(--navy-900);
 }
 
 .card h3 {
@@ -71,7 +76,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #5a6472;
+  color: var(--quiet);
 }
 
 .grid dd {
@@ -90,6 +95,7 @@
 .appId {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85rem;
+  color: var(--muted);
   overflow-wrap: anywhere;
 }
 
@@ -113,7 +119,7 @@
   gap: 0.6rem;
   min-height: 44px;
   padding: 0.35rem 0.75rem;
-  border: 1px solid #e2e6ea;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   font-size: 0.95rem;
   cursor: pointer;
@@ -122,7 +128,7 @@
 .choice input {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: #2748c4;
+  accent-color: var(--blue-600);
 }
 
 .label {
@@ -135,15 +141,22 @@
 .page textarea {
   width: 100%;
   padding: 0.65rem 0.75rem;
-  border: 1px solid #cfd6dd;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   font: inherit;
   font-size: 0.95rem;
   resize: vertical;
+  color: var(--ink);
+  background: var(--white);
+}
+
+.page textarea:focus {
+  outline: 3px solid var(--blue-100);
+  border-color: var(--blue-600);
 }
 
 .error {
-  color: #a52b2b;
+  color: var(--error);
   font-size: 0.85rem;
   margin: 0.35rem 0 0;
 }
@@ -159,8 +172,8 @@
 .emailStatus {
   margin: 0 0 1rem;
   padding: 0.7rem 0.85rem;
-  background: #f6f8fa;
-  border: 1px solid #e2e6ea;
+  background: var(--slate-50);
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.9rem;
   display: flex;
@@ -179,7 +192,7 @@
 }
 
 .history li {
-  border-top: 1px solid #eef1f4;
+  border-top: 1px solid var(--border);
   padding-top: 0.9rem;
 }
 

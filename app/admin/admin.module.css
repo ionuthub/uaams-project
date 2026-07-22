@@ -1,4 +1,5 @@
-/* app/admin/admin.module.css - styles for the admin list view (#12). */
+/* app/admin/admin.module.css - styles for the admin list view (#12).
+   Uses the shared design tokens from app/globals.css. */
 
 .page {
   max-width: 960px;
@@ -18,10 +19,12 @@
 .title {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
+  color: var(--navy-900);
+  font-family: var(--font-editorial);
 }
 
 .muted {
-  color: #5a6472;
+  color: var(--muted);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -35,10 +38,11 @@
   width: 100%;
   min-width: 680px;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid #e2e6ea;
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .table th {
@@ -46,26 +50,32 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #5a6472;
-  background: #f6f8fa;
+  color: var(--quiet);
+  background: var(--slate-50);
   padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid #e2e6ea;
+  border-bottom: 1px solid var(--border);
 }
 
 .table td {
   padding: 0.7rem 0.9rem;
-  border-bottom: 1px solid #eef1f4;
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
   font-size: 0.95rem;
+  color: var(--ink);
 }
 
 .table tr:last-child td {
   border-bottom: none;
 }
 
+.table tbody tr:hover {
+  background: var(--blue-100);
+}
+
 .appId {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85rem;
+  color: var(--muted);
   overflow-wrap: anywhere;
 }
 
