@@ -14,7 +14,7 @@ const STATUS_META = {
   submitted: { label: "Submitted", tone: "info" },
   under_review: { label: "Under review", tone: "warning" },
   offer: { label: "Offer", tone: "success" },
-  rejected: { label: "Not successful", tone: "rejected" },
+  rejected: { label: "Not successful", tone: "error" },
 };
 
 const STAGES = ["Draft", "Submitted", "Under review", "Decision"];
@@ -106,7 +106,7 @@ export default function StudentDashboardPage() {
                         <p className={styles.reference}>Reference {application.id}</p>
                       </div>
                     </div>
-                    <span className={styles.status + " " + styles["status_" + meta.tone]}>{meta.label}</span>
+                    <span className={"status status-" + meta.tone}>{meta.label}</span>
                   </div>
 
                   <ol className={styles.journey} aria-label="Application progress">
