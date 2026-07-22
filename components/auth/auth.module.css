@@ -1,9 +1,9 @@
 /* components/auth/auth.module.css
-   Added for #8. Plain CSS Modules - no extra build tooling required
-   (the repo doesn't have Tailwind installed yet, see package.json).
+   Auth routes (login, register, reset, verify). Uses the shared design tokens
+   from app/globals.css so these screens match the rest of the product. The
+   submit button now comes from the global .button classes (see LoadingButton).
    Mobile-first: base styles are single-column; .card widens from 480px up. */
 
-/* Site header for standalone auth routes (login, register, reset, verify). */
 .authTopBar {
   position: sticky;
   top: 0;
@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   backdrop-filter: blur(12px);
 }
 
@@ -31,15 +31,15 @@
   border-radius: 50% 50% 46% 46%;
   display: inline-grid;
   place-items: center;
-  color: #fff;
-  background: #0b2235;
-  font-family: Georgia, serif;
+  color: var(--white);
+  background: var(--navy-900);
+  font-family: var(--font-editorial);
   font-size: 19px;
   flex-shrink: 0;
 }
 
 .authBrandName {
-  color: #0b2235;
+  color: var(--navy-900);
   font-weight: 700;
   font-size: 17px;
   letter-spacing: 0.08em;
@@ -48,7 +48,7 @@
 .authBackLink {
   font-size: 13px;
   font-weight: 600;
-  color: #445362;
+  color: var(--muted);
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 7px;
@@ -56,12 +56,12 @@
 }
 
 .authBackLink:hover {
-  background: #f1f5f9;
-  color: #0b2235;
+  background: var(--slate-50);
+  color: var(--navy-900);
 }
 
 .authBackLink:focus-visible {
-  outline: 3px solid rgba(39, 72, 196, 0.28);
+  outline: 3px solid var(--blue-100);
   outline-offset: 2px;
 }
 
@@ -70,7 +70,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: #f8fafc;
+  background: var(--warm-50);
   padding: 2.5rem 1rem;
 }
 
@@ -83,24 +83,24 @@
 .card {
   width: 100%;
   max-width: 420px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--navy-900);
 }
 
 .subtitle {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--muted);
 }
 
 .body {
@@ -125,52 +125,49 @@
 .label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #334155;
+  color: var(--ink);
 }
 
 .input {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   padding: 0.55rem 0.7rem;
   font-size: 0.9rem;
-  color: #0f172a;
+  color: var(--ink);
 }
 
 .input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 3px var(--blue-100);
 }
 
 .inputError {
-  border-color: #f87171;
+  border-color: var(--error);
 }
 
 .inputError:focus {
-  border-color: #f87171;
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px var(--error-bg);
 }
 
 .hint {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--quiet);
 }
 
 .errorText {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #dc2626;
+  color: var(--error);
 }
 
 .passwordWrap {
   position: relative;
 }
 
-/* The label sits above the input; using absolute top positioned the toggle
-   relative to the wrapper top (including the label height) which pushed it
-   up into the label row. The flexbox approach below is more robust. */
 .passwordWrap > .field {
   flex: 1;
 }
@@ -178,10 +175,6 @@
 .toggleVisibility {
   position: absolute;
   right: 0.6rem;
-  /* Align vertically to the centre of the input.
-     The input starts after the label (approx 1.5rem) and a small gap
-     (0.35rem). The input itself is 44px (2.75rem). Centre = 1.85 + 1.375 = 3.225rem.
-     Expressed as bottom offset from container: simpler to use flex. */
   bottom: 0.6rem;
   top: auto;
   background: none;
@@ -190,7 +183,7 @@
   line-height: 1;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #4f46e5;
+  color: var(--blue-600);
   cursor: pointer;
 }
 
@@ -201,15 +194,15 @@
 }
 
 .strengthWeak {
-  color: #dc2626;
+  color: var(--error);
 }
 
 .strengthMedium {
-  color: #d97706;
+  color: var(--warning);
 }
 
 .strengthStrong {
-  color: #16a34a;
+  color: var(--success);
 }
 
 .checkboxRow {
@@ -224,71 +217,31 @@
 
 .checkboxLabel {
   font-size: 0.875rem;
-  color: #334155;
+  color: var(--ink);
 }
 
 .link {
   font-weight: 500;
-  color: #4f46e5;
+  color: var(--blue-600);
   text-decoration: underline;
-}
-
-.button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border: none;
-  border-radius: 6px;
-  background: #4f46e5;
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.65rem 1rem;
-  cursor: pointer;
-}
-
-.button:hover:not(:disabled) {
-  background: #4338ca;
-}
-
-.button:disabled {
-  background: #a5b4fc;
-  cursor: not-allowed;
-}
-
-.spinner {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-top-color: #fff;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .footerText {
   text-align: center;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--muted);
   margin: 0;
 }
 
 .select {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   padding: 0.55rem 0.7rem;
   font-size: 0.9rem;
-  color: #0f172a;
-  background: #fff;
+  color: var(--ink);
+  background: var(--white);
 }
 
 .banner {
@@ -299,19 +252,19 @@
 }
 
 .bannerSuccess {
-  border-color: #86efac;
-  background: #f0fdf4;
-  color: #166534;
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .bannerError {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: color-mix(in srgb, var(--error) 35%, transparent);
+  background: var(--error-bg);
+  color: var(--error);
 }
 
 .bannerInfo {
-  border-color: #a5b4fc;
-  background: #eef2ff;
-  color: #3730a3;
+  border-color: color-mix(in srgb, var(--info) 35%, transparent);
+  background: var(--info-bg);
+  color: var(--info);
 }
