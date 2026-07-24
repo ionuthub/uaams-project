@@ -27,7 +27,6 @@ import {
 } from "../../../../lib/db";
 import { getDocumentUrl } from "../../../../lib/storage";
 import PortalShell from "../../../../components/portal/PortalShell";
-import styles from "./detail.module.css";
 
 const FORM_FIELDS = [
   ["fullName", "Full name"],
@@ -252,7 +251,7 @@ export default function AdminApplicationDetailPage() {
   if (phase === "loading") {
     return (
       <AuthCard title="Application detail">
-        <p className={styles.muted} role="status">Loading the application...</p>
+        <p className="text-muted text-[0.9rem] my-1" role="status">Loading the application...</p>
       </AuthCard>
     );
   }
@@ -260,7 +259,7 @@ export default function AdminApplicationDetailPage() {
     return (
       <AuthCard title="Application detail">
         <AlertBanner variant="error">Sign in with an admissions account to view this application.</AlertBanner>
-        <p className={styles.muted}><a href="/login">Go to login</a></p>
+        <p className="text-muted text-[0.9rem] my-1"><a href="/login">Go to login</a></p>
       </AuthCard>
     );
   }
@@ -268,7 +267,7 @@ export default function AdminApplicationDetailPage() {
     return (
       <AuthCard title="Application detail">
         <AlertBanner variant="error">This area is only available to admissions officers.</AlertBanner>
-        <p className={styles.muted}><a href="/">Back to the homepage</a></p>
+        <p className="text-muted text-[0.9rem] my-1"><a href="/">Back to the homepage</a></p>
       </AuthCard>
     );
   }
@@ -278,7 +277,7 @@ export default function AdminApplicationDetailPage() {
         <AlertBanner variant="error">
           This application does not exist or is not part of your university's queue.
         </AlertBanner>
-        <p className={styles.muted}><a href="/admin">Back to the application queue</a></p>
+        <p className="text-muted text-[0.9rem] my-1"><a href="/admin">Back to the application queue</a></p>
       </AuthCard>
     );
   }
@@ -304,59 +303,59 @@ export default function AdminApplicationDetailPage() {
       roleLabel="Admissions officer"
       footerLinks={ADMIN_FOOTER}
     >
-      <div className={styles.page}>
-      <header className={styles.header}>
+      <div className="max-w-[860px] mx-auto my-10 pt-0 px-4 pb-16 grid gap-5">
+      <header className="flex justify-between items-start gap-4 flex-wrap">
         <div>
-          <p className={styles.breadcrumb}><a href="/admin">Application queue</a> / <span className={styles.appId}>{application.id}</span></p>
-          <h1 className={styles.title}>Application detail</h1>
-          <p className={styles.muted}>Signed in as {profile.fullName} ({profile.email})</p>
+          <p className="mt-0 mb-1.5 text-[0.85rem] text-muted"><a href="/admin">Application queue</a> / <span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.id}</span></p>
+          <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Application detail</h1>
+          <p className="text-muted text-[0.9rem] my-1">Signed in as {profile.fullName} ({profile.email})</p>
         </div>
         <StatusBadge status={application.status} />
       </header>
 
       {notice && <AlertBanner variant={notice.type}>{notice.text}</AlertBanner>}
 
-      <section className={styles.card} aria-labelledby="application-summary">
+      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="application-summary">
         <h2 id="application-summary">Summary</h2>
-        <dl className={styles.grid}>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 m-0 max-sm:grid-cols-1 [&_dt]:text-[0.78rem] [&_dt]:uppercase [&_dt]:tracking-[0.04em] [&_dt]:text-quiet [&_dd]:mt-[0.15rem] [&_dd]:text-[0.95rem] [&_dd]:[overflow-wrap:anywhere]">
           <div><dt>University</dt><dd>{application.form?.universityName || application.universityId}</dd></div>
           <div><dt>Submitted</dt><dd>{formatDateTime(application.submittedAt)}</dd></div>
           <div><dt>Last updated</dt><dd>{formatDateTime(application.updatedAt)}</dd></div>
-          <div><dt>Student ID</dt><dd className={styles.appId}>{application.studentUid}</dd></div>
+          <div><dt>Student ID</dt><dd className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.studentUid}</dd></div>
         </dl>
       </section>
 
-      <section className={styles.card} aria-labelledby="applicant-details">
+      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="applicant-details">
         <h2 id="applicant-details">Applicant details</h2>
-        <dl className={styles.grid}>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 m-0 max-sm:grid-cols-1 [&_dt]:text-[0.78rem] [&_dt]:uppercase [&_dt]:tracking-[0.04em] [&_dt]:text-quiet [&_dd]:mt-[0.15rem] [&_dd]:text-[0.95rem] [&_dd]:[overflow-wrap:anywhere]">
           {FORM_FIELDS.map(([key, label]) => (
             <div key={key}><dt>{label}</dt><dd>{application.form?.[key] || "-"}</dd></div>
           ))}
         </dl>
         <h3>Personal statement</h3>
-        <p className={styles.statement}>{application.form?.personalStatement || "-"}</p>
+        <p className="m-0 text-[0.95rem] leading-relaxed whitespace-pre-wrap">{application.form?.personalStatement || "-"}</p>
       </section>
 
-      <section className={styles.card} aria-labelledby="supporting-document">
+      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="supporting-document">
         <h2 id="supporting-document">Supporting document</h2>
         {application.documentPath ? (
           <>
-            <p className={styles.muted}>{application.documentPath.split("/").pop()}</p>
+            <p className="text-muted text-[0.9rem] my-1">{application.documentPath.split("/").pop()}</p>
             <LoadingButton loading={false} onClick={handleOpenDocument}>View document</LoadingButton>
             {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
           </>
         ) : (
-          <p className={styles.muted}>No document is attached to this application.</p>
+          <p className="text-muted text-[0.9rem] my-1">No document is attached to this application.</p>
         )}
       </section>
 
-      <section className={styles.card} aria-labelledby="record-decision">
+      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
         <h2 id="record-decision">Record a decision</h2>
         {decidable ? (
           <form onSubmit={handleDecision} noValidate>
-            <fieldset className={styles.choices}>
+            <fieldset className="m-0 mb-2 p-0 border-0 grid gap-2 [&_legend]:text-[0.9rem] [&_legend]:font-semibold [&_legend]:mb-1.5">
               <legend>Decision</legend>
-              <label className={styles.choice}>
+              <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
                 <input
                   type="radio"
                   name="decision"
@@ -366,7 +365,7 @@ export default function AdminApplicationDetailPage() {
                 />
                 Offer a place
               </label>
-              <label className={styles.choice}>
+              <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
                 <input
                   type="radio"
                   name="decision"
@@ -377,11 +376,12 @@ export default function AdminApplicationDetailPage() {
                 Reject the application
               </label>
             </fieldset>
-            {formErrors.choice && <p className={styles.error} role="alert">{formErrors.choice}</p>}
+            {formErrors.choice && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.choice}</p>}
 
-            <label className={styles.label} htmlFor="decision-message">Message to the student</label>
+            <label className="block mt-[0.9rem] mb-1.5 text-[0.9rem] font-semibold" htmlFor="decision-message">Message to the student</label>
             <textarea
               id="decision-message"
+                  className="w-full px-3 py-[0.65rem] border border-border-strong rounded-lg text-[0.95rem] resize-y text-ink bg-white font-[inherit] focus:outline-[3px] focus:outline-blue-100 focus:border-blue-600"
               rows="5"
               value={message}
               onChange={(event) => {
@@ -391,15 +391,15 @@ export default function AdminApplicationDetailPage() {
               aria-invalid={!!formErrors.message}
               placeholder="This message is included in the decision email and shown on the student's dashboard."
             />
-            {formErrors.message && <p className={styles.error} role="alert">{formErrors.message}</p>}
+            {formErrors.message && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.message}</p>}
 
-            <div className={styles.actions}>
+            <div className="mt-4 flex gap-3 items-center flex-wrap">
               <LoadingButton type="submit" loading={busy}>
                 Record decision and send email
               </LoadingButton>
             </div>
             {latestDecision && (
-              <p className={styles.muted}>
+              <p className="text-muted text-[0.9rem] my-1">
                 Recording a new decision replaces the current status; every decision stays in the audit log below.
               </p>
             )}
@@ -411,27 +411,27 @@ export default function AdminApplicationDetailPage() {
         )}
       </section>
 
-      <section className={styles.card} aria-labelledby="decision-history">
+      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="decision-history">
         <h2 id="decision-history">Decision history and email delivery</h2>
         {decisions.length === 0 ? (
-          <p className={styles.muted}>No decisions recorded yet.</p>
+          <p className="text-muted text-[0.9rem] my-1">No decisions recorded yet.</p>
         ) : (
           <>
-            <p className={styles.emailStatus}>
+            <p className="m-0 mb-4 px-[0.85rem] py-[0.7rem] bg-slate-50 border border-border rounded-lg text-[0.9rem] flex items-center justify-between gap-3 flex-wrap">
               Latest decision email: {emailStatusCopy(emailLog)}
               {showRetryEmail && (
                 <LoadingButton loading={emailBusy} onClick={handleRetryEmail}>Retry email</LoadingButton>
               )}
             </p>
-            <ol className={styles.history}>
+            <ol className="m-0 p-0 list-none grid gap-[0.9rem] [&_li]:border-t [&_li]:border-border [&_li]:pt-[0.9rem]">
               {decisions.map((entry) => (
                 <li key={entry.id}>
-                  <div className={styles.historyHead}>
+                  <div className="flex items-center gap-3">
                     <StatusBadge status={entry.decision} />
-                    <span className={styles.muted}>{formatDateTime(entry.decidedAt)}</span>
+                    <span className="text-muted text-[0.9rem] my-1">{formatDateTime(entry.decidedAt)}</span>
                   </div>
-                  <p className={styles.historyMessage}>{entry.message}</p>
-                  <p className={styles.mutedSmall}>Recorded by {entry.decidedBy === user.uid ? "you" : entry.decidedBy}</p>
+                  <p className="mt-[0.45rem] text-[0.95rem] leading-[1.55]">{entry.message}</p>
+                  <p className="text-muted text-[0.8rem] mt-1 mb-0">Recorded by {entry.decidedBy === user.uid ? "you" : entry.decidedBy}</p>
                 </li>
               ))}
             </ol>
