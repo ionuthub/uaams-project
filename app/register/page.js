@@ -140,8 +140,7 @@ export default function RegisterPage() {
             </label>
             <label htmlFor="reg-level">
               <span className="label-text">Intended study level<span className="req" aria-hidden="true">*</span></span>
-              <input id="reg-level" type="text" value={form.studyLevel} placeholder="e.g. Undergraduate"
-                aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} />
+              <select id="reg-level" value={form.studyLevel} aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>
               {errors.studyLevel && <span className="field-error" role="alert">{errors.studyLevel}</span>}
             </label>
           </div>
