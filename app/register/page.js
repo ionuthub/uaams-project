@@ -1,14 +1,16 @@
 // app/register/page.js
 // Route: /register (issue #8).
 //
-// Uses the designed two-column auth-shell layout while keeping the real
-// registration logic: PRD-required fields, full password rules, confirm
-// password, privacy consent, and honest verification-email routing.
+// Migration step: form controls use React Aria (TextField / Button) for
+// accessibility, styled with Tailwind. Native select (with the shared auth
+// chevron) and native consent checkbox are kept. The two-column auth shell
+// stays on the shared classes until the auth-layout pass.
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { TextField, Label, Input, FieldError, Button } from "react-aria-components";
 import { registerStudent } from "../../lib/auth";
 import {
   validateEmail,
@@ -30,6 +32,8 @@ const INITIAL_STATE = {
 };
 
 const STRENGTH_LABEL = { weak: "Weak", medium: "Okay", strong: "Strong" };
+const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_4px_var(--color-blue-100)]";
+const LABEL = "!flex items-center gap-1";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -124,72 +128,65 @@ export default function RegisterPage() {
             <div className="auth-alert is-success" role="status">Account created. Taking you to verify your email...</div>
           )}
 
-          <label htmlFor="reg-name">
-            <span className="label-text">Full name<span className="req" aria-hidden="true">*</span></span>
-            <input id="reg-name" type="text" value={form.fullName} autoComplete="name" placeholder="e.g. Amara Osei"
-              aria-invalid={!!errors.fullName} onChange={(e) => update("fullName", e.target.value)} />
-            {errors.fullName && <span className="field-error" role="alert">{errors.fullName}</span>}
-          </label>
+          <TextField name="fullName" value={form.fullName} onChange={(v) => update("fullName", v)} isInvalid={!!errors.fullName} className="grid gap-2">
+            <Label className={LABEL}>Full name<span className="text-error" aria-hidden="true">*</span></Label>
+            <Input autoComplete="name" placeholder="e.g. Amara Osei" className={INPUT} />
+            <FieldError className="field-error">{errors.fullName}</FieldError>
+          </TextField>
 
           <div className="field-grid">
-            <label htmlFor="reg-nationality">
-              <span className="label-text">Nationality<span className="req" aria-hidden="true">*</span></span>
-              <input id="reg-nationality" type="text" value={form.nationality} autoComplete="country-name"
-                aria-invalid={!!errors.nationality} onChange={(e) => update("nationality", e.target.value)} />
-              {errors.nationality && <span className="field-error" role="alert">{errors.nationality}</span>}
-            </label>
-            <label htmlFor="reg-level">
-              <span className="label-text">Intended study level<span className="req" aria-hidden="true">*</span></span>
-              <select id="reg-level" value={form.studyLevel} aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>
+            <TextField name="nationality" value={form.nationality} onChange={(v) => update("nationality", v)} isInvalid={!!errors.nationality} className="grid gap-2">
+              <Label className={LABEL}>Nationality<span className="text-error" aria-hidden="true">*</span></Label>
+              <Input autoComplete="country-name" className={INPUT} />
+              <FieldError className="field-error">{errors.nationality}</FieldError>
+            </TextField>
+            <div className="grid gap-2">
+              <label className={LABEL} htmlFor="reg-level">Intended study level<span className="text-error" aria-hidden="true">*</span></label>
+              <select id="reg-level" value={form.studyLevel} aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)}>
+                <option value="">Select a study level</option>
+                <option value="Foundation">Foundation</option>
+                <option value="Bachelors">Bachelors</option>
+                <option value="Masters">Masters</option>
+                <option value="PhD">PhD</option>
+              </select>
               {errors.studyLevel && <span className="field-error" role="alert">{errors.studyLevel}</span>}
-            </label>
+            </div>
           </div>
 
-          <label htmlFor="reg-email">
-            <span className="label-text">Email address<span className="req" aria-hidden="true">*</span></span>
-            <input id="reg-email" type="email" value={form.email} autoComplete="email" placeholder="you@example.com"
-              aria-invalid={!!errors.email} onChange={(e) => update("email", e.target.value)} />
-            {errors.email && <span className="field-error" role="alert">{errors.email}</span>}
-          </label>
+          <TextField name="email" type="email" value={form.email} onChange={(v) => update("email", v)} isInvalid={!!errors.email} className="grid gap-2">
+            <Label className={LABEL}>Email address<span className="text-error" aria-hidden="true">*</span></Label>
+            <Input autoComplete="email" placeholder="you@example.com" className={INPUT} />
+            <FieldError className="field-error">{errors.email}</FieldError>
+          </TextField>
 
-          <label htmlFor="reg-password">
-            <span className="label-text">Password<span className="req" aria-hidden="true">*</span></span>
-            <span className="password-field">
-              <input id="reg-password" type={showPassword ? "text" : "password"} value={form.password}
-                autoComplete="new-password" aria-invalid={!!errors.password} onChange={(e) => update("password", e.target.value)} />
-              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </span>
-            {errors.password && <span className="field-error" role="alert">{errors.password}</span>}
-            {!errors.password && strength && (
-              <span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>
-            )}
-          </label>
+          <TextField name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={(v) => update("password", v)} isInvalid={!!errors.password} className="grid gap-2">
+            <Label className={LABEL}>Password<span className="text-error" aria-hidden="true">*</span></Label>
+            <div className="relative">
+              <Input autoComplete="new-password" className={INPUT + " pr-16"} />
+              <Button type="button" onPress={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showPassword ? "Hide" : "Show"}</Button>
+            </div>
+            <FieldError className="field-error">{errors.password}</FieldError>
+            {!errors.password && strength && (<span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>)}
+          </TextField>
 
-          <label htmlFor="reg-confirm">
-            <span className="label-text">Confirm password<span className="req" aria-hidden="true">*</span></span>
-            <span className="password-field">
-              <input id="reg-confirm" type={showConfirm ? "text" : "password"} value={form.confirmPassword}
-                autoComplete="new-password" aria-invalid={!!errors.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} />
-              <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"}>
-                {showConfirm ? "Hide" : "Show"}
-              </button>
-            </span>
-            {errors.confirmPassword && <span className="field-error" role="alert">{errors.confirmPassword}</span>}
-          </label>
+          <TextField name="confirmPassword" type={showConfirm ? "text" : "password"} value={form.confirmPassword} onChange={(v) => update("confirmPassword", v)} isInvalid={!!errors.confirmPassword} className="grid gap-2">
+            <Label className={LABEL}>Confirm password<span className="text-error" aria-hidden="true">*</span></Label>
+            <div className="relative">
+              <Input autoComplete="new-password" className={INPUT + " pr-16"} />
+              <Button type="button" onPress={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showConfirm ? "Hide" : "Show"}</Button>
+            </div>
+            <FieldError className="field-error">{errors.confirmPassword}</FieldError>
+          </TextField>
 
           <label htmlFor="reg-privacy" className="check-row">
-            <input id="reg-privacy" type="checkbox" checked={form.privacyConsent}
-              onChange={(e) => update("privacyConsent", e.target.checked)}
-              aria-describedby={errors.privacyConsent ? "reg-privacy-error" : undefined} />
+            <input id="reg-privacy" type="checkbox" checked={form.privacyConsent} onChange={(e) => update("privacyConsent", e.target.checked)} aria-describedby={errors.privacyConsent ? "reg-privacy-error" : undefined} />
             <span>I agree to the <a href="/privacy" target="_blank" rel="noreferrer">privacy notice</a> and the processing of my application data.</span>
           </label>
           {errors.privacyConsent && <p id="reg-privacy-error" className="field-error" role="alert">{errors.privacyConsent}</p>}
 
-          <button className="button button-primary button-large button-full" type="submit" disabled={status === "loading"}>
+          <Button type="submit" isDisabled={status === "loading"} className="w-full inline-flex items-center justify-center gap-2 min-h-[52px] px-6 py-[13px] rounded-lg border border-transparent bg-blue-600 text-white font-semibold text-[15px] transition hover:bg-blue-700 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed">
             {status === "loading" ? "Creating account..." : "Create account"}
-          </button>
+          </Button>
 
           <p className="auth-footer-links">
             Already have an account?{" "}
