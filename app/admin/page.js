@@ -1,9 +1,9 @@
 // app/admin/page.js
 // Route: /admin (issue #12 - build admin list view; US-07, FR-09, NFR-03).
 //
-// The shared query and Firestore rules both enforce university scoping.
-// The queue renders inside the shared portal shell so admin matches the
-// applicant portal look and navigation.
+// Queue renders inside the shared portal shell. Styling is Tailwind utilities
+// (migrated from admin.module.css); mobile-first, with the two lower-priority
+// columns hidden on small screens.
 
 "use client";
 
@@ -15,10 +15,14 @@ import StatusBadge from "../../components/StatusBadge";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile, logout } from "../../lib/auth";
 import { getApplicationsForUniversity, getUniversities } from "../../lib/db";
-import styles from "./admin.module.css";
 
 const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
 const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
+
+const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
+const TD = "px-[0.9rem] py-[0.7rem] border-b border-border align-middle text-[0.95rem] text-ink max-sm:p-[0.6rem]";
+const TH_HIDE = TH + " max-sm:hidden";
+const TD_HIDE = TD + " max-sm:hidden";
 
 function formatDate(ts) {
   if (!ts) return "-";
@@ -118,7 +122,7 @@ export default function AdminListPage() {
   if (phase === "loading") {
     return (
       <AuthCard title="Admissions">
-        <p className={styles.muted} role="status">Loading your application queue...</p>
+        <p className="text-muted text-[0.9rem]" role="status">Loading your application queue...</p>
       </AuthCard>
     );
   }
@@ -129,7 +133,7 @@ export default function AdminListPage() {
         <AlertBanner variant="error">
           You need to sign in with an admissions account to view this page.
         </AlertBanner>
-        <p className={styles.muted}>
+        <p className="text-muted text-[0.9rem]">
           <a className="text-link" href="/login">Go to login</a>
         </p>
       </AuthCard>
@@ -171,12 +175,12 @@ export default function AdminListPage() {
       roleLabel="Admissions officer"
       footerLinks={ADMIN_FOOTER}
     >
-      <div className={styles.page}>
-        <header className={styles.header}>
+      <div className="max-w-[960px] mx-auto my-10 px-4">
+        <header className="flex justify-between items-start gap-4 mb-6 flex-wrap">
           <div>
-            <p className={styles.eyebrow}>Admissions</p>
-            <h1 className={styles.title}>Application queue</h1>
-            <p className={styles.muted}>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Admissions</p>
+            <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Application queue</h1>
+            <p className="text-muted text-[0.9rem] m-0">
               {universityName} — {profile.fullName} ({profile.email})
             </p>
           </div>
@@ -188,28 +192,28 @@ export default function AdminListPage() {
             appear here automatically, newest first.
           </AlertBanner>
         ) : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <caption className={styles.srOnly}>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[680px] border-collapse bg-white border border-border rounded-lg overflow-hidden shadow-sm max-sm:min-w-0 max-sm:table-fixed">
+              <caption className="sr-only">
                 Applications submitted to {universityName}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Application</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Submitted</th>
-                  <th scope="col">Document</th>
-                  <th scope="col"><span className={styles.srOnly}>Actions</span></th>
+                  <th scope="col" className={TH}>Application</th>
+                  <th scope="col" className={TH}>Status</th>
+                  <th scope="col" className={TH_HIDE}>Submitted</th>
+                  <th scope="col" className={TH_HIDE}>Document</th>
+                  <th scope="col" className={TH}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&_tr:last-child_td]:border-b-0">
                 {applications.map((app) => (
-                  <tr key={app.id}>
-                    <td><span className={styles.appId}>{app.id}</span></td>
-                    <td><StatusBadge status={app.status} /></td>
-                    <td>{formatDate(app.submittedAt)}</td>
-                    <td>{app.documentPath ? "Attached" : "None"}</td>
-                    <td>
+                  <tr key={app.id} className="hover:bg-blue-100">
+                    <td className={TD}><span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{app.id}</span></td>
+                    <td className={TD}><StatusBadge status={app.status} /></td>
+                    <td className={TD_HIDE}>{formatDate(app.submittedAt)}</td>
+                    <td className={TD_HIDE}>{app.documentPath ? "Attached" : "None"}</td>
+                    <td className={TD}>
                       <a className="text-link" href={`/admin/applications/${app.id}`}>View details</a>
                     </td>
                   </tr>

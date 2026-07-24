@@ -1,3 +1,42 @@
+/* Tailwind v4: utilities unlayered (win over element base styles by
+   specificity); theme layer only defines variables; no Preflight so the
+   existing design system stays intact during migration. Colours point at
+   the tokens already defined in :root below, so there is one source of truth. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+@theme {
+  --color-navy-950: var(--navy-950);
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-blue-700: var(--blue-700);
+  --color-blue-600: var(--blue-600);
+  --color-blue-100: var(--blue-100);
+  --color-warm-50: var(--warm-50);
+  --color-slate-50: var(--slate-50);
+  --color-white: var(--white);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-quiet: var(--quiet);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-gold: var(--gold);
+  --color-side-text: var(--side-text);
+  --color-side-quiet: var(--side-quiet);
+  --font-ui: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-editorial: "Source Serif 4", Georgia, serif;
+  --shadow-sm: 0 1px 2px rgb(10 31 50 / 5%);
+  --shadow-lg: 0 24px 70px rgb(10 31 50 / 14%);
+}
+
 :root {
   --navy-950: #071827;
   --navy-900: #0b1f33;
@@ -864,4 +903,17 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* Auth-card selects: custom chevron with breathing room from the edge
+   (native select arrow sits too close to the border). Mirrors apply.module.css. */
+.auth-card select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c6977' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .9rem center;
+  background-size: 12px 8px;
 }

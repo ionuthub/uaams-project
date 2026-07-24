@@ -18,6 +18,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "react-aria-components";
 import AuthShell from "../../components/auth/AuthShell";
 import { confirmEmailVerification, resendVerification, watchAuth } from "../../lib/auth";
 import { mapAuthErrorToMessage } from "../../lib/validation";
@@ -27,6 +28,8 @@ const VERIFY_STORY = {
   headline: "One quick check protects your applications.",
   subtext: "We verify every applicant email before personal information or documents can be submitted.",
 };
+
+const SUBMIT = "w-full inline-flex items-center justify-center gap-2 min-h-[52px] px-6 py-[13px] rounded-lg border border-transparent bg-blue-600 text-white font-semibold text-[15px] transition hover:bg-blue-700 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed";
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -94,9 +97,7 @@ function VerifyEmailContent() {
           {confirmStatus === "success" && (
             <>
               <div className="auth-alert is-success" role="status">Your email is verified. You can now log in.</div>
-              <button className="button button-primary button-large button-full" type="button" onClick={() => router.push("/login")}>
-                Go to login
-              </button>
+              <Button type="button" onPress={() => router.push("/login")} className={SUBMIT}>Go to login</Button>
             </>
           )}
           {confirmStatus === "error" && confirmError && (
@@ -133,9 +134,7 @@ function VerifyEmailContent() {
           <div className="auth-alert is-error" role="alert">{resendError}</div>
         )}
 
-        <button className="button button-primary button-large button-full" type="button" disabled={resendStatus === "loading"} onClick={handleResend}>
-          {resendStatus === "loading" ? "Sending..." : "Resend verification email"}
-        </button>
+        <Button type="button" isDisabled={resendStatus === "loading"} onPress={handleResend} className={SUBMIT}>{resendStatus === "loading" ? "Sending..." : "Resend verification email"}</Button>
 
         <p className="auth-footer-links">
           Already verified?{" "}

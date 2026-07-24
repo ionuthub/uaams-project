@@ -1,24 +1,15 @@
 // app/reset-password/page.js
-// Route: /reset-password (issue #8, Figure A.2).
+// Route: /reset-password (issue #8). useSearchParams needs a Suspense boundary.
 //
-// Build fix: same Suspense requirement as /verify-email - useSearchParams()
-// needs a Suspense boundary or the production build fails.
-//
-// Two-stage screen driven by the oobCode query param:
-//   - No oobCode: "request" stage - resetPassword() emails the link.
-//     Always shows success, even if the account does not exist, so we do not
-//     leak which emails are registered.
-//   - oobCode present: "confirm" stage - verifyResetCode() checks the link
-//     and returns the account email, then confirmPasswordReset() sets the
-//     new password.
-//
-// Presentation uses the shared two-column AuthShell so this route matches
-// login and register. The logic is unchanged.
+// Migration step: form controls use React Aria (TextField / Button), styled
+// with Tailwind. Two-stage logic (request link / confirm new password) and the
+// shared AuthShell layout are unchanged.
 
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { TextField, Label, Input, FieldError, Button } from "react-aria-components";
 import AuthShell from "../../components/auth/AuthShell";
 import { resetPassword, verifyResetCode, confirmPasswordReset } from "../../lib/auth";
 import {
@@ -36,6 +27,10 @@ const RESET_STORY = {
 };
 
 const STRENGTH_LABEL = { weak: "Weak", medium: "Okay", strong: "Strong" };
+const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_4px_var(--color-blue-100)]";
+const LABEL = "!flex items-center gap-1";
+const SUBMIT = "w-full inline-flex items-center justify-center gap-2 min-h-[52px] px-6 py-[13px] rounded-lg border border-transparent bg-blue-600 text-white font-semibold text-[15px] transition hover:bg-blue-700 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed";
+const TOGGLE = "absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer";
 
 function RequestResetForm() {
   const [email, setEmail] = useState("");
@@ -87,25 +82,22 @@ function RequestResetForm() {
 
       {status === "error" && error && <div className="auth-alert is-error" role="alert">{error}</div>}
 
-      <label htmlFor="reset-email">
-        <span className="label-text">Email address<span className="req" aria-hidden="true">*</span></span>
-        <input
-          id="reset-email"
-          type="email"
-          value={email}
-          autoComplete="email"
-          aria-invalid={status !== "error" && !!error}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (error) setError(null);
-          }}
-        />
-        {status !== "error" && error && <span className="field-error" role="alert">{error}</span>}
-      </label>
+      <TextField
+        name="email"
+        type="email"
+        value={email}
+        onChange={(v) => { setEmail(v); if (error) setError(null); }}
+        isInvalid={status !== "error" && !!error}
+        className="grid gap-2"
+      >
+        <Label className={LABEL}>Email address<span className="text-error" aria-hidden="true">*</span></Label>
+        <Input autoComplete="email" className={INPUT} />
+        <FieldError className="field-error">{error}</FieldError>
+      </TextField>
 
-      <button className="button button-primary button-large button-full" type="submit" disabled={status === "loading"}>
+      <Button type="submit" isDisabled={status === "loading"} className={SUBMIT}>
         {status === "loading" ? "Sending..." : "Send reset link"}
-      </button>
+      </Button>
 
       <p className="auth-footer-links"><a href="/login">Back to sign in</a></p>
     </form>
@@ -181,9 +173,7 @@ function ConfirmResetForm({ oobCode }) {
         <div className="auth-alert is-success" role="status">
           Password updated for {accountEmail}. You can now log in.
         </div>
-        <button className="button button-primary button-large button-full" type="button" onClick={() => router.push("/login")}>
-          Go to login
-        </button>
+        <Button type="button" onPress={() => router.push("/login")} className={SUBMIT}>Go to login</Button>
       </div>
     );
   }
@@ -200,54 +190,42 @@ function ConfirmResetForm({ oobCode }) {
 
       {submitStatus === "error" && submitError && <div className="auth-alert is-error" role="alert">{submitError}</div>}
 
-      <label htmlFor="reset-new-password">
-        <span className="label-text">New password<span className="req" aria-hidden="true">*</span></span>
-        <span className="password-field">
-          <input
-            id="reset-new-password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            autoComplete="new-password"
-            aria-invalid={!!errors.password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
-            }}
-          />
-          <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
-            {showPassword ? "Hide" : "Show"}
-          </button>
-        </span>
-        {errors.password && <span className="field-error" role="alert">{errors.password}</span>}
-        {!errors.password && strength && (
-          <span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>
-        )}
-      </label>
+      <TextField
+        name="new-password"
+        type={showPassword ? "text" : "password"}
+        value={password}
+        onChange={(v) => { setPassword(v); setErrors((prev) => (prev.password ? { ...prev, password: null } : prev)); }}
+        isInvalid={!!errors.password}
+        className="grid gap-2"
+      >
+        <Label className={LABEL}>New password<span className="text-error" aria-hidden="true">*</span></Label>
+        <div className="relative">
+          <Input autoComplete="new-password" className={INPUT + " pr-16"} />
+          <Button type="button" onPress={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className={TOGGLE}>{showPassword ? "Hide" : "Show"}</Button>
+        </div>
+        <FieldError className="field-error">{errors.password}</FieldError>
+        {!errors.password && strength && (<span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>)}
+      </TextField>
 
-      <label htmlFor="reset-confirm-password">
-        <span className="label-text">Confirm new password<span className="req" aria-hidden="true">*</span></span>
-        <span className="password-field">
-          <input
-            id="reset-confirm-password"
-            type={showConfirm ? "text" : "password"}
-            value={confirmPasswordValue}
-            autoComplete="new-password"
-            aria-invalid={!!errors.confirmPassword}
-            onChange={(e) => {
-              setConfirmPasswordValue(e.target.value);
-              setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev));
-            }}
-          />
-          <button type="button" onClick={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"}>
-            {showConfirm ? "Hide" : "Show"}
-          </button>
-        </span>
-        {errors.confirmPassword && <span className="field-error" role="alert">{errors.confirmPassword}</span>}
-      </label>
+      <TextField
+        name="confirm-password"
+        type={showConfirm ? "text" : "password"}
+        value={confirmPasswordValue}
+        onChange={(v) => { setConfirmPasswordValue(v); setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev)); }}
+        isInvalid={!!errors.confirmPassword}
+        className="grid gap-2"
+      >
+        <Label className={LABEL}>Confirm new password<span className="text-error" aria-hidden="true">*</span></Label>
+        <div className="relative">
+          <Input autoComplete="new-password" className={INPUT + " pr-16"} />
+          <Button type="button" onPress={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"} className={TOGGLE}>{showConfirm ? "Hide" : "Show"}</Button>
+        </div>
+        <FieldError className="field-error">{errors.confirmPassword}</FieldError>
+      </TextField>
 
-      <button className="button button-primary button-large button-full" type="submit" disabled={submitStatus === "loading"}>
+      <Button type="submit" isDisabled={submitStatus === "loading"} className={SUBMIT}>
         {submitStatus === "loading" ? "Updating..." : "Update password"}
-      </button>
+      </Button>
     </form>
   );
 }
