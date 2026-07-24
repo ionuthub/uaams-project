@@ -1,8 +1,12 @@
 // components/auth/LoadingButton.js
-// Design-system button with a loading state (spinner + disabled). Uses the
-// global .button / .button-* classes from app/globals.css so every screen
-// shares one button implementation. Pass `variant` to pick the look and
-// `full` (default true) for a full-width button.
+// Design-system button with a loading state (spinner + disabled). Now built on
+// React Aria's Button for accessible press handling (pointer + keyboard),
+// while keeping the global .button / .button-* classes so the look is unchanged.
+// Pass `variant` to pick the look and `full` (default true) for full width.
+
+"use client";
+
+import { Button } from "react-aria-components";
 
 const VARIANTS = {
   primary: "button-primary",
@@ -25,15 +29,15 @@ export default function LoadingButton({
   if (full) classes.push("button-full");
 
   return (
-    <button
+    <Button
       type={type}
-      onClick={onClick}
-      disabled={loading || disabled}
+      onPress={onClick}
+      isDisabled={loading || disabled}
       aria-busy={loading}
       className={classes.join(" ")}
     >
       {loading && <span className="button-spinner" aria-hidden="true" />}
       {children}
-    </button>
+    </Button>
   );
 }
