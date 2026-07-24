@@ -129,7 +129,9 @@ export default function StudentDashboardPage() {
                       <div><dt>Submitted</dt><dd>{formatDate(application.submittedAt)}</dd></div>
                       <div><dt>Document</dt><dd>{application.documentPath ? "Attached" : "Not attached"}</dd></div>
                     </dl>
-                    <a className="button button-secondary" href="/apply">Open application</a>
+                    {application.status === "draft" && (
+                  <a className="button button-secondary" href="/apply">Continue application</a>
+                )}
                   </div>
 
                   {application.latestDecisionMessage && (
