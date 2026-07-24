@@ -93,7 +93,7 @@ export default function LoginPage() {
             isInvalid={!!errors.email}
             className="grid gap-2"
           >
-            <Label className="label-text">Email address<span className="req" aria-hidden="true">*</span></Label>
+            <Label className="flex items-center gap-1 text-[15px] font-semibold text-ink">Email address<span className="text-error" aria-hidden="true">*</span></Label>
             <Input autoComplete="email" className={INPUT} />
             <FieldError className="field-error">{errors.email}</FieldError>
           </TextField>
@@ -106,7 +106,7 @@ export default function LoginPage() {
             isInvalid={!!errors.password}
             className="grid gap-2"
           >
-            <Label className="label-text">Password<span className="req" aria-hidden="true">*</span></Label>
+            <Label className="flex items-center gap-1 text-[15px] font-semibold text-ink">Password<span className="text-error" aria-hidden="true">*</span></Label>
             <div className="relative">
               <Input autoComplete="current-password" className={INPUT + " pr-16"} />
               <Button
