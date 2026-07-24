@@ -26,6 +26,7 @@ import {
   recordDecision,
 } from "../../../../lib/db";
 import { getDocumentUrl } from "../../../../lib/storage";
+import PortalShell from "../../../../components/portal/PortalShell";
 import styles from "./detail.module.css";
 
 const FORM_FIELDS = [
@@ -38,6 +39,9 @@ const FORM_FIELDS = [
   ["studyLevel", "Intended study level"],
   ["intake", "Intake"],
 ];
+
+const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
+const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -292,7 +296,15 @@ export default function AdminApplicationDetailPage() {
   const showRetryEmail = latestDecision && (!emailLog || emailLog.status !== "sent");
 
   return (
-    <main className={styles.page}>
+    <PortalShell
+      user={user}
+      current="queue"
+      nav={ADMIN_NAV}
+      subtitle="Admissions"
+      roleLabel="Admissions officer"
+      footerLinks={ADMIN_FOOTER}
+    >
+      <div className={styles.page}>
       <header className={styles.header}>
         <div>
           <p className={styles.breadcrumb}><a href="/admin">Application queue</a> / <span className={styles.appId}>{application.id}</span></p>
@@ -426,6 +438,7 @@ export default function AdminApplicationDetailPage() {
           </>
         )}
       </section>
-    </main>
+    </div>
+    </PortalShell>
   );
 }
