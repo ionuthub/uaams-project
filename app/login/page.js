@@ -1,16 +1,20 @@
 // app/login/page.js
 // Route: /login (issue #8, Figure A.2).
 //
-// Uses the designed two-column auth-shell layout (navy story panel + form)
-// while keeping the real login logic: validation, role-aware redirect and
-// the verification gate. No prefilled credentials, unlike the prototype.
+// Migration step: the form controls use React Aria (TextField / Button) for
+// accessibility, styled with Tailwind utilities. The two-column auth shell
+// layout stays on the shared global classes for now; it is converted in the
+// coordinated auth-layout pass so all auth pages move together.
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { TextField, Label, Input, FieldError, Button } from "react-aria-components";
 import { login, getUserProfile } from "../../lib/auth";
 import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../lib/validation";
+
+const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_3px_var(--color-blue-100)]";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -81,50 +85,53 @@ export default function LoginPage() {
             <div className="auth-alert is-error" role="alert">{serverError}</div>
           )}
 
-          <label htmlFor="login-email">
-            <span className="label-text">Email address<span className="req" aria-hidden="true">*</span></span>
-            <input
-              id="login-email"
-              type="email"
-              value={email}
-              autoComplete="email"
-              aria-invalid={!!errors.email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prev) => (prev.email ? { ...prev, email: null } : prev));
-              }}
-            />
-            {errors.email && <span className="field-error" role="alert">{errors.email}</span>}
-          </label>
+          <TextField
+            name="email"
+            type="email"
+            value={email}
+            onChange={(v) => { setEmail(v); setErrors((prev) => (prev.email ? { ...prev, email: null } : prev)); }}
+            isInvalid={!!errors.email}
+            className="grid gap-2"
+          >
+            <Label className="label-text">Email address<span className="req" aria-hidden="true">*</span></Label>
+            <Input autoComplete="email" className={INPUT} />
+            <FieldError className="field-error">{errors.email}</FieldError>
+          </TextField>
 
-          <label htmlFor="login-password">
-            <span className="label-text">Password<span className="req" aria-hidden="true">*</span></span>
-            <span className="password-field">
-              <input
-                id="login-password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                autoComplete="current-password"
-                aria-invalid={!!errors.password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors((prev) => (prev.password ? { ...prev, password: null } : prev));
-                }}
-              />
-              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
+          <TextField
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(v) => { setPassword(v); setErrors((prev) => (prev.password ? { ...prev, password: null } : prev)); }}
+            isInvalid={!!errors.password}
+            className="grid gap-2"
+          >
+            <Label className="label-text">Password<span className="req" aria-hidden="true">*</span></Label>
+            <div className="relative">
+              <Input autoComplete="current-password" className={INPUT + " pr-16"} />
+              <Button
+                type="button"
+                onPress={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer"
+              >
                 {showPassword ? "Hide" : "Show"}
-              </button>
-            </span>
-            {errors.password && <span className="field-error" role="alert">{errors.password}</span>}
-          </label>
+              </Button>
+            </div>
+            <FieldError className="field-error">{errors.password}</FieldError>
+          </TextField>
 
           <p className="auth-inline-link">
             <a href="/reset-password">Forgot password?</a>
           </p>
 
-          <button className="button button-primary button-large button-full" type="submit" disabled={status === "loading"}>
+          <Button
+            type="submit"
+            isDisabled={status === "loading"}
+            className="w-full inline-flex items-center justify-center gap-2 min-h-[52px] px-6 py-[13px] rounded-lg border border-transparent bg-blue-600 text-white font-semibold text-[15px] transition hover:bg-blue-700 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             {status === "loading" ? "Signing in..." : "Sign in"}
-          </button>
+          </Button>
 
           <p className="auth-footer-links">
             Do not have an account?{" "}
