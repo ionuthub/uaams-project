@@ -2,7 +2,8 @@
 // Route: /admin (issue #12 - build admin list view; US-07, FR-09, NFR-03).
 //
 // The shared query and Firestore rules both enforce university scoping.
-// Detail navigation remains disabled until issue #13 adds the route.
+// The queue renders inside the shared portal shell so admin matches the
+// applicant portal look and navigation.
 
 "use client";
 
@@ -11,11 +12,13 @@ import AuthCard from "../../components/auth/AuthCard";
 import AlertBanner from "../../components/auth/AlertBanner";
 import LoadingButton from "../../components/auth/LoadingButton";
 import StatusBadge from "../../components/StatusBadge";
+import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile, logout } from "../../lib/auth";
 import { getApplicationsForUniversity, getUniversities } from "../../lib/db";
 import styles from "./admin.module.css";
 
-const DETAIL_ROUTE_READY = true; // #13 admin detail view is live at /admin/applications/[id]
+const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
+const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
 
 function formatDate(ts) {
   if (!ts) return "-";
@@ -160,63 +163,62 @@ export default function AdminListPage() {
   }
 
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Application queue</h1>
-          <p className={styles.muted}>
-            {universityName} - signed in as {profile.fullName} ({profile.email})
-          </p>
-        </div>
-        <LoadingButton loading={false} onClick={handleLogout}>Log out</LoadingButton>
-      </header>
+    <PortalShell
+      user={{ displayName: profile.fullName, email: profile.email }}
+      current="queue"
+      nav={ADMIN_NAV}
+      subtitle="Admissions"
+      roleLabel="Admissions officer"
+      footerLinks={ADMIN_FOOTER}
+    >
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <div>
+            <p className={styles.eyebrow}>Admissions</p>
+            <h1 className={styles.title}>Application queue</h1>
+            <p className={styles.muted}>
+              {universityName} — {profile.fullName} ({profile.email})
+            </p>
+          </div>
+        </header>
 
-      {applications.length === 0 ? (
-        <AlertBanner variant="info">
-          No submitted applications for {universityName} yet. New submissions
-          appear here automatically, newest first.
-        </AlertBanner>
-      ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <caption className={styles.srOnly}>
-              Applications submitted to {universityName}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Application</th>
-                <th scope="col">Status</th>
-                <th scope="col">Submitted</th>
-                <th scope="col">Document</th>
-                <th scope="col"><span className={styles.srOnly}>Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app.id}>
-                  <td><span className={styles.appId}>{app.id}</span></td>
-                  <td><StatusBadge status={app.status} /></td>
-                  <td>{formatDate(app.submittedAt)}</td>
-                  <td>{app.documentPath ? "Attached" : "None"}</td>
-                  <td>
-                    {DETAIL_ROUTE_READY ? (
-                      <a className="text-link" href={`/admin/applications/${app.id}`}>View details</a>
-                    ) : (
-                      <span
-                        className={styles.muted}
-                        aria-disabled="true"
-                        title="Application details are not available yet"
-                      >
-                        Details unavailable
-                      </span>
-                    )}
-                  </td>
+        {applications.length === 0 ? (
+          <AlertBanner variant="info">
+            No submitted applications for {universityName} yet. New submissions
+            appear here automatically, newest first.
+          </AlertBanner>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <caption className={styles.srOnly}>
+                Applications submitted to {universityName}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Application</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Submitted</th>
+                  <th scope="col">Document</th>
+                  <th scope="col"><span className={styles.srOnly}>Actions</span></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </main>
+              </thead>
+              <tbody>
+                {applications.map((app) => (
+                  <tr key={app.id}>
+                    <td><span className={styles.appId}>{app.id}</span></td>
+                    <td><StatusBadge status={app.status} /></td>
+                    <td>{formatDate(app.submittedAt)}</td>
+                    <td>{app.documentPath ? "Attached" : "None"}</td>
+                    <td>
+                      <a className="text-link" href={`/admin/applications/${app.id}`}>View details</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </PortalShell>
   );
 }

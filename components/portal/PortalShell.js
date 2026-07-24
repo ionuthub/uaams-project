@@ -3,23 +3,30 @@
 import { logout } from "../../lib/auth";
 import styles from "./portal.module.css";
 
-// Applicant portal navigation. Only routes that actually exist are listed here,
-// so nothing links to a screen that has not been built.
-const NAV = [
+// Shared portal shell (sidebar + main) for every signed-in area. Defaults
+// render the applicant portal exactly as before; the admin screens reuse the
+// same shell by passing their own nav, subtitle, role label and footer links,
+// so there is a single shell implementation rather than one per role.
+const STUDENT_NAV = [
   { key: "dashboard", label: "My applications", href: "/student" },
   { key: "apply", label: "New application", href: "/apply" },
 ];
 
-// Shared shell for the signed-in applicant portal: fixed sidebar (brand, nav,
-// real user profile, log out) plus a main content area. Pages pass their own
-// content as children and mark the active nav item with `current`.
-export default function PortalShell({ user, current, children }) {
-  const who = user?.displayName || user?.email || "Applicant";
+export default function PortalShell({
+  user,
+  current,
+  children,
+  nav = STUDENT_NAV,
+  subtitle = "Applicant portal",
+  roleLabel = "Applicant",
+  footerLinks = [{ label: "Privacy", href: "/privacy" }],
+}) {
+  const who = user?.displayName || user?.email || roleLabel;
   const avatar = who.slice(0, 2).toUpperCase();
 
   // Signing out is a deliberate action, not an error. Redirect to the login
-  // screen as soon as Firebase clears the session, so the applicant never lands
-  // on a signed-out page rendering its "please sign in" error state.
+  // screen as soon as Firebase clears the session, so the user never lands on
+  // a signed-out page rendering its "please sign in" error state.
   async function handleLogout() {
     await logout();
     window.location.assign("/login");
@@ -32,12 +39,12 @@ export default function PortalShell({ user, current, children }) {
           <span className={styles.brandMark}>U</span>
           <div>
             <strong>UAAMS</strong>
-            <small>Applicant portal</small>
+            <small>{subtitle}</small>
           </div>
         </div>
 
-        <nav className={styles.nav} aria-label="Applicant navigation">
-          {NAV.map((item) => (
+        <nav className={styles.nav} aria-label="Portal navigation">
+          {nav.map((item) => (
             <a
               key={item.key}
               className={item.key === current ? styles.navCurrent : styles.navItem}
@@ -50,12 +57,14 @@ export default function PortalShell({ user, current, children }) {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <a className={styles.navItem} href="/privacy">Privacy</a>
+          {footerLinks.map((link) => (
+            <a key={link.href} className={styles.navItem} href={link.href}>{link.label}</a>
+          ))}
           <div className={styles.userChip}>
             <span className={styles.userAvatar}>{avatar}</span>
             <div>
               <strong title={who}>{who}</strong>
-              <small>Applicant</small>
+              <small>{roleLabel}</small>
             </div>
           </div>
           <button className={styles.logout} type="button" onClick={handleLogout}>Log out</button>
