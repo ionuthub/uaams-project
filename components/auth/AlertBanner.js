@@ -1,13 +1,15 @@
 // components/auth/AlertBanner.js
-// Added for #8. Success/error/info banner for the async UI states
-// (idle/loading/success/error) required on every auth screen.
+// Success/error/info banner for the async UI states (idle, loading, success,
+// error) used across the product. Styling: Tailwind utilities built from the
+// shared status tokens. The text prefix carries the meaning, so the state is
+// never communicated by colour alone.
 
-import styles from "./auth.module.css";
+const BASE = "rounded-md border px-[0.9rem] py-[0.7rem] text-sm";
 
 const VARIANT_CLASS = {
-  success: styles.bannerSuccess,
-  error: styles.bannerError,
-  info: styles.bannerInfo,
+  success: "border-success/35 bg-success-bg text-success",
+  error: "border-error/35 bg-error-bg text-error",
+  info: "border-info/35 bg-info-bg text-info",
 };
 
 const VARIANT_PREFIX = {
@@ -20,7 +22,7 @@ export default function AlertBanner({ variant, children }) {
   return (
     <div
       role={variant === "error" ? "alert" : "status"}
-      className={`${styles.banner} ${VARIANT_CLASS[variant]}`}
+      className={BASE + " " + (VARIANT_CLASS[variant] || VARIANT_CLASS.info)}
     >
       <strong>{VARIANT_PREFIX[variant]} </strong>
       {children}
