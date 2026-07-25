@@ -7,15 +7,11 @@ import LoadingButton from "../../components/auth/LoadingButton";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth } from "../../lib/auth";
 import { getStudentApplications } from "../../lib/db";
-import styles from "./student.module.css";
+import { statusMeta } from "../../components/StatusBadge";
 
-const STATUS_META = {
-  draft: { label: "Draft", tone: "neutral" },
-  submitted: { label: "Submitted", tone: "info" },
-  under_review: { label: "Under review", tone: "warning" },
-  offer: { label: "Offer", tone: "success" },
-  rejected: { label: "Not successful", tone: "error" },
-};
+
+const LI_BASE =
+  "min-w-0 relative flex flex-col items-center gap-2.5 text-center before:content-[''] before:absolute before:z-0 before:left-[calc(50%+16px)] before:right-[calc(-50%+16px)] before:top-[15px] before:h-0.5 last:before:hidden";
 
 const STAGES = ["Draft", "Submitted", "Under review", "Decision"];
 const JOURNEY = {
@@ -91,7 +87,7 @@ export default function StudentDashboardPage() {
         ) : (
           <section className="grid gap-[22px]" aria-label="Your applications">
             {applications.map((application) => {
-              const meta = STATUS_META[application.status] || { label: application.status, tone: "neutral" };
+              const meta = statusMeta(application.status);
               const states = JOURNEY[application.status] || JOURNEY.draft;
               const university = application.form?.universityName || "University application";
               const seal = university.trim().slice(0, 2).toUpperCase();
@@ -109,16 +105,16 @@ export default function StudentDashboardPage() {
                     <span className={"status status-" + meta.tone}>{meta.label}</span>
                   </div>
 
-                  <ol className={styles.journey} aria-label="Application progress">
+                  <ol className="m-0 px-7 pt-[30px] pb-7 grid grid-cols-4 list-none border-y border-border bg-[#fbfcfd] max-[900px]:grid-cols-2 max-[900px]:gap-y-5" aria-label="Application progress">
                     {STAGES.map((stage, index) => {
                       const state = states[index];
                       const dot = state === "done" ? "✓" : index + 1;
                       return (
-                        <li key={stage} className={styles[state]}>
-                          <span className={styles.dot}>{dot}</span>
-                          <strong>{stage}</strong>
-                          {index === 3 && application.status === "offer" && <small>Offer made</small>}
-                          {index === 3 && application.status === "rejected" && <small>Not successful</small>}
+                        <li key={stage} className={LI_BASE + " " + (state === "done" ? "before:bg-success" : "before:bg-border")}>
+                          <span className={"w-[31px] h-[31px] relative z-[1] shrink-0 grid place-items-center border-2 rounded-full text-[11px] font-bold " + (state === "done" ? "text-white bg-success border-success" : state === "current" ? "text-white bg-blue-600 border-blue-600 shadow-[0_0_0_5px_var(--color-blue-100)]" : "text-quiet bg-white border-border-strong")}>{dot}</span>
+                          <strong className="text-xs text-ink leading-[1.2]">{stage}</strong>
+                          {index === 3 && application.status === "offer" && <small className="mt-0.5 text-quiet text-[10px]">Offer made</small>}
+                          {index === 3 && application.status === "rejected" && <small className="mt-0.5 text-quiet text-[10px]">Not successful</small>}
                         </li>
                       );
                     })}
