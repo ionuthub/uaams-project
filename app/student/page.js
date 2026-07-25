@@ -11,7 +11,7 @@ import { statusMeta } from "../../components/StatusBadge";
 
 
 const LI_BASE =
-  "min-w-0 relative flex flex-col items-center gap-2.5 text-center before:content-[''] before:absolute before:z-0 before:left-[calc(50%+16px)] before:right-[calc(-50%+16px)] before:top-[15px] before:h-0.5 last:before:hidden";
+  "min-w-0 relative flex flex-col items-center gap-2.5 text-center before:content-[''] before:absolute before:z-0 before:left-[calc(50%+16px)] before:right-[calc(-50%+16px)] before:top-[15px] before:h-0.5 last:before:hidden max-[900px]:even:before:hidden";
 
 const STAGES = ["Draft", "Submitted", "Under review", "Decision"];
 const JOURNEY = {
