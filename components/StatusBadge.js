@@ -1,9 +1,13 @@
 // components/StatusBadge.js
-// Maps lib/db.js APPLICATION_STATUSES to a plain-language label and a
-// colour. Status is always readable as text, per WCAG "not by colour alone".
-import styles from "./StatusBadge.module.css";
+// Maps lib/db.js APPLICATION_STATUSES to a plain-language label and a tone.
+// Status is always readable as text, per WCAG "not by colour alone".
+//
+// Uses the global .status / .status-* classes from app/globals.css so every
+// badge in the product is styled from one place. STATUS_META is exported so
+// pages reuse these labels instead of keeping their own copy, which is what
+// previously let the student dashboard and the admin badge drift apart.
 
-const STATUS_META = {
+export const STATUS_META = {
   draft: { label: "Draft", tone: "neutral" },
   submitted: { label: "Submitted", tone: "info" },
   under_review: { label: "Under review", tone: "warning" },
@@ -11,7 +15,11 @@ const STATUS_META = {
   rejected: { label: "Not successful", tone: "error" },
 };
 
+export function statusMeta(status) {
+  return STATUS_META[status] || { label: status, tone: "neutral" };
+}
+
 export default function StatusBadge({ status }) {
-  const meta = STATUS_META[status] || { label: status, tone: "neutral" };
-  return <span className={`${styles.badge} ${styles[meta.tone]}`}>{meta.label}</span>;
+  const meta = statusMeta(status);
+  return <span className={"status status-" + meta.tone}>{meta.label}</span>;
 }
