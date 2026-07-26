@@ -931,3 +931,38 @@ body {
   background-position: right .9rem center;
   background-size: 12px 8px;
 }
+
+
+/* ---------------------------------------------------------------------------
+   Landing hero: mobile overlap fixes.
+   The hero decoration (orbit rings and the floating note) is absolutely
+   positioned for the wide two-column hero. Once the columns stack, that layer
+   keeps its offsets and lands on top of real content: the note and its arrow
+   button covered body copy and the footer mark, and the preview card sat over
+   the "Start an application" call to action. Hide the decoration on small
+   screens and let the preview card flow normally.
+   --------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .hero-visual .visual-orbit,
+  .hero-visual .floating-note {
+    display: none;
+  }
+
+  .hero-visual {
+    min-height: 0;
+    position: static;
+  }
+
+  .preview-card {
+    width: 100%;
+    position: static;
+  }
+
+  /* The sticky header was 94% opaque and relied on backdrop-filter. Where that
+     is unsupported or disabled the page text showed through while scrolling,
+     which read as ghosting behind the brand and menu. Make it solid. */
+  .public-header {
+    background: var(--white);
+    backdrop-filter: none;
+  }
+}
