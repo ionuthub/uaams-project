@@ -1,9 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getUserProfile } from "../lib/auth";
 
 export default function PublicHeader({ setScreen, currentScreen, user, onSignOut }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [role, setRole] = useState(null);
+
+  // The header only receives the auth user, not the profile. Look up the role
+  // so the signed-in actions can point admins at the real /admin queue instead
+  // of always sending everyone to the student dashboard.
+  useEffect(() => {
+    if (!user) {
+      setRole(null);
+      return undefined;
+    }
+    let active = true;
+    getUserProfile(user.uid)
+      .then((profile) => {
+        if (active) setRole(profile?.role || "student");
+      })
+      .catch(() => {
+        if (active) setRole("student");
+      });
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
   const go = (action) => {
     setMenuOpen(false);
     action();
@@ -33,6 +57,17 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       </button>
 
       <nav className="public-nav" id="public-header-nav" aria-label="Primary navigation">
+        {/* Home represents the landing page itself, so it is the only item that
+            can legitimately carry aria-current="page" there. */}
+        <button
+          className={currentScreen === "landing" ? "is-current" : ""}
+          type="button"
+          onClick={() => go(() => setScreen("landing"))}
+          aria-current={currentScreen === "landing" ? "page" : undefined}
+        >
+          Home
+        </button>
+
         <button
           className={currentScreen === "universities" ? "is-current" : ""}
           type="button"
@@ -50,20 +85,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         >
           Courses
         </button>
-
-        <button
-          className={currentScreen === "landing" ? "is-current" : ""}
-          type="button"
-          onClick={() => {
-            go(() => setScreen("landing"));
-            setTimeout(() => {
-              document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-          }}
-        >
-          How it works
-        </button>
-
+        
         <button
           className={currentScreen === "support" ? "is-current" : ""}
           type="button"
@@ -77,8 +99,13 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       <div className="header-actions">
         {user ? (
           <>
+            {role === "admin" && (
+              <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/admin"; })}>
+                Admin queue
+              </button>
+            )}
             <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/student"; })}>
-              Portal Dashboard
+              Student Dashboard
             </button>
             <button className="button button-secondary" type="button" onClick={() => go(onSignOut)}>
               Sign out

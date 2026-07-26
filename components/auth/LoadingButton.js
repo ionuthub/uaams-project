@@ -1,9 +1,20 @@
 // components/auth/LoadingButton.js
-// Added for #8. Submit button that visibly reflects the loading state
-// (spinner + disabled) rather than leaving students unsure whether their
-// click registered.
+// Design-system button with a loading state (spinner + disabled). Now built on
+// React Aria's Button for accessible press handling (pointer + keyboard),
+// while keeping the global .button / .button-* classes so the look is unchanged.
+// Pass `variant` to pick the look and `full` (default true) for full width.
 
-import styles from "./auth.module.css";
+"use client";
+
+import { Button } from "react-aria-components";
+
+const VARIANTS = {
+  primary: "button-primary",
+  secondary: "button-secondary",
+  dark: "button-dark",
+  quiet: "button-quiet",
+  danger: "button-danger",
+};
 
 export default function LoadingButton({
   loading,
@@ -11,17 +22,22 @@ export default function LoadingButton({
   type = "submit",
   onClick,
   disabled,
+  variant = "primary",
+  full = true,
 }) {
+  const classes = ["button", VARIANTS[variant] || VARIANTS.primary];
+  if (full) classes.push("button-full");
+
   return (
-    <button
+    <Button
       type={type}
-      onClick={onClick}
-      disabled={loading || disabled}
+      onPress={onClick}
+      isDisabled={loading || disabled}
       aria-busy={loading}
-      className={styles.button}
+      className={classes.join(" ")}
     >
-      {loading && <span className={styles.spinner} aria-hidden="true" />}
+      {loading && <span className="button-spinner" aria-hidden="true" />}
       {children}
-    </button>
+    </Button>
   );
 }

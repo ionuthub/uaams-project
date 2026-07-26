@@ -1,0 +1,51 @@
+name: Production boot smoke
+
+# Loads the deployed app and fails if it cannot boot in the browser, for
+# example when the Firebase config was not inlined into the client bundle.
+#
+# Why this targets production only:
+# Vercel gives every deployment a per-deployment URL of the form
+# uaams-project-<hash>-<team>.vercel.app. Deployment Protection makes that URL
+# return an authentication page to anonymous callers such as this runner, so
+# the check never saw the application and failed on all 87 of its earlier runs,
+# including after healthy deploys. A check that can only ever fail teaches the
+# team to ignore a red mark, so it now tests the public production alias, which
+# is reachable, and skips per-deployment preview URLs.
+#
+# Can also be run on demand from the Actions tab, which covers the recurring
+# live smoke test (issue #21).
+#
+# Non-gating: this is a separate workflow and is not a required status check.
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PRODUCTION_URL: https://uaams-project.vercel.app
+
+jobs:
+  smoke:
+    name: Boot smoke check against production
+    # Deployment events: production only. Manual runs always proceed.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       contains(github.event.deployment_status.environment, 'roduction'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run boot smoke check
+        run: node scripts/smoke.mjs "$PRODUCTION_URL"

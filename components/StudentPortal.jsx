@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   getStudentApplications,
   createApplication,
+  getLatestDraft,
   submitApplication,
   getUniversities,
 } from "../lib/db";
@@ -46,7 +47,7 @@ export default function StudentPortal({
   // Form State
   const [formStep, setFormStep] = useState(1);
   const [selectedUniId, setSelectedUniId] = useState("");
-  const [fullName, setFullName] = useState(profile?.name || "Amara Osei");
+  const [fullName, setFullName] = useState(profile?.fullName || "Amara Osei");
   const [phone, setPhone] = useState("+44 7700 900123");
   const [addressLine1, setAddressLine1] = useState("14 Roundhay Terrace");
   const [city, setCity] = useState("Leeds");
@@ -84,7 +85,12 @@ export default function StudentPortal({
     const studentUid = user ? user.uid : "demo-student-uid-001";
     try {
       const targetUni = selectedUniId || (universities[0] ? universities[0].id : "ashworth-uni-001");
-      const appId = await createApplication(studentUid, targetUni, {
+      // Reuse an existing draft instead of creating a duplicate on every click.
+    // Mirrors the guard on the real /apply page.
+    const existingDraft = await getLatestDraft(studentUid);
+    if (existingDraft) return existingDraft.id;
+
+    const appId = await createApplication(studentUid, targetUni, {
         fullName,
         phone,
         addressLine1,
@@ -201,7 +207,7 @@ export default function StudentPortal({
             <div className="user-chip" style={{ marginTop: "12px" }}>
               <img className="user-avatar-photo" src="/assets/avatar-amara-osei.png" alt="" />
               <div>
-                <strong>{profile?.name || user?.email?.split("@")[0] || "Applicant"}</strong>
+                <strong>{profile?.fullName || user?.email?.split("@")[0] || "Applicant"}</strong>
                 <small>Applicant</small>
               </div>
             </div>

@@ -6,15 +6,31 @@ import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import FormField from "../../components/auth/FormField";
 import LoadingButton from "../../components/auth/LoadingButton";
+import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth } from "../../lib/auth";
 import { createApplication, findDraftApplication, getLatestDraft, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
 import { uploadDocument, validateFile } from "../../lib/storage";
-import styles from "./apply.module.css";
+
+const FIELD =
+  "w-full box-border border border-border-strong rounded-md px-[0.7rem] py-[0.55rem] text-[0.9rem] text-ink bg-white focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_var(--color-blue-100)]";
+
+const SELECT = FIELD + " select-chevron";
+
+const TEXTAREA = FIELD + " resize-y";
+
+const FILE_INPUT = "block w-full my-[0.8rem] mb-4";
+
+const SECTION =
+  "my-4 p-[1.4rem] border border-border rounded-[0.9rem] bg-white shadow-sm max-sm:p-4 [&>h2]:mt-0 [&>h2]:text-[1.25rem] [&>h2]:text-navy-900";
 
 const INITIAL_FORM = { universityId: "", fullName: "", dateOfBirth: "", nationality: "", phone: "", address: "", previousQualification: "", studyLevel: "", intake: "", personalStatement: "" };
 
 function fileError(code) {
-  return { NO_FILE: "Choose a document first.", FILE_TOO_LARGE: "The document must be 10 MB or smaller.", INVALID_TYPE: "Upload a PDF, JPG or PNG file." }[code] || "The document could not be uploaded.";
+  return {
+    NO_FILE: "Choose a document first.",
+    FILE_TOO_LARGE: "That file is too large. Please upload a file no bigger than 10 MB.",
+    INVALID_TYPE: "That file type isn't supported. Please upload a PDF, JPG, or PNG.",
+  }[code] || "The document could not be uploaded. Please try again.";
 }
 
 export default function ApplicationPage() {
@@ -110,13 +126,13 @@ export default function ApplicationPage() {
   if (phase === "unverified") return <AuthCard title="New application"><AlertBanner variant="info">Verify your email before applying.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="New application"><AlertBanner variant="error">University information could not be loaded.</AlertBanner></AuthCard>;
 
-  return <main className={styles.page}><form className={styles.form} onSubmit={(event) => event.preventDefault()} noValidate>
-    <header><p className={styles.eyebrow}>Student application</p><h1>Apply to a university</h1><p>Complete the required details, save a draft, attach evidence and submit.</p></header>
+  return <PortalShell user={user} current="apply"><div className="min-h-screen pt-8 px-4 pb-16 bg-transparent text-ink"><form className="max-w-[52rem] mx-auto [&>header]:mb-6 [&>header_h1]:mt-[0.2rem] [&>header_h1]:mb-2 [&>header_h1]:text-[clamp(2rem,5vw,3rem)] [&>header_h1]:text-navy-900" onSubmit={(event) => event.preventDefault()} noValidate>
+    <header><p className="m-0 text-blue-600 font-extrabold uppercase tracking-[0.08em]">Student application</p><h1>Apply to a university</h1><p>Complete the required details, save a draft, attach evidence and submit.</p></header>
     {message && <AlertBanner variant={message.type}>{message.text}</AlertBanner>}
-    <section><h2>1. University and intake</h2><label className={styles.label} htmlFor="universityId">University</label><select id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className={styles.error}>{errors.universityId}</p>}<div className={styles.twoColumns}><FormField label="Intended study level" name="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} error={errors.studyLevel} /><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div></section>
-    <section><h2>2. Personal details</h2><div className={styles.twoColumns}><FormField label="Full name" name="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} error={errors.fullName} /><FormField label="Date of birth" name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} error={errors.dateOfBirth} /><FormField label="Nationality" name="nationality" value={form.nationality} onChange={(e) => update("nationality", e.target.value)} error={errors.nationality} /><FormField label="Phone" name="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} error={errors.phone} /></div><FormField label="Address" name="address" value={form.address} onChange={(e) => update("address", e.target.value)} error={errors.address} /></section>
-    <section><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><label className={styles.label} htmlFor="personalStatement">Personal statement</label><textarea id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className={styles.error}>{errors.personalStatement}</p>}</section>
-    <section><h2>4. Supporting document</h2><p>Upload one PDF, JPG or PNG file, no larger than 10 MB.</p><input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={(e) => { setFile(e.target.files?.[0] || null); setDocumentPath(null); }} /><LoadingButton type="button" loading={busy} onClick={upload}>Upload document</LoadingButton>{documentPath && <p className={styles.success} role="status">Document attached.</p>}</section>
-    <div className={styles.actions}><LoadingButton type="button" loading={busy} onClick={saveDraft}>Save draft</LoadingButton><LoadingButton type="button" loading={busy} onClick={submit} disabled={!documentPath}>Submit application</LoadingButton><a href="/student">Cancel</a></div>
-  </form></main>;
+    <section className={SECTION}><h2>1. University and intake</h2><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="universityId">University</label><select className={SELECT} id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className="text-xs font-medium text-error">{errors.universityId}</p>}</div><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="studyLevel">Intended study level</label><select className={SELECT} id="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} aria-invalid={!!errors.studyLevel}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>{errors.studyLevel && <p className="text-xs font-medium text-error">{errors.studyLevel}</p>}</div><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div></section>
+    <section className={SECTION}><h2>2. Personal details</h2><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Full name" name="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} error={errors.fullName} /><FormField label="Date of birth" name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} error={errors.dateOfBirth} /><FormField label="Nationality" name="nationality" value={form.nationality} onChange={(e) => update("nationality", e.target.value)} error={errors.nationality} /><FormField label="Phone" name="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} error={errors.phone} /></div><FormField label="Address" name="address" value={form.address} onChange={(e) => update("address", e.target.value)} error={errors.address} /></section>
+    <section className={SECTION}><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><div className="flex flex-col gap-1 mt-4"><label className="text-sm font-medium text-ink" htmlFor="personalStatement">Personal statement</label><textarea className={TEXTAREA} id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className="text-xs font-medium text-error">{errors.personalStatement}</p>}</div></section>
+    <section className={SECTION}><h2>4. Supporting document</h2><p>Upload one PDF, JPG or PNG file, no larger than 10 MB.</p><input className={FILE_INPUT} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/pjpeg,image/png" onChange={(e) => { setFile(e.target.files?.[0] || null); setDocumentPath(null); setMessage(null); }} /><LoadingButton type="button" loading={busy} onClick={upload}>Upload document</LoadingButton>{documentPath && <p className="text-success font-bold" role="status">Document attached.</p>}</section>
+    <div className="flex items-center gap-3 flex-wrap mt-6 [&>a]:ml-auto max-sm:flex-col max-sm:items-stretch max-sm:[&>*]:w-full max-sm:[&>*]:text-center max-sm:[&>a]:ml-0"><LoadingButton type="button" variant="secondary" full={false} loading={busy} onClick={saveDraft}>Save draft</LoadingButton><LoadingButton type="button" variant="primary" full={false} loading={busy} onClick={submit} disabled={!documentPath}>Submit application</LoadingButton><a className="text-link" href="/student">Cancel</a></div>
+  </form></div></PortalShell>;
 }

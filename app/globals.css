@@ -1,3 +1,42 @@
+/* Tailwind v4: utilities unlayered (win over element base styles by
+   specificity); theme layer only defines variables; no Preflight so the
+   existing design system stays intact during migration. Colours point at
+   the tokens already defined in :root below, so there is one source of truth. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+@theme {
+  --color-navy-950: var(--navy-950);
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-blue-700: var(--blue-700);
+  --color-blue-600: var(--blue-600);
+  --color-blue-100: var(--blue-100);
+  --color-warm-50: var(--warm-50);
+  --color-slate-50: var(--slate-50);
+  --color-white: var(--white);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-quiet: var(--quiet);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-gold: var(--gold);
+  --color-side-text: var(--side-text);
+  --color-side-quiet: var(--side-quiet);
+  --font-ui: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-editorial: "Source Serif 4", Georgia, serif;
+  --shadow-sm: 0 1px 2px rgb(10 31 50 / 5%);
+  --shadow-lg: 0 24px 70px rgb(10 31 50 / 14%);
+}
+
 :root {
   --navy-950: #071827;
   --navy-900: #0b1f33;
@@ -22,6 +61,8 @@
   --info: #175cd3;
   --info-bg: #eaf2ff;
   --gold: #b8975a;
+  --side-text: #c3d4e2;
+  --side-quiet: #93a8bb;
   --shadow-sm: 0 1px 2px rgb(10 31 50 / 5%);
   --shadow-lg: 0 24px 70px rgb(10 31 50 / 14%);
   --space-eyebrow-heading: 12px;
@@ -81,6 +122,10 @@ p { color: var(--muted); }
 .text-link, .text-button { border: 0; background: transparent; padding: 0; color: var(--blue-600); text-decoration: none; font-weight: 600; cursor: pointer; }
 .text-link span { transition: margin .18s ease; }
 .text-link:hover span { margin-left: 4px; }
+.button:disabled { opacity: .6; cursor: not-allowed; }
+.button:disabled:hover { transform: none; }
+.button-spinner { width: 14px; height: 14px; flex: 0 0 auto; border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 35%, transparent); border-top-color: currentColor; animation: button-spin .7s linear infinite; }
+@keyframes button-spin { to { transform: rotate(360deg); } }
 
 .hero-shell { max-width: 1280px; min-height: 690px; margin: auto; padding: 112px 32px 120px; display: grid; grid-template-columns: 1.03fr .97fr; gap: 96px; align-items: center; overflow: hidden; }
 .hero-copy h1 { max-width: 720px; margin-bottom: 28px; font-family: var(--font-editorial); font-weight: 600; color: var(--navy-900); }
@@ -93,7 +138,7 @@ p { color: var(--muted); }
 .trust-line { display: flex; align-items: center; gap: 12px; max-width: 580px; color: var(--muted); font-size: 14px; }
 .trust-icon { width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: var(--success); background: var(--success-bg); font-weight: 700; }
 .hero-visual { min-height: 510px; position: relative; display: grid; place-items: center; }
-.hero-visual::before { content: ""; position: absolute; inset: 12% 0 3% 12%; border-radius: 40% 60% 64% 36% / 48% 42% 58% 52%; background: linear-gradient(145deg, #e8edf1, #dbe5eb); }
+.hero-visual::before { display: none; }
 .visual-orbit { position: absolute; border: 1px solid rgba(184,151,90,.48); border-radius: 50%; transform: rotate(-18deg); }
 .visual-orbit-one { width: 460px; height: 320px; }
 .visual-orbit-two { width: 520px; height: 380px; opacity: .55; }
@@ -222,6 +267,7 @@ p { color: var(--muted); }
 .status-success { color: var(--success); background: var(--success-bg); border: 1px solid #b9dfc9; }
 .status-info { color: var(--info); background: var(--info-bg); border: 1px solid #bfd3fa; }
 .status-neutral { color: #536170; background: #eef1f3; border: 1px solid #d9dfe4; }
+.status-error { color: var(--error); background: var(--error-bg); border: 1px solid #f2c1bc; }
 .journey { margin: 0; padding: 34px 36px 32px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); list-style: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: #fbfcfd; }
 .journey li { min-width: 0; position: relative; display: flex; align-items: center; flex-direction: column; gap: 12px; text-align: center; }
 .journey li:not(:last-child)::before { content: ""; position: absolute; z-index: 0; left: calc(50% + 15px); right: calc(-50% + 15px); top: 14px; height: 2px; background: var(--border); }
@@ -856,5 +902,102 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Auth-card selects: custom chevron with breathing room from the edge
+   (native select arrow sits too close to the border). Mirrors apply.module.css. */
+.auth-card select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c6977' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .9rem center;
+  background-size: 12px 8px;
+}
+
+
+/* Select with a custom chevron. Kept as a real CSS class because the data-URI
+   background is fragile to express as a Tailwind arbitrary value. Pair it with
+   the shared field utilities on any <select>. */
+.select-chevron {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235c6977' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .9rem center;
+  background-size: 12px 8px;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Landing hero: mobile overlap fixes.
+   The hero decoration (orbit rings and the floating note) is absolutely
+   positioned for the wide two-column hero. Once the columns stack, that layer
+   keeps its offsets and lands on top of real content: the note and its arrow
+   button covered body copy and the footer mark, and the preview card sat over
+   the "Start an application" call to action. Hide the decoration on small
+   screens and let the preview card flow normally.
+   --------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .hero-visual .visual-orbit,
+  .hero-visual .floating-note {
+    display: none;
+  }
+
+  .hero-visual {
+    min-height: 0;
+    position: static;
+  }
+
+  .preview-card {
+    width: 100%;
+    position: static;
+  }
+
+  /* The sticky header was 94% opaque and relied on backdrop-filter. Where that
+     is unsupported or disabled the page text showed through while scrolling,
+     which read as ghosting behind the brand and menu. Make it solid. */
+  .public-header {
+    background: var(--white);
+    backdrop-filter: none;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   Hero preview artwork.
+   The hero showcase is now a single exported SVG rather than a live card with
+   absolutely positioned decoration, which is what used to overlap real content
+   once the columns stacked. The image scales to the width of its column and
+   keeps its aspect ratio, so it fits any screen from 320px upward without
+   overflowing or covering anything.
+   --------------------------------------------------------------------------- */
+.hero-preview {
+  display: block;
+  width: 100%;
+  max-width: 589px;
+  margin-inline: auto;
+  border-radius: 16px;
+}
+
+.hero-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hero-preview:focus-visible {
+  outline: 3px solid var(--blue-600);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  /* Keep the artwork comfortably within a phone screen and let the copy lead. */
+  .hero-preview {
+    max-width: min(100%, 420px);
   }
 }

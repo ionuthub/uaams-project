@@ -29,7 +29,7 @@ service firebase.storage {
       // IS-07 enforced here - cannot be bypassed by skipping the UI:
       allow write: if isOwner()
                    && request.resource.size <= 10 * 1024 * 1024
-                   && request.resource.contentType.matches('application/pdf|image/jpeg|image/png');
+                   && request.resource.contentType.matches('application/pdf|image/jpeg|image/pjpeg|image/jpg|image/png');
 
       // IS-04: only the owning student or the scoped admin can read.
       allow read: if isOwner() || isScopedAdmin();
