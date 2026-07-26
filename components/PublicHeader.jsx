@@ -57,6 +57,17 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       </button>
 
       <nav className="public-nav" id="public-header-nav" aria-label="Primary navigation">
+        {/* Home represents the landing page itself, so it is the only item that
+            can legitimately carry aria-current="page" there. */}
+        <button
+          className={currentScreen === "landing" ? "is-current" : ""}
+          type="button"
+          onClick={() => go(() => setScreen("landing"))}
+          aria-current={currentScreen === "landing" ? "page" : undefined}
+        >
+          Home
+        </button>
+
         <button
           className={currentScreen === "universities" ? "is-current" : ""}
           type="button"
@@ -76,7 +87,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         </button>
 
         <button
-          className={currentScreen === "landing" ? "is-current" : ""}
+          className=""
           type="button"
           onClick={() => {
             go(() => setScreen("landing"));
