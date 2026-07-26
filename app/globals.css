@@ -966,3 +966,38 @@ body {
     backdrop-filter: none;
   }
 }
+
+
+/* ---------------------------------------------------------------------------
+   Hero preview artwork.
+   The hero showcase is now a single exported SVG rather than a live card with
+   absolutely positioned decoration, which is what used to overlap real content
+   once the columns stacked. The image scales to the width of its column and
+   keeps its aspect ratio, so it fits any screen from 320px upward without
+   overflowing or covering anything.
+   --------------------------------------------------------------------------- */
+.hero-preview {
+  display: block;
+  width: 100%;
+  max-width: 589px;
+  margin-inline: auto;
+  border-radius: 16px;
+}
+
+.hero-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hero-preview:focus-visible {
+  outline: 3px solid var(--blue-600);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  /* Keep the artwork comfortably within a phone screen and let the copy lead. */
+  .hero-preview {
+    max-width: min(100%, 420px);
+  }
+}
