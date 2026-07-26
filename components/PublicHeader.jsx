@@ -85,20 +85,7 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
         >
           Courses
         </button>
-
-        <button
-          className=""
-          type="button"
-          onClick={() => {
-            go(() => setScreen("landing"));
-            setTimeout(() => {
-              document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-          }}
-        >
-          How it works
-        </button>
-
+        
         <button
           className={currentScreen === "support" ? "is-current" : ""}
           type="button"
