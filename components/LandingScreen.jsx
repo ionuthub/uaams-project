@@ -38,33 +38,19 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           </div>
         </div>
 
-        <div className="hero-visual" aria-label="Application preview">
-          <div className="visual-orbit visual-orbit-one"></div>
-          <div className="visual-orbit visual-orbit-two"></div>
-          <div className="preview-card">
-            <div className="preview-header">
-              <div>
-                <span className="micro-label">Current application</span>
-                <strong>Southampton Solent University</strong>
-              </div>
-              <span className="status status-warning">Action needed</span>
-            </div>
-            <h2>BSc Computer Science</h2>
-            <p className="preview-reference">UAAMS-2026-0417</p>
-            <ol className="mini-journey" aria-label="Application progress">
-              <li className="done"><span>1</span><div><strong>Application</strong><small>Submitted</small></div></li>
-              <li className="done"><span>2</span><div><strong>Documents</strong><small>Attached</small></div></li>
-              <li className="current"><span>3</span><div><strong>Review</strong><small>In progress</small></div></li>
-              <li><span>4</span><div><strong>Decision</strong><small>Not started</small></div></li>
-            </ol>
-            <button className="button button-primary button-full" type="button" onClick={() => { window.location.href = "/student"; }}>
-              View next action
-            </button>
-          </div>
-          <div className="floating-note">
-            <span className="note-icon">↗</span>
-            <div><strong>Always know what comes next</strong><small>Plain-language progress and deadlines</small></div>
-          </div>
+        <div className="hero-visual">
+          {/* Exported hero artwork. Decorative showcase of the applicant portal;
+              the whole graphic links to the portal so it stays actionable, and the
+              alt text carries its meaning for screen readers. Scales to the width
+              of its column, so it fits any screen without overlapping content. */}
+          <a className="hero-preview" href="/student" aria-label="Explore the applicant portal">
+            <img
+              src="/hero-preview.svg"
+              alt="Preview of the UAAMS applicant portal: an application to Southampton Solent University at the review stage."
+              width="589"
+              height="667"
+            />
+          </a>
         </div>
       </div>
 
