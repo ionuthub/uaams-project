@@ -43,14 +43,14 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
               the whole graphic links to the portal so it stays actionable, and the
               alt text carries its meaning for screen readers. Scales to the width
               of its column, so it fits any screen without overlapping content. */}
-          <a className="hero-preview" href="/student" aria-label="Explore the applicant portal">
-            <img
-              src="/hero-preview.svg"
-              alt="Preview of the UAAMS applicant portal: an application to Southampton Solent University at the review stage."
-              width="589"
-              height="667"
-            />
-          </a>
+          <img
+            className="hero-preview"
+            src="/hero-preview.svg"
+            alt=""
+            aria-hidden="true"
+            width="589"
+            height="667"
+          />
         </div>
       </div>
 
