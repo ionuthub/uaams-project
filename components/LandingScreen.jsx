@@ -28,9 +28,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
             <button className="button button-primary button-large" type="button" onClick={() => { window.location.href = "/register"; }}>
               Start an application
             </button>
-            <button className="button button-secondary button-large" type="button" onClick={() => { window.location.href = "/student"; }}>
-              Explore the applicant portal
-            </button>
+              
           </div>
           <div className="trust-line">
             <span className="trust-icon"><Check className="w-3.5 h-3.5" /></span>
