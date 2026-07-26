@@ -53,9 +53,9 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
             <p className="preview-reference">UAAMS-2026-0417</p>
             <ol className="mini-journey" aria-label="Application progress">
               <li className="done"><span>1</span><div><strong>Application</strong><small>Submitted</small></div></li>
-              <li className="done"><span>2</span><div><strong>Payment</strong><small>Paid</small></div></li>
-              <li className="current"><span>3</span><div><strong>Documents</strong><small>1 requested</small></div></li>
-              <li><span>4</span><div><strong>Review</strong><small>Not started</small></div></li>
+              <li className="done"><span>2</span><div><strong>Documents</strong><small>Attached</small></div></li>
+              <li className="current"><span>3</span><div><strong>Review</strong><small>In progress</small></div></li>
+              <li><span>4</span><div><strong>Decision</strong><small>Not started</small></div></li>
             </ol>
             <button className="button button-primary button-full" type="button" onClick={() => { window.location.href = "/student"; }}>
               View next action
@@ -82,7 +82,7 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           <input
             id="course-query"
             type="search"
-            placeholder="Search by course, subject or university"
+            placeholder="Search courses or subjects"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
