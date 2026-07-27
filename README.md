@@ -4,7 +4,7 @@ UAAMS is a university team project for managing student applications, university
 
 ## Start Here
 
-- **Live application:** https://uaams-project.vercel.app
+- **Live application:** https://www.uaams.website
 - **Sprint board:** https://github.com/users/ionuthub/projects/3
 - **Team operating guide:** https://github.com/ionuthub/uaams-project/issues/30
 - **Current delivery branch:** `develop`
