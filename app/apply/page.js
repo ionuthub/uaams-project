@@ -25,12 +25,30 @@ const SECTION =
 
 const INITIAL_FORM = { universityId: "", fullName: "", dateOfBirth: "", nationality: "", phone: "", address: "", previousQualification: "", studyLevel: "", intake: "", personalStatement: "" };
 
-function fileError(code) {
-  return {
-    NO_FILE: "Choose a document first.",
-    FILE_TOO_LARGE: "That file is too large. Please upload a file no bigger than 10 MB.",
-    INVALID_TYPE: "That file type isn't supported. Please upload a PDF, JPG, or PNG.",
-  }[code] || "The document could not be uploaded. Please try again.";
+const FILE_ERRORS = {
+  NO_FILE: "Choose a document first.",
+  FILE_TOO_LARGE: "That file is too large. Please upload a file no bigger than 10 MB.",
+  INVALID_TYPE: "That file type isn't supported. Please upload a PDF, JPG, or PNG.",
+};
+
+// Every upload failure used to read the same, which hid whether the cause was
+// the file, the security rules or the Firebase configuration. Keep the friendly
+// wording for problems the student can fix, and carry the underlying code for
+// the ones they cannot, so a report is diagnosable instead of just "try again".
+function uploadError(problem) {
+  const known = FILE_ERRORS[typeof problem === "string" ? problem : problem?.message];
+  if (known) return known;
+
+  const code = problem?.code;
+  if (code === "storage/unauthorized") {
+    return "You do not have permission to upload to this application. Sign out, sign back in and try again.";
+  }
+  if (code === "storage/retry-limit-exceeded" || code === "storage/canceled") {
+    return "The upload did not finish. Check your connection and try again.";
+  }
+  return code
+    ? `The document could not be uploaded (${code}). Please try again, and quote that code if you report it.`
+    : "The document could not be uploaded. Please try again.";
 }
 
 export default function ApplicationPage() {
@@ -106,10 +124,10 @@ export default function ApplicationPage() {
   async function upload() {
     setMessage(null);
     const problem = validateFile(file);
-    if (problem) { setMessage({ type: "error", text: fileError(problem) }); return; }
+    if (problem) { setMessage({ type: "error", text: uploadError(problem) }); return; }
     setBusy(true);
     try { const id = await ensureDraft(); const path = await uploadDocument(id, file); setDocumentPath(path); setMessage({ type: "success", text: "Document uploaded and linked to your draft." }); }
-    catch (error) { if (error.message !== "FORM_INVALID") setMessage({ type: "error", text: fileError(error.message) }); }
+    catch (error) { if (error.message !== "FORM_INVALID") setMessage({ type: "error", text: uploadError(error) }); }
     finally { setBusy(false); }
   }
   async function submit() {
