@@ -93,6 +93,12 @@ export default function PortalShell({
           </nav>
 
           <div className="mt-auto flex flex-col gap-1.5 pt-[18px] max-[900px]:mt-0 max-[900px]:pt-2">
+            {/* Signed-in users had no route back to the public site: the portal was a
+                dead end apart from signing out. Matches the "Back to UAAMS" control
+                on the auth screens. */}
+            <a className={NAV_ITEM} href="/">
+              <span aria-hidden="true">&larr;</span> Back to UAAMS
+            </a>
             {footerLinks.map((link) => (
               <a key={link.href} className={NAV_ITEM} href={link.href}>{link.label}</a>
             ))}
