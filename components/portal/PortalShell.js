@@ -11,13 +11,31 @@ import { logout } from "../../lib/auth";
 // links, the user chip and log out) collapses behind that button, so the
 // header stays readable on a phone instead of wrapping onto several rows.
 const STUDENT_NAV = [
-  { key: "dashboard", label: "My applications", href: "/student" },
-  { key: "apply", label: "New application", href: "/apply" },
+  { key: "home", label: "Home", href: "/" },
+  {
+    key: "student-dashboard",
+    label: "Dashboard",
+    children: [
+      { key: "dashboard", label: "My applications", href: "/student" },
+      { key: "apply", label: "New application", href: "/apply" },
+    ],
+  },
 ];
 
-const NAV_ITEM =
-  "flex items-center px-3 py-[11px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white";
-const NAV_CURRENT = NAV_ITEM + " bg-white/[0.11] text-white";
+// min-h-[44px] keeps every target at the size WCAG 2.5.8 asks for, and the
+// focus-visible ring replaces the outline browsers drop on custom styling.
+const NAV_BASE =
+  "flex items-center w-full px-3 min-h-[44px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+const NAV_ITEM = NAV_BASE;
+const NAV_CURRENT = NAV_BASE + " bg-white/[0.11] text-white";
+// Children sit on an indent rather than an icon, so the level is still legible
+// without relying on graphics.
+// Dashboard names the group; it is not a control. aria-labelledby ties it to the
+// list below so the grouping is announced without implying something clickable.
+const NAV_GROUP_LABEL =
+  "block px-3 pt-4 pb-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-side-quiet";
+const NAV_CHILD = NAV_BASE + " text-[0.85rem] font-normal";
+const NAV_CHILD_CURRENT = NAV_CHILD + " bg-white/[0.11] text-white font-medium";
 
 export default function PortalShell({
   user,
@@ -29,6 +47,7 @@ export default function PortalShell({
   footerLinks = [{ label: "Privacy", href: "/privacy" }],
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+
   const who = user?.displayName || user?.email || roleLabel;
   const avatar = who.slice(0, 2).toUpperCase();
 
@@ -79,23 +98,59 @@ export default function PortalShell({
             (menuOpen ? "max-[900px]:pt-3" : "max-[900px]:hidden")
           }
         >
-          <nav className="flex flex-col gap-1" aria-label="Portal navigation">
-            {nav.map((item) => (
-              <a
-                key={item.key}
-                className={item.key === current ? NAV_CURRENT : NAV_ITEM}
-                href={item.href}
-                aria-current={item.key === current ? "page" : undefined}
-              >
-                {item.label}
-              </a>
-            ))}
+          <nav className="flex flex-col gap-1" aria-label="Portal sections">
+            <ul className="list-none m-0 p-0 flex flex-col gap-1">
+              {nav.map((item) =>
+                item.children ? (
+                  <li key={item.key}>
+                    <span
+                      id={"nav-label-" + item.key}
+                      className={NAV_GROUP_LABEL}
+                    >
+                      {item.label}
+                    </span>
+                    <ul
+                      aria-labelledby={"nav-label-" + item.key}
+                      className="list-none m-0 p-0 mt-1 mb-1 ml-[1.4rem] pl-3 border-l border-white/20 flex flex-col gap-1"
+                    >
+                      {item.children.map((child) => (
+                        <li key={child.key}>
+                          <a
+                            className={child.key === current ? NAV_CHILD_CURRENT : NAV_CHILD}
+                            href={child.href}
+                            aria-current={child.key === current ? "page" : undefined}
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <li key={item.key}>
+                    <a
+                      className={item.key === current ? NAV_CURRENT : NAV_ITEM}
+                      href={item.href}
+                      aria-current={item.key === current ? "page" : undefined}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                )
+              )}
+            </ul>
           </nav>
 
           <div className="mt-auto flex flex-col gap-1.5 pt-[18px] max-[900px]:mt-0 max-[900px]:pt-2">
-            {footerLinks.map((link) => (
-              <a key={link.href} className={NAV_ITEM} href={link.href}>{link.label}</a>
-            ))}
+            <nav aria-label="Account">
+              <ul className="list-none m-0 p-0 flex flex-col gap-1">
+                {footerLinks.map((link) => (
+                  <li key={link.href}>
+                    <a className={NAV_ITEM} href={link.href}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
             <div className="flex items-center gap-3 px-2 py-2.5 [&_strong]:block [&_strong]:max-w-[150px] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-white [&_strong]:text-[13px] [&_small]:text-side-quiet [&_small]:text-xs">
               <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-full text-white bg-blue-600 text-[13px] font-semibold">{avatar}</span>
               <div>
