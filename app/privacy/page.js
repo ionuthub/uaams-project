@@ -23,11 +23,7 @@ function PrivacyContent() {
         identified without asking you for further personal details.
       </p>
       <p>
-        Requests are answered within one month. Erasure is carried out by the UAAMS team
-        rather than through a button in the application. Automated deletion is planned but
-        not yet built, and a partial automated delete that left documents or email records
-        behind would be worse than none, so client-side deletion is refused by the security
-        rules until the full process exists.
+        Requests are answered within one month. Erasure is carried out by the UAAMS team.
       </p>
       <p>
         When an account is erased, the account record, any applications submitted from it and
