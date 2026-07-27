@@ -15,6 +15,28 @@ function PrivacyContent() {
       <p>Firebase Authentication, Firestore and Cloud Storage hold the proof-of-concept data. Applicants can access their own records. Admissions officers can access only applications associated with their assigned university.</p>
       <h2>Your choices</h2>
       <p>Do not submit real sensitive evidence during development testing. Requests to correct or remove test data should be sent to the project owner. The production-ready retention and deletion process must be approved before real-world use.</p>
+      <h2>Requesting your data or its deletion</h2>
+      <p>
+        You can ask what personal data this service holds about you, ask for it to be
+        corrected, or ask for it to be erased. Send the request to the project owner from
+        the email address the account was registered with, so that the account can be
+        identified without asking you for further personal details.
+      </p>
+      <p>
+        Requests are answered within one month. Erasure is carried out by the project team
+        rather than through a button in the application. Automated deletion is planned but
+        not yet built, and a partial automated delete that left documents or email records
+        behind would be worse than none, so client-side deletion is refused by the security
+        rules until the full process exists.
+      </p>
+      <p>
+        When an account is erased, the account record, any applications submitted from it and
+        any uploaded documents are removed. Records of admissions decisions may be kept in an
+        anonymised form, with the applicant no longer identifiable, because a university needs
+        to be able to show how a decision was reached. Email delivery logs are anonymised
+        rather than deleted, so that a record that contact took place remains without holding
+        the address it was sent to.
+      </p>
       <p><a href="/register">Return to registration</a></p>
     </div>
   );
