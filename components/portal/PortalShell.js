@@ -30,7 +30,11 @@ const NAV_ITEM = NAV_BASE;
 const NAV_CURRENT = NAV_BASE + " bg-white/[0.11] text-white";
 // Children sit on an indent rather than an icon, so the level is still legible
 // without relying on graphics.
-const NAV_CHILD = NAV_BASE + " pl-6 text-[0.85rem] font-normal";
+// Dashboard names the group; it is not a control. aria-labelledby ties it to the
+// list below so the grouping is announced without implying something clickable.
+const NAV_GROUP_LABEL =
+  "block px-3 pt-4 pb-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-side-quiet";
+const NAV_CHILD = NAV_BASE + " text-[0.85rem] font-normal";
 const NAV_CHILD_CURRENT = NAV_CHILD + " bg-white/[0.11] text-white font-medium";
 
 export default function PortalShell({
@@ -43,16 +47,7 @@ export default function PortalShell({
   footerLinks = [{ label: "Privacy", href: "/privacy" }],
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  // Groups start expanded so the destinations are visible without a click, and
-  // the state is per group so opening one does not close another.
-  const [openGroups, setOpenGroups] = useState(() =>
-    nav.filter((item) => item.children).map((item) => item.key)
-  );
-  const isGroupOpen = (key) => openGroups.includes(key);
-  const toggleGroup = (key) =>
-    setOpenGroups((open) =>
-      open.includes(key) ? open.filter((k) => k !== key) : [...open, key]
-    );
+
   const who = user?.displayName || user?.email || roleLabel;
   const avatar = who.slice(0, 2).toUpperCase();
 
@@ -108,34 +103,15 @@ export default function PortalShell({
               {nav.map((item) =>
                 item.children ? (
                   <li key={item.key}>
-                    <button
-                      type="button"
-                      className={NAV_ITEM + " justify-between"}
-                      aria-expanded={isGroupOpen(item.key)}
-                      aria-controls={"nav-group-" + item.key}
-                      onClick={() => toggleGroup(item.key)}
+                    <span
+                      id={"nav-label-" + item.key}
+                      className={NAV_GROUP_LABEL}
                     >
                       {item.label}
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                        focusable="false"
-                        className={isGroupOpen(item.key) ? "" : "rotate-180"}
-                      >
-                        <path d="m6 15 6-6 6 6" />
-                      </svg>
-                    </button>
+                    </span>
                     <ul
-                      id={"nav-group-" + item.key}
-                      hidden={!isGroupOpen(item.key)}
-                      className="list-none m-0 p-0 mt-1 flex flex-col gap-1"
+                      aria-labelledby={"nav-label-" + item.key}
+                      className="list-none m-0 p-0 mt-1 mb-1 ml-[1.4rem] pl-3 border-l border-white/20 flex flex-col gap-1"
                     >
                       {item.children.map((child) => (
                         <li key={child.key}>
