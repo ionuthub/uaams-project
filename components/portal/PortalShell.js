@@ -11,13 +11,27 @@ import { logout } from "../../lib/auth";
 // links, the user chip and log out) collapses behind that button, so the
 // header stays readable on a phone instead of wrapping onto several rows.
 const STUDENT_NAV = [
-  { key: "dashboard", label: "My applications", href: "/student" },
-  { key: "apply", label: "New application", href: "/apply" },
+  { key: "home", label: "Home", href: "/" },
+  {
+    key: "student-dashboard",
+    label: "Dashboard",
+    children: [
+      { key: "dashboard", label: "My applications", href: "/student" },
+      { key: "apply", label: "New application", href: "/apply" },
+    ],
+  },
 ];
 
-const NAV_ITEM =
-  "flex items-center px-3 py-[11px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white";
-const NAV_CURRENT = NAV_ITEM + " bg-white/[0.11] text-white";
+// min-h-[44px] keeps every target at the size WCAG 2.5.8 asks for, and the
+// focus-visible ring replaces the outline browsers drop on custom styling.
+const NAV_BASE =
+  "flex items-center w-full px-3 min-h-[44px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+const NAV_ITEM = NAV_BASE;
+const NAV_CURRENT = NAV_BASE + " bg-white/[0.11] text-white";
+// Children sit on an indent rather than an icon, so the level is still legible
+// without relying on graphics.
+const NAV_CHILD = NAV_BASE + " pl-6 text-[0.85rem] font-normal";
+const NAV_CHILD_CURRENT = NAV_CHILD + " bg-white/[0.11] text-white font-medium";
 
 export default function PortalShell({
   user,
@@ -29,6 +43,16 @@ export default function PortalShell({
   footerLinks = [{ label: "Privacy", href: "/privacy" }],
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  // Groups start expanded so the destinations are visible without a click, and
+  // the state is per group so opening one does not close another.
+  const [openGroups, setOpenGroups] = useState(() =>
+    nav.filter((item) => item.children).map((item) => item.key)
+  );
+  const isGroupOpen = (key) => openGroups.includes(key);
+  const toggleGroup = (key) =>
+    setOpenGroups((open) =>
+      open.includes(key) ? open.filter((k) => k !== key) : [...open, key]
+    );
   const who = user?.displayName || user?.email || roleLabel;
   const avatar = who.slice(0, 2).toUpperCase();
 
@@ -40,10 +64,6 @@ export default function PortalShell({
   return (
     <div className="min-h-screen grid grid-cols-[248px_1fr] text-ink font-ui leading-[1.6] max-[900px]:grid-cols-1">
       <aside className="min-h-screen px-4 pt-[26px] pb-5 flex flex-col bg-navy-900 text-side-text max-[900px]:min-h-0 max-[900px]:px-[18px] max-[900px]:py-3">
-        <a className="back-link light-link" href="/">
-          <span aria-hidden="true">←</span> Back to UAAMS
-        </a>
-
         <div className="flex items-center gap-3 mb-7 px-1.5 max-[900px]:mb-0 max-[900px]:px-0 [&_strong]:block [&_strong]:text-white [&_strong]:text-[15px] [&_strong]:tracking-[0.08em] [&_small]:text-side-quiet [&_small]:text-xs">
           <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-[50%_50%_46%_46%] text-white bg-blue-600 font-editorial text-xl">U</span>
           <div>
@@ -83,23 +103,78 @@ export default function PortalShell({
             (menuOpen ? "max-[900px]:pt-3" : "max-[900px]:hidden")
           }
         >
-          <nav className="flex flex-col gap-1" aria-label="Portal navigation">
-            {nav.map((item) => (
-              <a
-                key={item.key}
-                className={item.key === current ? NAV_CURRENT : NAV_ITEM}
-                href={item.href}
-                aria-current={item.key === current ? "page" : undefined}
-              >
-                {item.label}
-              </a>
-            ))}
+          <nav className="flex flex-col gap-1" aria-label="Portal sections">
+            <ul className="list-none m-0 p-0 flex flex-col gap-1">
+              {nav.map((item) =>
+                item.children ? (
+                  <li key={item.key}>
+                    <button
+                      type="button"
+                      className={NAV_ITEM + " justify-between"}
+                      aria-expanded={isGroupOpen(item.key)}
+                      aria-controls={"nav-group-" + item.key}
+                      onClick={() => toggleGroup(item.key)}
+                    >
+                      {item.label}
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                        focusable="false"
+                        className={isGroupOpen(item.key) ? "" : "rotate-180"}
+                      >
+                        <path d="m6 15 6-6 6 6" />
+                      </svg>
+                    </button>
+                    <ul
+                      id={"nav-group-" + item.key}
+                      hidden={!isGroupOpen(item.key)}
+                      className="list-none m-0 p-0 mt-1 flex flex-col gap-1"
+                    >
+                      {item.children.map((child) => (
+                        <li key={child.key}>
+                          <a
+                            className={child.key === current ? NAV_CHILD_CURRENT : NAV_CHILD}
+                            href={child.href}
+                            aria-current={child.key === current ? "page" : undefined}
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <li key={item.key}>
+                    <a
+                      className={item.key === current ? NAV_CURRENT : NAV_ITEM}
+                      href={item.href}
+                      aria-current={item.key === current ? "page" : undefined}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                )
+              )}
+            </ul>
           </nav>
 
           <div className="mt-auto flex flex-col gap-1.5 pt-[18px] max-[900px]:mt-0 max-[900px]:pt-2">
-            {footerLinks.map((link) => (
-              <a key={link.href} className={NAV_ITEM} href={link.href}>{link.label}</a>
-            ))}
+            <nav aria-label="Account">
+              <ul className="list-none m-0 p-0 flex flex-col gap-1">
+                {footerLinks.map((link) => (
+                  <li key={link.href}>
+                    <a className={NAV_ITEM} href={link.href}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
             <div className="flex items-center gap-3 px-2 py-2.5 [&_strong]:block [&_strong]:max-w-[150px] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-white [&_strong]:text-[13px] [&_small]:text-side-quiet [&_small]:text-xs">
               <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-full text-white bg-blue-600 text-[13px] font-semibold">{avatar}</span>
               <div>
