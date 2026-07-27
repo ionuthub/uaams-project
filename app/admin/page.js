@@ -16,7 +16,15 @@ import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile, logout } from "../../lib/auth";
 import { getApplicationsForUniversity, getUniversities } from "../../lib/db";
 
-const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
+const ADMIN_NAV = [
+  { key: "home", label: "Home", href: "/" },
+  {
+    key: "admin-dashboard",
+    label: "Dashboard",
+    children: [{ key: "queue", label: "Application queue", href: "/admin" }],
+  },
+];
+
 const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
 
 const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
