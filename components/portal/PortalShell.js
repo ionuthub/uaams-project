@@ -40,6 +40,10 @@ export default function PortalShell({
   return (
     <div className="min-h-screen grid grid-cols-[248px_1fr] text-ink font-ui leading-[1.6] max-[900px]:grid-cols-1">
       <aside className="min-h-screen px-4 pt-[26px] pb-5 flex flex-col bg-navy-900 text-side-text max-[900px]:min-h-0 max-[900px]:px-[18px] max-[900px]:py-3">
+        <a className="back-link light-link" href="/">
+          <span aria-hidden="true">←</span> Back to UAAMS
+        </a>
+
         <div className="flex items-center gap-3 mb-7 px-1.5 max-[900px]:mb-0 max-[900px]:px-0 [&_strong]:block [&_strong]:text-white [&_strong]:text-[15px] [&_strong]:tracking-[0.08em] [&_small]:text-side-quiet [&_small]:text-xs">
           <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-[50%_50%_46%_46%] text-white bg-blue-600 font-editorial text-xl">U</span>
           <div>
@@ -93,12 +97,6 @@ export default function PortalShell({
           </nav>
 
           <div className="mt-auto flex flex-col gap-1.5 pt-[18px] max-[900px]:mt-0 max-[900px]:pt-2">
-            {/* Signed-in users had no route back to the public site: the portal was a
-                dead end apart from signing out. Matches the "Back to UAAMS" control
-                on the auth screens. */}
-            <a className={NAV_ITEM} href="/">
-              <span aria-hidden="true">&larr;</span> Back to UAAMS
-            </a>
             {footerLinks.map((link) => (
               <a key={link.href} className={NAV_ITEM} href={link.href}>{link.label}</a>
             ))}
