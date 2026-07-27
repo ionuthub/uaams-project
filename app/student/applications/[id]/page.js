@@ -174,7 +174,7 @@ export default function StudentApplicationDetailPage() {
         <header className="flex justify-between items-start gap-4 flex-wrap">
           <div>
             <p className="mt-0 mb-1.5 text-[0.85rem] text-muted">
-              <a className="text-link" href="/student">My applications</a> /{" "}
+              <a className="text-link font-medium" href="/student"><span aria-hidden="true">&larr;</span> My applications</a> /{" "}
               <span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.id}</span>
             </p>
             <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">{university}</h1>
