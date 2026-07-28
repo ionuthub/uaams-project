@@ -24,6 +24,8 @@ import {
   getStudentApplications,
   getApplicationsForUniversity,
   recordDecision,
+  addInternalNote,
+  getInternalNotes,
 } from "../../../lib/db";
 import { uploadDocument, validateFile } from "../../../lib/storage";
 import { getAuthClient } from "../../../lib/firebase";
@@ -83,9 +85,14 @@ export default function Harness() {
       <button onClick={run("register + verification email sent", () => registerStudent(email, password, name))}>
         Register student
       </button>
-      <button onClick={run("login", async () => { const { verified } = await login(email, password);
-            if (!verified) say("Signed in but NOT verified. Click the link in your email, then press Login again.");
-          })}>Login</button>
+      <button
+        onClick={run("login", async () => {
+          const { verified } = await login(email, password);
+          if (!verified) say("Signed in but NOT verified. Click the link in your email, then press Login again.");
+        })}
+      >
+        Login
+      </button>
       <button onClick={run("resend verification", () => resendVerification(getAuthClient().currentUser))}>
         Resend verification
       </button>
@@ -149,6 +156,41 @@ export default function Harness() {
         )}
       >
         Load applications for my university
+      </button>
+      <button
+        onClick={run("admin: add internal note", async () => {
+          const apps = await getApplicationsForUniversity(profile.universityId);
+          if (!apps.length) throw new Error("NO_APPLICATIONS");
+          const id = await addInternalNote(
+            apps[0].id,
+            profile.universityId,
+            user.uid,
+            profile.fullName || "Admin",
+            "Test internal note"
+          );
+          say(`Note added: ${id} on application ${apps[0].id}`);
+        })}
+      >
+        admin: add internal note (to first application)
+      </button>
+      <button
+        onClick={run("read internal notes", async () => {
+          const apps = await getApplicationsForUniversity(profile.universityId);
+          const targetId = apps[0]?.id;
+          if (!targetId) throw new Error("NO_APPLICATION");
+          const notes = await getInternalNotes(targetId);
+          say(`Notes read on ${targetId}: ${notes.length} — ${notes.map((n) => n.body).join(", ") || "none"}`);
+        })}
+      >
+        read internal notes (first application)
+      </button>
+      <button
+        onClick={run("TEST: student reads note-bearing app", async () => {
+          const notes = await getInternalNotes("RuPjGaKnjqzWG5L0fit7");
+          say(`Notes read: ${notes.length}`);
+        })}
+      >
+        TEST: read notes on RuPjGa
       </button>
       <ul>
         {adminApps.map((a) => (
