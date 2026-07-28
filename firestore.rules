@@ -107,6 +107,15 @@ service cloud.firestore {
                            .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
         allow update, delete: if false; // decisions are never edited or removed
       }
+
+      // ---- internal admin notes (PRD 4.3.2): scoped-admin only; students never ----
+      match /notes/{noteId} {
+        allow read: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
+                      && request.resource.data.authorUid == request.auth.uid
+                      && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId;
+        allow update, delete: if false;
+      }
     }
 
     // ---- email logs (written only by the protected server route) ----
