@@ -165,6 +165,16 @@ async function handlePost(request) {
     return errorResponse("email/send-in-progress", 409);
   }
 
+  // In-app notification (PRD 4.2.2, issue #164). One per event; a failure
+  // here never blocks the email.
+  await db.collection("notifications").doc(`${logId}-notice`).set({
+    userId: application.studentUid,
+    applicationId,
+    message: `${application.form?.universityName || application.universityId} has started reviewing your application.`,
+    readStatus: false,
+    createdAt: Timestamp.now(),
+  }, { merge: true }).catch(() => {});
+
   let providerId;
   try {
     const result = await sendEmail({
