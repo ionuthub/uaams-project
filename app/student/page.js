@@ -6,7 +6,7 @@ import AuthCard from "../../components/auth/AuthCard";
 import LoadingButton from "../../components/auth/LoadingButton";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth } from "../../lib/auth";
-import { getStudentApplications } from "../../lib/db";
+import { getStudentApplications, getNotifications, markNotificationRead } from "../../lib/db";
 import { statusMeta } from "../../components/StatusBadge";
 
 
@@ -66,6 +66,7 @@ function getNextAction(applications) {
 export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
   const [applications, setApplications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -83,6 +84,10 @@ export default function StudentDashboardPage() {
       setUser(current);
       try {
         setApplications(await getStudentApplications(current.uid));
+        // Notifications (PRD 4.2.2, #164). Fails soft: if the rules are not
+        // deployed yet the dashboard still works without the panel.
+        try { setNotifications(await getNotifications(current.uid)); }
+        catch (error) { console.warn("Notifications unavailable:", error?.code || error?.message); }
         if (active) setPhase("ready");
       } catch (error) {
         console.error("Student dashboard failed to load:", error);
@@ -104,6 +109,7 @@ export default function StudentDashboardPage() {
   const activeCount = applications.filter((a) => ["draft", "submitted", "under_review"].includes(a.status)).length;
   const action = getNextAction(applications);
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const unreadCount = notifications.filter((n) => !n.readStatus).length;
   const navWithCounts = [
     { key: "home", label: "Home", href: "/" },
     {
@@ -111,10 +117,22 @@ export default function StudentDashboardPage() {
       label: "Dashboard",
       children: [
         { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
+        { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
         { key: "apply", label: "New application", href: "/apply" },
       ],
     },
   ];
+
+  async function handleMarkRead(notificationId) {
+    try {
+      await markNotificationRead(notificationId);
+      setNotifications((current) =>
+        current.map((n) => (n.id === notificationId ? { ...n, readStatus: true } : n))
+      );
+    } catch (error) {
+      console.warn("Mark as read failed:", error?.code || error?.message);
+    }
+  }
   const subtitle = applications.length === 0
     ? "Choose a university and start your first application."
     : activeCount > 0
@@ -208,6 +226,28 @@ export default function StudentDashboardPage() {
                 </article>
               );
             })}
+          </section>
+        )}
+
+        {notifications.length > 0 && (
+          <section id="notifications" className="mt-[26px] border border-border rounded-[14px] bg-white shadow-sm px-7 py-6" aria-label="Notifications">
+            <h2 className="mt-0 mb-1 text-navy-900 text-[19px]">Notifications{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}</h2>
+            <p className="mt-0 mb-4 text-muted text-sm">Updates about your applications appear here as well as by email.</p>
+            <ol className="m-0 p-0 list-none grid gap-2">
+              {notifications.slice(0, 8).map((notice) => (
+                <li key={notice.id} className={"px-4 py-3 rounded-lg border flex items-start justify-between gap-4 flex-wrap " + (notice.readStatus ? "border-border bg-white" : "border-blue-600/30 bg-info-bg")}>
+                  <div className="min-w-0">
+                    <p className="m-0 text-sm text-ink">{notice.message}</p>
+                    <p className="mt-1 mb-0 text-xs text-quiet">{formatDate(notice.createdAt)}{notice.readStatus ? "" : " - unread"}</p>
+                  </div>
+                  {!notice.readStatus && (
+                    <button type="button" className="shrink-0 px-3 py-1.5 rounded-full border border-border bg-white text-muted text-xs font-semibold cursor-pointer hover:border-border-strong" onClick={() => handleMarkRead(notice.id)}>
+                      Mark as read
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ol>
           </section>
         )}
       </div>
