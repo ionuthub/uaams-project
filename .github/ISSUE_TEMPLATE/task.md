@@ -25,9 +25,7 @@ assignees: ""
 - Compliance-register row(s):
 - Approved change/waiver (if applicable):
 
-## Owner
-
-## Sprint week
+## Sprint
 
 ## Done when
 

@@ -31,10 +31,15 @@ import PortalShell from "../../../../components/portal/PortalShell";
 const FORM_FIELDS = [
   ["fullName", "Full name"],
   ["dateOfBirth", "Date of birth"],
+  ["passportNumber", "Passport number"],
   ["nationality", "Nationality"],
   ["phone", "Phone"],
   ["address", "Address"],
   ["previousQualification", "Previous qualification"],
+  ["institutionName", "Institution name"],
+  ["graduationYear", "Graduation year"],
+  ["gpa", "GPA / Grade"],
+  ["courseName", "Course name"],
   ["studyLevel", "Intended study level"],
   ["intake", "Intake"],
 ];

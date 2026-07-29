@@ -40,14 +40,15 @@ For any create, save, submit or upload action, the criteria must also state:
 - Resume case: returning to the page shows existing progress, not a blank form.
 - Missing-input case: the exact error state shown when a required input or dependency is unavailable.
 
-## Delivery ownership
+## Size
 
-- Story lead:
-- Frontend:
-- Backend/integration:
-- Test owner:
-- Documentation:
-- Reviewer:
+Relative estimate agreed by the Developers during Sprint Planning: XS / S / M / L / XL
+
+Sized by the people who will do the work, not assigned by the Product Owner. If a story is L or larger, split it before taking it into a Sprint.
+
+## Reviewer
+
+The Developers decide who reviews at the point the work is ready. Not pre-assigned.
 
 ## Dependencies and blockers
 
