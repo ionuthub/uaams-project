@@ -50,6 +50,10 @@ export default function AdminListPage() {
   const [profile, setProfile] = useState(null);
   const [universityName, setUniversityName] = useState(null);
   const [applications, setApplications] = useState([]);
+  // Issue #153 (PRD 4.3.1): status filter, name/ID search, paginated list.
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [query, setQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     let active = true;
@@ -187,6 +191,23 @@ export default function AdminListPage() {
       : item
   );
 
+  const q = query.trim().toLowerCase();
+  const filtered = applications.filter(
+    (a) =>
+      (statusFilter === "all" || a.status === statusFilter) &&
+      (!q ||
+        a.id.toLowerCase().includes(q) ||
+        (a.form?.fullName || "").toLowerCase().includes(q))
+  );
+  const visible = filtered.slice(0, visibleCount);
+  const FILTERS = [
+    ["all", "All"],
+    ["submitted", "Submitted"],
+    ["under_review", "Under review"],
+    ["offer", "Offer"],
+    ["rejected", "Rejected"],
+  ];
+
   return (
     <PortalShell
       user={{ displayName: profile.fullName, email: profile.email }}
@@ -268,10 +289,45 @@ export default function AdminListPage() {
           );
         })()}
 
+        {applications.length > 0 && (
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <label className="sr-only" htmlFor="queue-search">Search by student name or application ID</label>
+            <input
+              id="queue-search"
+              type="search"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setVisibleCount(10); }}
+              placeholder="Search by student name or application ID"
+              className="min-w-[260px] flex-1 max-w-[360px] px-3 py-2 border border-border rounded-lg bg-white text-sm text-ink"
+            />
+            <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Filter by status">
+              {FILTERS.map(([value, label]) => {
+                const count = value === "all" ? applications.length : applications.filter((a) => a.status === value).length;
+                const active = statusFilter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { setStatusFilter(value); setVisibleCount(10); }}
+                    aria-pressed={active}
+                    className={"px-3 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-colors " + (active ? "bg-navy-900 text-white border-navy-900" : "bg-white text-muted border-border hover:border-border-strong")}
+                  >
+                    {label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {applications.length === 0 ? (
           <AlertBanner variant="info">
             No submitted applications for {universityName} yet. New submissions
             appear here automatically, newest first.
+          </AlertBanner>
+        ) : filtered.length === 0 ? (
+          <AlertBanner variant="info">
+            No applications match the current filter or search.
           </AlertBanner>
         ) : (
           <div className="w-full overflow-x-auto">
@@ -289,7 +345,7 @@ export default function AdminListPage() {
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child_td]:border-b-0">
-                {applications.map((app) => (
+                {visible.map((app) => (
                   <tr key={app.id} className="hover:bg-blue-100">
                     <td className={TD}><span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{app.id}</span></td>
                     <td className={TD}><StatusBadge status={app.status} /></td>
@@ -302,6 +358,13 @@ export default function AdminListPage() {
                 ))}
               </tbody>
             </table>
+            {filtered.length > visibleCount && (
+              <div className="mt-3 flex justify-center">
+                <button type="button" className="button button-secondary" onClick={() => setVisibleCount((n) => n + 10)}>
+                  Show more ({filtered.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
