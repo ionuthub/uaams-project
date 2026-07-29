@@ -24,6 +24,7 @@ import {
   getDecisionHistory,
   getDecisionEmailLog,
   recordDecision,
+  startReview,
 } from "../../../../lib/db";
 import { getDocumentUrl } from "../../../../lib/storage";
 import PortalShell from "../../../../components/portal/PortalShell";
@@ -83,6 +84,7 @@ export default function AdminApplicationDetailPage() {
   const [message, setMessage] = useState("");
   const [formErrors, setFormErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [reviewBusy, setReviewBusy] = useState(false);
   const [emailBusy, setEmailBusy] = useState(false);
   const [notice, setNotice] = useState(null);
   const [documentError, setDocumentError] = useState(null);
@@ -183,6 +185,45 @@ export default function AdminApplicationDetailPage() {
       return { ok: false, code: data.error || `http-${response.status}` };
     } catch {
       return { ok: false, code: "network-error" };
+    }
+  }
+
+  async function handleStartReview() {
+    setReviewBusy(true);
+    setNotice(null);
+    try {
+      await startReview(applicationId);
+    } catch (error) {
+      console.error("Start review failed:", error);
+      setNotice({ type: "error", text: "The status could not be changed. Please try again." });
+      setReviewBusy(false);
+      return;
+    }
+    let emailOk = false;
+    let emailCode = null;
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/email/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ applicationId }),
+      });
+      const data = await response.json().catch(() => ({}));
+      emailOk = response.ok && data.ok;
+      if (!emailOk) emailCode = data.error || `http-${response.status}`;
+    } catch {
+      emailCode = "network-error";
+    }
+    try {
+      await refresh();
+    } catch (error) {
+      console.warn("Refresh after review failed:", error?.code || error?.message);
+    }
+    setReviewBusy(false);
+    if (emailOk) {
+      setNotice({ type: "success", text: "Application moved to under review and the student was emailed." });
+    } else {
+      setNotice({ type: "error", text: `Application moved to under review, but the status email did not send (${emailCode}). The attempt is logged.` });
     }
   }
 
@@ -356,6 +397,12 @@ export default function AdminApplicationDetailPage() {
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
         <h2 id="record-decision">Record a decision</h2>
+        {application.status === "submitted" && (
+          <div className="mb-4 px-[0.85rem] py-[0.7rem] bg-slate-50 border border-border rounded-lg text-[0.9rem] flex items-center justify-between gap-3 flex-wrap">
+            <span>This application has not been reviewed yet. Moving it to under review tells the student their application is being processed (PRD 4.3.2).</span>
+            <LoadingButton loading={reviewBusy} onClick={handleStartReview}>Move to under review</LoadingButton>
+          </div>
+        )}
         {decidable ? (
           <form onSubmit={handleDecision} noValidate>
             <fieldset className="m-0 mb-2 p-0 border-0 grid gap-2 [&_legend]:text-[0.9rem] [&_legend]:font-semibold [&_legend]:mb-1.5">
