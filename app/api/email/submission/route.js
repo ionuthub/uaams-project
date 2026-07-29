@@ -104,6 +104,17 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, code: `email/${claim.reason}` });
   }
 
+  // In-app notification (PRD 4.2.2, issue #164). One per event (doc id is
+  // derived from the email log key), written server-side with the Admin SDK.
+  // A failure here never blocks the email or the submission response.
+  await db.collection("notifications").doc(`${key}-notice`).set({
+    userId: application.studentUid,
+    applicationId,
+    message: `Your application to ${application.form?.universityName || application.universityId} has been received.`,
+    readStatus: false,
+    createdAt: Timestamp.now(),
+  }, { merge: true }).catch(() => {});
+
   const { subject, text, html } = buildSubmissionEmail({
     universityName: application.form?.universityName || application.universityId,
     courseName: application.form?.courseName || "",
