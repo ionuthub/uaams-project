@@ -117,8 +117,8 @@ export default function StudentDashboardPage() {
       label: "Dashboard",
       children: [
         { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
-        { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
         { key: "apply", label: "New application", href: "/apply" },
+        { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
       ],
     },
   ];
