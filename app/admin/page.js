@@ -174,11 +174,24 @@ export default function AdminListPage() {
     );
   }
 
+  const navWithCounts = ADMIN_NAV.map((item) =>
+    item.children
+      ? {
+          ...item,
+          children: item.children.map((child) =>
+            child.key === "queue"
+              ? { ...child, badge: applications.length || null }
+              : child
+          ),
+        }
+      : item
+  );
+
   return (
     <PortalShell
       user={{ displayName: profile.fullName, email: profile.email }}
       current="queue"
-      nav={ADMIN_NAV}
+      nav={navWithCounts}
       subtitle="Admissions"
       roleLabel="Admissions officer"
       footerLinks={ADMIN_FOOTER}

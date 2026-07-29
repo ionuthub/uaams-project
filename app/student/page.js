@@ -104,6 +104,17 @@ export default function StudentDashboardPage() {
   const activeCount = applications.filter((a) => ["draft", "submitted", "under_review"].includes(a.status)).length;
   const action = getNextAction(applications);
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const navWithCounts = [
+    { key: "home", label: "Home", href: "/" },
+    {
+      key: "student-dashboard",
+      label: "Dashboard",
+      children: [
+        { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
+        { key: "apply", label: "New application", href: "/apply" },
+      ],
+    },
+  ];
   const subtitle = applications.length === 0
     ? "Choose a university and start your first application."
     : activeCount > 0
@@ -111,7 +122,7 @@ export default function StudentDashboardPage() {
       : "All of your applications have received a decision.";
 
   return (
-    <PortalShell user={user} current="dashboard">
+    <PortalShell user={user} current="dashboard" nav={navWithCounts}>
       <div className="max-w-[960px] mx-auto px-10 pt-[52px] pb-20 max-[900px]:px-5 max-[900px]:pt-9 max-[900px]:pb-16">
         <header className="mb-[30px] flex items-end justify-between gap-8 flex-wrap">
           <div>
@@ -129,7 +140,7 @@ export default function StudentDashboardPage() {
             <h2 className="mt-0 mb-1 text-navy-900 text-[19px]">{action.title}</h2>
               <p className="m-0 max-w-[560px] text-muted text-sm">{action.detail}</p>
             </div>
-            <a className="button button-primary" href={action.href}>{action.cta}</a>
+            <a className="button button-secondary !text-[#8a6d1f] !border-[#b3801f] hover:!bg-[#f6ecd4]" href={action.href}>{action.cta}</a>
           </section>
         )}
 
