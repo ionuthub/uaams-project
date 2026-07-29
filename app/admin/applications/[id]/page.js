@@ -26,7 +26,7 @@ import {
   recordDecision,
   startReview,
 } from "../../../../lib/db";
-import { getDocumentUrl } from "../../../../lib/storage";
+import { getDocumentUrl, DOC_TYPES } from "../../../../lib/storage";
 import PortalShell from "../../../../components/portal/PortalShell";
 
 const FORM_FIELDS = [
@@ -283,10 +283,10 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
-  async function handleOpenDocument() {
+  async function handleOpenDocument(path) {
     setDocumentError(null);
     try {
-      const url = await getDocumentUrl(application.documentPath);
+      const url = await getDocumentUrl(path);
       window.open(url, "_blank", "noopener");
     } catch (error) {
       console.error("Document open failed:", error);
@@ -383,16 +383,25 @@ export default function AdminApplicationDetailPage() {
       </section>
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="supporting-document">
-        <h2 id="supporting-document">Supporting document</h2>
-        {application.documentPath ? (
+        <h2 id="supporting-document">Supporting documents</h2>
+        {application.documents && Object.keys(application.documents).length > 0 ? (
+          <ul className="m-0 p-0 list-none grid gap-2">
+            {DOC_TYPES.filter(([key]) => application.documents[key]?.path).map(([key, label]) => (
+              <li key={key} className="flex items-center justify-between gap-3 flex-wrap px-3 py-2 border border-border rounded-lg bg-slate-50">
+                <span className="text-[0.9rem]"><strong>{label}</strong><span className="text-muted"> {application.documents[key].name || ""}</span></span>
+                <LoadingButton loading={false} full={false} onClick={() => handleOpenDocument(application.documents[key].path)}>View</LoadingButton>
+              </li>
+            ))}
+          </ul>
+        ) : application.documentPath ? (
           <>
             <p className="text-muted text-[0.9rem] my-1">{application.documentPath.split("/").pop()}</p>
-            <LoadingButton loading={false} onClick={handleOpenDocument}>View document</LoadingButton>
-            {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
+            <LoadingButton loading={false} onClick={() => handleOpenDocument(application.documentPath)}>View document</LoadingButton>
           </>
         ) : (
-          <p className="text-muted text-[0.9rem] my-1">No document is attached to this application.</p>
+          <p className="text-muted text-[0.9rem] my-1">No documents are attached to this application.</p>
         )}
+        {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
       </section>
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
