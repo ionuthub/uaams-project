@@ -25,9 +25,16 @@ const STUDENT_NAV = [
 // min-h-[44px] keeps every target at the size WCAG 2.5.8 asks for, and the
 // focus-visible ring replaces the outline browsers drop on custom styling.
 const NAV_BASE =
-  "flex items-center w-full px-3 min-h-[44px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+  "relative flex items-center w-full px-3 min-h-[44px] rounded-lg text-side-text no-underline text-sm font-medium cursor-pointer transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+// Figma sidebar: the current item sits in a lighter rounded box with a short
+// accent bar on its left edge.
+const NAV_ACCENT =
+  " bg-white/[0.11] text-white before:content-[''] before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-[3px] before:rounded-full before:bg-blue-400";
 const NAV_ITEM = NAV_BASE;
-const NAV_CURRENT = NAV_BASE + " bg-white/[0.11] text-white";
+const NAV_CURRENT = NAV_BASE + NAV_ACCENT;
+// Count badge on the right of a nav item (live numbers only, passed by pages).
+const NAV_BADGE =
+  "ml-auto min-w-[20px] h-5 px-1.5 grid place-items-center rounded-full bg-white/[0.16] text-white text-[11px] font-semibold";
 // Children sit on an indent rather than an icon, so the level is still legible
 // without relying on graphics.
 // Dashboard names the group; it is not a control. aria-labelledby ties it to the
@@ -35,7 +42,7 @@ const NAV_CURRENT = NAV_BASE + " bg-white/[0.11] text-white";
 const NAV_GROUP_LABEL =
   "block px-3 pt-4 pb-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-side-quiet";
 const NAV_CHILD = NAV_BASE + " text-[0.85rem] font-normal";
-const NAV_CHILD_CURRENT = NAV_CHILD + " bg-white/[0.11] text-white font-medium";
+const NAV_CHILD_CURRENT = NAV_CHILD + NAV_ACCENT + " font-medium";
 
 export default function PortalShell({
   user,
@@ -121,6 +128,9 @@ export default function PortalShell({
                             aria-current={child.key === current ? "page" : undefined}
                           >
                             {child.label}
+                            {child.badge != null && (
+                              <span className={NAV_BADGE} aria-label={child.badge + " items"}>{child.badge}</span>
+                            )}
                           </a>
                         </li>
                       ))}
@@ -134,6 +144,9 @@ export default function PortalShell({
                       aria-current={item.key === current ? "page" : undefined}
                     >
                       {item.label}
+                      {item.badge != null && (
+                        <span className={NAV_BADGE} aria-label={item.badge + " items"}>{item.badge}</span>
+                      )}
                     </a>
                   </li>
                 )
@@ -141,7 +154,7 @@ export default function PortalShell({
             </ul>
           </nav>
 
-          <div className="mt-auto flex flex-col gap-1.5 pt-[18px] max-[900px]:mt-0 max-[900px]:pt-2">
+          <div className="mt-auto flex flex-col gap-1.5 pt-[18px] border-t border-white/10 max-[900px]:mt-0 max-[900px]:pt-2">
             <nav aria-label="Account">
               <ul className="list-none m-0 p-0 flex flex-col gap-1">
                 {footerLinks.map((link) => (
@@ -151,7 +164,7 @@ export default function PortalShell({
                 ))}
               </ul>
             </nav>
-            <div className="flex items-center gap-3 px-2 py-2.5 [&_strong]:block [&_strong]:max-w-[150px] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-white [&_strong]:text-[13px] [&_small]:text-side-quiet [&_small]:text-xs">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 [&_strong]:block [&_strong]:max-w-[150px] [&_strong]:overflow-hidden [&_strong]:text-ellipsis [&_strong]:whitespace-nowrap [&_strong]:text-white [&_strong]:text-[13px] [&_small]:text-side-quiet [&_small]:text-xs">
               <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-full text-white bg-blue-600 text-[13px] font-semibold">{avatar}</span>
               <div>
                 <strong title={who}>{who}</strong>
