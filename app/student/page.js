@@ -28,6 +28,41 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? "Not submitted" : date.toLocaleDateString("en-GB");
 }
 
+// Figma dashboard alignment (Sprint 2): the design's "Your next action" banner,
+// adapted to the live data model. Payment and finance-check stages from the
+// mock-up are out of scope per the PRD, so actions only cover draft, offer
+// and rejected states.
+function getNextAction(applications) {
+  const draft = applications.find((a) => a.status === "draft");
+  if (draft) {
+    return {
+      title: "Finish your draft application",
+      detail: "You have a saved draft. Complete the remaining sections and submit it when you are ready.",
+      cta: "Continue draft",
+      href: "/apply",
+    };
+  }
+  const offer = applications.find((a) => a.status === "offer");
+  if (offer) {
+    return {
+      title: "You have received an offer",
+      detail: "Open the application to read the decision and the university's message.",
+      cta: "View decision",
+      href: "/student/applications/" + offer.id,
+    };
+  }
+  const rejected = applications.find((a) => a.status === "rejected");
+  if (rejected) {
+    return {
+      title: "A decision has been issued",
+      detail: "Open the application to read the university's decision message.",
+      cta: "View decision",
+      href: "/student/applications/" + rejected.id,
+    };
+  }
+  return null;
+}
+
 export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
   const [applications, setApplications] = useState([]);
@@ -65,17 +100,38 @@ export default function StudentDashboardPage() {
   if (phase === "unverified") return <AuthCard title="Verify your email"><AlertBanner variant="info">Verify your email before starting an application.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="My applications"><AlertBanner variant="error">We could not load your applications. Please try again.</AlertBanner><LoadingButton loading={false} onClick={() => window.location.reload()}>Try again</LoadingButton></AuthCard>;
 
+  const firstName = user && user.displayName ? user.displayName.split(" ")[0] : "";
+  const activeCount = applications.filter((a) => ["draft", "submitted", "under_review"].includes(a.status)).length;
+  const action = getNextAction(applications);
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const subtitle = applications.length === 0
+    ? "Choose a university and start your first application."
+    : activeCount > 0
+      ? "You have " + activeCount + " active application" + (activeCount === 1 ? "" : "s") + ". Here is what needs your attention."
+      : "All of your applications have received a decision.";
+
   return (
     <PortalShell user={user} current="dashboard">
       <div className="max-w-[960px] mx-auto px-10 pt-[52px] pb-20 max-[900px]:px-5 max-[900px]:pt-9 max-[900px]:pb-16">
-        <header className="mb-[34px] flex items-end justify-between gap-8 flex-wrap">
+        <header className="mb-[30px] flex items-end justify-between gap-8 flex-wrap">
           <div>
-            <p className="mt-0 mb-2.5 text-blue-600 text-xs font-bold tracking-[0.12em] uppercase">Applicant portal</p>
-            <h1 className="mt-0 mb-2.5 text-navy-900 font-editorial text-[clamp(30px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.12]">My applications</h1>
-            <p className="m-0 max-w-[560px] text-muted">Track your drafts, submissions and university decisions in one place.</p>
+            <p className="mt-0 mb-2.5 text-blue-600 text-xs font-bold tracking-[0.12em] uppercase">{today}</p>
+            <h1 className="mt-0 mb-2.5 text-navy-900 font-editorial text-[clamp(30px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.12]">Welcome back{firstName ? ", " + firstName : ""}</h1>
+            <p className="m-0 max-w-[560px] text-muted">{subtitle}</p>
           </div>
           <a className="button button-primary" href="/apply">New application</a>
         </header>
+
+        {action && (
+          <section aria-label="Your next action" className="mb-[26px] px-7 py-6 flex items-center justify-between gap-6 flex-wrap border border-[#e7d9b8] border-l-4 border-l-[#d9a441] rounded-[14px] bg-[#fdf8ec]">
+            <div>
+              <p className="mt-0 mb-1.5 text-[#8a6d1f] text-[10px] font-bold tracking-[0.12em] uppercase">Your next action</p>
+            <h2 className="mt-0 mb-1 text-navy-900 text-[19px]">{action.title}</h2>
+              <p className="m-0 max-w-[560px] text-muted text-sm">{action.detail}</p>
+            </div>
+            <a className="button button-primary" href={action.href}>{action.cta}</a>
+          </section>
+        )}
 
         {applications.length === 0 ? (
           <section className="px-8 py-16 grid justify-items-center text-center gap-3 border border-border rounded-[14px] bg-white shadow-sm">

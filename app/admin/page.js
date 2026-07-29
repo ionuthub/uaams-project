@@ -187,12 +187,73 @@ export default function AdminListPage() {
         <header className="flex justify-between items-start gap-4 mb-6 flex-wrap">
           <div>
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Admissions</p>
-            <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Application queue</h1>
+            <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Admissions overview</h1>
             <p className="text-muted text-[0.9rem] m-0">
-              {universityName} — {profile.fullName} ({profile.email})
+              Operational workload and application progress for {universityName}. Signed in as {profile.fullName} ({profile.email}).
             </p>
           </div>
+          <a className="button button-primary" href="#queue">Open queue</a>
         </header>
+
+        {(() => {
+          // Figma "Admissions overview" alignment, computed from live queue
+          // data only. The mock-up's median review time is not derivable from
+          // the current data model, so it is deliberately not shown.
+          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0 };
+          applications.forEach((a) => {
+            if (counts[a.status] !== undefined) counts[a.status] += 1;
+          });
+          const open = counts.submitted + counts.under_review;
+          const decided = counts.offer + counts.rejected;
+          const offerRate = decided
+            ? Math.round((counts.offer / decided) * 100) + "% offer rate"
+            : "No decisions issued yet";
+          const stages = [
+            ["Submitted", counts.submitted],
+            ["Under review", counts.under_review],
+            ["Offer issued", counts.offer],
+            ["Rejected", counts.rejected],
+          ];
+          const max = Math.max(1, ...stages.map((s) => s[1]));
+          const CARD = "border border-border rounded-[14px] bg-white shadow-sm px-6 py-5";
+          return (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-6 max-sm:grid-cols-1">
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Open applications</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{open}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">Submitted or under review</p>
+                </div>
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Awaiting first review</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{counts.submitted}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">Newest submissions appear first in the queue</p>
+                </div>
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Decisions issued</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{decided}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">{offerRate}</p>
+                </div>
+              </div>
+              <div className="border border-border rounded-[14px] bg-white shadow-sm px-6 py-5 mb-8">
+                <p className="mt-0 mb-1 text-blue-700 text-[11px] font-bold uppercase tracking-[0.08em]">Workload</p>
+                <h2 className="mt-0 mb-4 text-navy-900 text-lg">Applications by stage</h2>
+                <dl className="m-0 grid gap-3">
+                  {stages.map(([label, value]) => (
+                    <div key={label} className="grid grid-cols-[140px_1fr_32px] items-center gap-3 max-sm:grid-cols-[110px_1fr_28px]">
+                      <dt className="text-muted text-xs">{label}</dt>
+                      <dd className="m-0 h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <span className="block h-full rounded-full bg-blue-600" style={{ width: ((value / max) * 100) + "%" }} />
+                      </dd>
+                      <dd className="m-0 text-ink text-sm font-semibold text-right">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              <h2 id="queue" className="mt-0 mb-3 text-navy-900 text-lg">Application queue</h2>
+            </>
+          );
+        })()}
 
         {applications.length === 0 ? (
           <AlertBanner variant="info">
