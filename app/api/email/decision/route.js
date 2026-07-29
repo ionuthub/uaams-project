@@ -200,6 +200,16 @@ async function handlePost(request) {
     return errorResponse("email/send-in-progress", 409);
   }
 
+  // In-app notification (PRD 4.2.2, issue #164). One per decision; a
+  // failure here never blocks the email.
+  await db.collection("notifications").doc(`${logId}-notice`).set({
+    userId: application.studentUid,
+    applicationId,
+    message: `${application.form?.universityName || application.universityId} has issued a decision on your application. Open it to read the message.`,
+    readStatus: false,
+    createdAt: Timestamp.now(),
+  }, { merge: true }).catch(() => {});
+
   const idempotencyKey = decisionEmailIdempotencyKey(applicationId, decisionSnapshot.id);
   let providerId;
   try {
