@@ -1,3 +1,6 @@
+// Collects the full PRD 4.2.3 application content: personal details including
+// passport number, academic history with institution, graduation year and grade,
+// and the course applied for alongside the university and intake.
 "use client";
 
 import { useEffect, useRef, useState } from "react";
