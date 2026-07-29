@@ -137,7 +137,19 @@ export default function ApplicationPage() {
     setMessage(null);
     if (!documentPath) { setMessage({ type: "error", text: "Upload one permitted document before submitting." }); return; }
     setBusy(true);
-    try { const id = await ensureDraft(); await submitApplication(id); setMessage({ type: "success", text: "Application submitted successfully." }); setTimeout(() => router.push("/student"), 700); }
+    try { const id = await ensureDraft(); await submitApplication(id);
+      // Confirmation email (PRD s5). Fire and forget: the submission is already
+      // committed, so a send failure is logged server-side rather than shown
+      // as a false submission error. The route is idempotent per application.
+      try {
+        const idToken = await user.getIdToken();
+        fetch("/api/email/submission", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + idToken },
+          body: JSON.stringify({ applicationId: id }),
+        }).catch((error) => console.error("Submission email dispatch failed:", error));
+      } catch (error) { console.error("Submission email dispatch failed:", error); }
+      setMessage({ type: "success", text: "Application submitted successfully." }); setTimeout(() => router.push("/student"), 700); }
     catch (error) { setMessage({ type: "error", text: error.message === "DOCUMENT_REQUIRED" ? "Upload a document before submitting." : "The application could not be submitted." }); }
     finally { setBusy(false); }
   }
