@@ -1,0 +1,41 @@
+# End-to-end demo-path test (Playwright) against production.
+# Triggers: manually from the Actions tab, and on every release to main.
+# Needs repo secrets E2E_EMAIL and E2E_PASSWORD (verified test student
+# account). Without them the test skips and the run stays green.
+# Screenshots, videos and the HTML report are uploaded as artifacts on
+# every run - that is the evidence trail for the PID testing section.
+
+name: e2e
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  demo-path:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright (not saved to the app dependencies)
+        run: npm install --no-save @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run demo-path test
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+        run: npx playwright test -c e2e/playwright.config.mjs
+      - name: Upload evidence (screenshots, videos, report)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-evidence
+          path: |
+            e2e-results
+            e2e-report
+          if-no-files-found: ignore
