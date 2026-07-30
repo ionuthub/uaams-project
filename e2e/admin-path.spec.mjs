@@ -7,14 +7,14 @@
 //
 // Runs AFTER demo-path.spec.mjs: Playwright runs spec files alphabetically
 // with workers=1, and review-path sorts after demo-path, so a freshly
-// submitted E2E Test Student application always exists.
+// submitted Playwright Test Student application always exists.
 //
 // Needs a dedicated admin test account (role admin + universityId set in the
 // users document) passed in as env vars:
 //   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD  (GitHub Actions secrets in CI)
 // The test skips itself when they are missing. It only ever touches
-// applications whose applicant name is E2E Test Student.
-// Side effects per run: one status email and one decision email to the test
+// applications whose applicant name is Playwright Test Student. Side
+// effects per run: one status email and one decision email to the test
 // student inbox, plus their in-app notifications. No cleanup step (recorded
 // limitation, same as the student spec).
 
@@ -38,18 +38,16 @@ test.describe("UAAMS admin path", () => {
 
     // 2. PRD 4.3.1 / #153: filter by status, then search by student name
     await page.getByRole("button", { name: /^Submitted \(/ }).click();
-    await page.locator("#queue-search").fill("E2E Test Student");
+    await page.locator("#queue-search").fill("Playwright Test Student");
     const detailLinks = page.getByRole("link", { name: "View details" });
     await page.screenshot({ path: "e2e-results/07-admin-queue-filtered.png", fullPage: true });
     const matches = await detailLinks.count();
-    test.skip(matches === 0, "No submitted E2E Test Student application found - run the student spec first");
+    test.skip(matches === 0, "No submitted Playwright Test Student applPlaywright Test Studentrun the student spec first");
 
     // 3. Open the newest matching application
     await detailLinks.first().click();
     await expect(page.getByRole("heading", { name: "Application detail" })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText("E2E Test Student").first()).toBeVisible();
-
-    // 4. PRD 4.3.2 / #165: move to under review, status email to the student
+    await expect(page.getByText("Playwright Test Student").first()).Playwright Test Student    // 4. PRD 4.3.2 / #165: move to under review, status email to the student
     await page.getByRole("button", { name: "Move to under review" }).click();
     await expect(
       page.getByText("Application moved to under review and the student was emailed.")
