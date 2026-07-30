@@ -113,8 +113,10 @@ export default function ApplicationPage() {
     }
     if (!next.phone) {
       const digits = val("phone").replace(/\D/g, "");
-      if (!/^[+()\d\s-]+$/.test(val("phone")) || digits.length < 7 || digits.length > 15) {
-        next.phone = "Enter a valid phone number (7 to 15 digits).";
+      const ukLocal = digits.length === 11 && digits.startsWith("0");
+      const ukIntl = digits.length === 12 && digits.startsWith("44");
+      if (!/^[+()\d\s-]+$/.test(val("phone")) || (!ukLocal && !ukIntl)) {
+        next.phone = "Enter a valid UK phone number (11 digits starting 0, or +44).";
       }
     }
     if (!next.passportNumber && !/^[A-Za-z0-9-]{5,15}$/.test(val("passportNumber"))) {
@@ -123,8 +125,8 @@ export default function ApplicationPage() {
     if (!next.dateOfBirth) {
       const dob = new Date(val("dateOfBirth"));
       const year = dob.getFullYear();
-      if (Number.isNaN(dob.getTime()) || year < thisYear - 100 || year > thisYear - 15) {
-        next.dateOfBirth = "Enter a real date of birth (applicants must be 15 to 100 years old).";
+      if (Number.isNaN(dob.getTime()) || year < thisYear - 100 || year > thisYear - 18) {
+        next.dateOfBirth = "Enter a real date of birth (applicants must be 18 to 100 years old).";
       }
     }
     if (!next.graduationYear) {
