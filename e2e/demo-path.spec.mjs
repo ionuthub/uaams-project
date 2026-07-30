@@ -53,7 +53,7 @@ test.describe("UAAMS demo path", () => {
     const fields = {
       "Intake": "September 2026",
       "Course name": "BSc Computer Science",
-      "Full name": "E2E Test Student",
+      "Full name": "Playwright Test Student",
       "Nationality": "Romanian",
       "Phone": "07000000000",
       "Passport number": "E2E123456",
