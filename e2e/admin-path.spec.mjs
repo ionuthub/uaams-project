@@ -5,8 +5,9 @@
 // it to under review (which emails the student), then record an offer with a
 // message (which emails the student again). Screenshots at every stage.
 //
-// Runs AFTER demo-path.spec.mjs (alphabetical order, workers=1 in the
-// config), so a freshly submitted E2E Test Student application exists.
+// Runs AFTER demo-path.spec.mjs: Playwright runs spec files alphabetically
+// with workers=1, and review-path sorts after demo-path, so a freshly
+// submitted E2E Test Student application always exists.
 //
 // Needs a dedicated admin test account (role admin + universityId set in the
 // users document) passed in as env vars:
