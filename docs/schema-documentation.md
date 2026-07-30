@@ -18,6 +18,7 @@ This document records the Firestore and Storage structures currently implemented
 /applications/{applicationId}
 /applications/{applicationId}/decisions/{decisionId}
 
+/notifications/{noticeId}
 /emailLogs/{logId}
 ```
 
@@ -121,28 +122,36 @@ Path: `/applications/{applicationId}/decisions/{decisionId}`.
 
 `recordDecision()` uses one Firestore batch to update the application and create the history entry. Decision documents are append-only: scoped users can read them, scoped admins can create them, and client update/delete is denied.
 
-## Email Logs
+## Notifications
 
-Path: `/emailLogs/{logId}`. Decision emails use the deterministic ID `decision-{applicationId}-{decisionId}`, so retrying the same decision updates one log instead of creating duplicates.
+Path: `/notifications/{noticeId}`. Submission, under-review and decision email routes create one notification per event with a deterministic ID derived from the corresponding email-log ID.
 
 | Field | Type | Required | Meaning |
 |---|---|---|---|
-| `eventType` | string | Yes | `decision` |
-| `provider` | string | Yes | `resend` |
+| `userId` | string | Yes | Student Firebase Auth user ID and ownership key |
 | `applicationId` | string | Yes | Related application |
-| `decisionId` | string | Yes | Related append-only decision record |
-| `decision` | string | Yes | `offer` or `rejected` |
-| `studentUid` | string | Yes | Student account reference; no email address is stored in the log |
-| `universityId` | string | Yes | Scope used for admin log reads |
-| `requestedBy` | string | Yes | Admin Firebase user ID |
-| `status` | string | Yes | `sending`, `sent` or `failed` |
-| `attempts` | number | Yes | Number of claimed send attempts |
-| `providerMessageId` | string | After success | Resend message ID |
-| `lastErrorCode`, `providerStatus` | string/number or null | After attempt | Limited failure evidence without provider payload or secrets |
-| `createdAt`, `startedAt`, `updatedAt` | timestamp | Yes | Server-side lifecycle timestamps |
-| `sentAt`, `failedAt` | timestamp | When applicable | Latest outcome timestamp |
+| `message` | string | Yes | Short in-app event message |
+| `readStatus` | boolean | Yes | Starts as `false`; the owner may change it only to `true` |
+| `createdAt` | timestamp | Yes | Server timestamp when the notification is created |
 
-The protected route writes logs with Firebase Admin after verifying the caller and application scope. Firestore client writes are denied. Admin reads are limited to logs with the same `universityId` as the admin profile. Email addresses, bodies, API keys and private keys are not stored.
+Notifications are created with Firebase Admin by protected server routes. Firestore denies browser create/delete access. A verified student can read only records whose `userId` matches their account and can update only `readStatus`, with the new value required to be `true`.
+
+## Email Logs
+
+Path: `/emailLogs/{logId}`. All four transactional routes use deterministic log IDs and provider idempotency keys:
+
+| Event | `eventType` | Log ID |
+|---|---|---|
+| Welcome | `welcome` | `welcome-{uid}` |
+| Submission | `submission-confirmation` | `submission-{applicationId}` |
+| Under review | `status-update` | `status-under_review-{applicationId}` |
+| Decision | `decision` | `decision-{applicationId}-{decisionId}` |
+
+The common lifecycle is `sending` followed by `sent` or `failed`. A completed `sent` log prevents another send, and a recent active send lease blocks concurrent duplication. Logs record the attempt count and outcome timestamp plus the provider message ID or a limited error code/status where the route supports it.
+
+Application-scoped status and decision logs also record `applicationId`, `studentUid`, `universityId` and `requestedBy`; status logs record `statusValue`, while decision logs record `decisionId` and `decision`. Welcome logs record the student/caller ID. The submission route currently records its recipient address and uses the shorter `providerId`/`errorCode` field names, so the log schema is not yet fully uniform across routes.
+
+Protected routes write logs with Firebase Admin after verifying the caller and event state. Firestore client writes are denied. Admin reads are limited by `universityId`, where that scope field is present. Email bodies, API keys and private keys are not stored.
 
 ## Composite Indexes
 
@@ -194,17 +203,19 @@ Production evidence recorded in issue #25 on 30 July 2026 confirms successful up
 | Other student's application | Denied | Read/update only for admin university | Denied |
 | Decision history | Verified owner read | Scoped read/create | Denied |
 | Storage document | Owner read/write within constraints | Scoped read | Denied |
+| Notification | Read own; may only set `readStatus` to `true` | No client access | Denied |
 | Email logs | No access | Read for own university; no client writes | Denied |
 
-Firebase Admin operations used by the seed script and decision-email server route bypass client security rules. Those server paths must perform their own authorization checks.
+Firebase Admin operations used by the seed script and protected notification/email routes bypass client security rules. Those server paths must perform their own authorization checks.
 
 ## Known Gaps and Deferred Decisions
 
 - Blank decision-message validation is missing in `recordDecision()`.
 - A top-level `documents` collection is not implemented; the approved current model embeds typed metadata in each application.
 - Legacy `documentPath` remains during compatibility migration and should not be treated as the required-document source of truth.
+- Email-log fields are not yet uniform: the submission route stores the recipient address and uses different provider/error field names. This needs privacy and schema review.
 - Email-log retention still depends on IS-06.
 - GDPR delete/anonymise behaviour and App Check are deferred.
 - Automated emulator tests for rules are not yet present.
 
-This document must be updated when issues #10, #11, #14, #15, #19 or #69 change the implemented schema.
+This document must be updated when issues #10, #11, #14, #15, #19, #69 or the notification/email routes change the implemented schema.
