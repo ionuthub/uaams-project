@@ -10,6 +10,10 @@ export default defineConfig({
   testDir: "./",
   timeout: 180_000,
   retries: 0,
+  // The admin spec depends on the application the student spec submits, so
+  // the two files must run in order, one at a time.
+  fullyParallel: false,
+  workers: 1,
   outputDir: "../e2e-results",
   reporter: [["list"], ["html", { outputFolder: "../e2e-report", open: "never" }]],
   use: {
