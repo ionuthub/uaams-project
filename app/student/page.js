@@ -5,7 +5,7 @@ import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import LoadingButton from "../../components/auth/LoadingButton";
 import PortalShell from "../../components/portal/PortalShell";
-import { watchAuth } from "../../lib/auth";
+import { watchAuth, getUserProfile } from "../../lib/auth";
 import { getStudentApplications, getNotifications, markNotificationRead } from "../../lib/db";
 import { statusMeta } from "../../components/StatusBadge";
 
@@ -67,6 +67,7 @@ export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [profileName, setProfileName] = useState("");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -82,6 +83,16 @@ export default function StudentDashboardPage() {
         return;
       }
       setUser(current);
+      // Issue #177: older accounts have no Auth displayName, so fall back to
+      // the profile fullName for the greeting and the sidebar chip.
+      if (!current.displayName) {
+        try {
+          const profile = await getUserProfile(current.uid);
+          if (active && profile?.fullName) setProfileName(profile.fullName);
+        } catch (error) {
+          console.warn("Profile name unavailable:", error?.code || error?.message);
+        }
+      }
       try {
         setApplications(await getStudentApplications(current.uid));
         // Notifications (PRD 4.2.2, #164). Fails soft: if the rules are not
@@ -105,7 +116,8 @@ export default function StudentDashboardPage() {
   if (phase === "unverified") return <AuthCard title="Verify your email"><AlertBanner variant="info">Verify your email before starting an application.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="My applications"><AlertBanner variant="error">We could not load your applications. Please try again.</AlertBanner><LoadingButton loading={false} onClick={() => window.location.reload()}>Try again</LoadingButton></AuthCard>;
 
-  const firstName = user && user.displayName ? user.displayName.split(" ")[0] : "";
+  const bestName = (user && user.displayName) || profileName;
+  const firstName = bestName ? bestName.split(" ")[0] : "";
   const activeCount = applications.filter((a) => ["draft", "submitted", "under_review"].includes(a.status)).length;
   const action = getNextAction(applications);
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
@@ -140,7 +152,7 @@ export default function StudentDashboardPage() {
       : "All of your applications have received a decision.";
 
   return (
-    <PortalShell user={user} current="dashboard" nav={navWithCounts}>
+    <PortalShell user={{ displayName: bestName, email: user?.email }} current="dashboard" nav={navWithCounts}>
       <div className="max-w-[960px] mx-auto px-10 pt-[52px] pb-20 max-[900px]:px-5 max-[900px]:pt-9 max-[900px]:pb-16">
         <header className="mb-[30px] flex items-end justify-between gap-8 flex-wrap">
           <div>
