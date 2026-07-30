@@ -88,6 +88,7 @@ test.describe("UAAMS demo path", () => {
     await expect(submit).toBeEnabled({ timeout: 15_000 });
     await submit.click();
     await expect(page.getByText("Application submitted successfully.")).toBeVisible({ timeout: 60_000 });
+    await page.screenshot({ path: "e2e-results/05-submitted-confirmation.png", fullPage: true });
 
     // 6. Dashboard shows the submitted application
     await page.waitForURL("**/student", { timeout: 30_000 });
