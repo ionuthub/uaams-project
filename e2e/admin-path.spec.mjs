@@ -42,12 +42,14 @@ test.describe("UAAMS admin path", () => {
     const detailLinks = page.getByRole("link", { name: "View details" });
     await page.screenshot({ path: "e2e-results/07-admin-queue-filtered.png", fullPage: true });
     const matches = await detailLinks.count();
-    test.skip(matches === 0, "No submitted Playwright Test Student applPlaywright Test Studentrun the student spec first");
+    test.skip(matches === 0, "No submitted Playwright Test Student application found - run the student spec first");
 
     // 3. Open the newest matching application
     await detailLinks.first().click();
     await expect(page.getByRole("heading", { name: "Application detail" })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText("Playwright Test Student").first()).Playwright Test Student    // 4. PRD 4.3.2 / #165: move to under review, status email to the student
+    await expect(page.getByText("Playwright Test Student").first()).toBeVisible();
+
+    // 4. PRD 4.3.2 / #165: move to under review, status email to the student
     await page.getByRole("button", { name: "Move to under review" }).click();
     await expect(
       page.getByText("Application moved to under review and the student was emailed.")
