@@ -1,14 +1,14 @@
 # Schema Documentation
 
-**Issue:** #23 - Draft schema documentation
+**Issues:** #23 - Draft schema documentation; #69 - Document model and required-document rule
 
 **Owners:** Silvana and Dawid
 
-**Implementation review:** Ionut compared this document with `lib/auth.js`, `lib/db.js`, `lib/storage.js`, `scripts/seed.js`, `firestore.rules` and `storage.rules` on 15 July 2026. Dawid's owner confirmation remains required on the issue.
+**Implementation review:** Updated against `develop` commit `03f9490` on 30 July 2026, including `app/apply/page.js`, `lib/db.js`, `lib/storage.js`, `lib/upload-policy.mjs`, `firestore.rules` and `storage.rules`.
 
 ## Purpose
 
-This document records the Firestore and Storage structures currently used by the Sprint 2 proof of concept. Planned structures are labelled clearly.
+This document records the Firestore and Storage structures currently implemented by UAAMS. Planned or deferred structures are labelled clearly.
 
 ## Implemented Firestore Structure
 
@@ -21,7 +21,7 @@ This document records the Firestore and Storage structures currently used by the
 /emailLogs/{logId}
 ```
 
-There are no implemented top-level `documents`, `messages` or `decisions` collections. A document is represented by `applications.documentPath`; the latest student-facing message is stored in `applications.latestDecisionMessage`; full decision history is stored below each application.
+There is no top-level `documents` collection. Typed document metadata is embedded in the parent application under `applications.documents`; the Storage objects remain below the application's Storage path. `applications.documentPath` is retained as a legacy compatibility field containing the most recently uploaded path. The latest student-facing message is stored in `applications.latestDecisionMessage`, and full decision history is stored below each application.
 
 ## Users
 
@@ -60,13 +60,27 @@ Path: `/applications/{applicationId}` with an automatically generated ID.
 | `universityId` | string | Yes | University receiving the application and admin-scope key |
 | `status` | string | Yes | One of the supported status values below |
 | `form` | map | Yes | Step 1 and step 4 application data; exact UI fields remain owned by issue #10 |
-| `documentPath` | string or null | Yes | Firebase Storage object path; starts as `null` |
+| `documents` | map | Yes | Typed document metadata; starts as an empty map |
+| `documentPath` | string or null | Yes (legacy compatibility) | Most recently uploaded Firebase Storage object path; starts as `null` |
 | `createdAt` | timestamp | Yes | Server timestamp when the draft is created |
 | `updatedAt` | timestamp | Yes | Server timestamp for the latest allowed change |
 | `submittedAt` | timestamp | Required after submission | Added when status becomes `submitted` |
 | `latestDecisionMessage` | string | Required after decision | Latest admin message shown to the student |
 
-The current helper creates a new draft every time and does not check for an existing application for the same student/university.
+The application page uses `findDraftApplication()` to reuse an existing draft for the same student and university when one is available.
+
+### Embedded document metadata
+
+Path: `/applications/{applicationId}` field `documents`.
+
+| Map key | Required for submission | Value |
+|---|---|---|
+| `passportCopy` | Yes | `{ path: string, name: string, uploadedAt: timestamp }` |
+| `transcripts` | Yes | `{ path: string, name: string, uploadedAt: timestamp }` |
+| `certificates` | Yes | `{ path: string, name: string, uploadedAt: timestamp }` |
+| `englishTest` | No | `{ path: string, name: string, uploadedAt: timestamp }` |
+
+`uploadTypedDocument()` validates the key against `DOC_TYPES`, sanitises the original filename, uploads the object and updates the corresponding nested map entry. It also updates `documentPath` with the newest path so existing records and views remain compatible.
 
 ## Application Statuses
 
@@ -90,7 +104,8 @@ Current enforcement is less strict than the intended lifecycle:
 - admin rules permit `under_review`, `offer` or `rejected` when the admin is correctly scoped, without checking the previous status;
 - `recordDecision()` accepts only `offer` and `rejected`;
 - a new decision can reverse a previous decision because each change adds an audit entry;
-- `submitApplication()` and Firestore rules require a non-empty `documentPath` before submission;
+- the page, `submitApplication()` and Firestore rules require non-empty paths for `documents.passportCopy`, `documents.transcripts` and `documents.certificates` before submission;
+- `documents.englishTest` is optional and does not block submission;
 - `recordDecision()` does not currently reject an empty/whitespace message.
 
 ## Decision History
@@ -142,10 +157,10 @@ Deploy reproducibly with the Firestore configuration rather than relying only on
 
 ## Storage Structure
 
-Object path:
+Typed-document object path:
 
 ```text
-applications/{applicationId}/{timestamp}_{sanitisedFilename}
+applications/{applicationId}/{docType}__{timestamp}_{sanitisedFilename}
 ```
 
 `lib/storage.js` replaces characters outside `a-z`, `A-Z`, `0-9`, `.`, `_` and `-` with `_`.
@@ -153,12 +168,21 @@ applications/{applicationId}/{timestamp}_{sanitisedFilename}
 | Constraint | Implemented rule |
 |---|---|
 | Maximum size | 10 MB |
-| Allowed MIME types | `application/pdf`, `image/jpeg`, `image/png` |
-| Write access | Owning student only |
-| Read access | Owning student or admin for the application's university |
+| Allowed types | PDF, JPG/JPEG or PNG; the client accepts recognised MIME types or extensions, while Storage rules enforce the uploaded MIME type |
+| Write access | Verified owning student only |
+| Read access | Verified owning student or verified admin for the application's university |
 | Delete access | Denied for Sprint 2 clients |
 
-After upload, the exact Storage path is written to `applications.documentPath`. The Blaze-plan decision is resolved; live bucket, deployed-rules and allowed/denied upload evidence still needs to be recorded.
+After upload, the exact Storage path, sanitised name and server upload timestamp are written to `applications.documents.{docType}`. The path is also written to legacy `applications.documentPath`.
+
+The required-document rule is enforced independently in the service and security boundary:
+
+- `submitApplication()` reads the current application and throws `DOCUMENTS_REQUIRED` if any mandatory entry has no `path`;
+- Firestore permits `draft -> submitted` only when all three mandatory paths are strings;
+- the application page blocks submission and lists the missing labels;
+- direct attempts to bypass the page remain subject to Firestore rules.
+
+Production evidence recorded in issue #25 on 30 July 2026 confirms successful upload of all three required types, blocked submission with a missing required type, rejection of an unsupported type and rejection of a file larger than 10 MB.
 
 ## Access-Control Summary
 
@@ -176,13 +200,11 @@ Firebase Admin operations used by the seed script and decision-email server rout
 
 ## Known Gaps and Deferred Decisions
 
-- The paid Firebase plan decision is resolved; live bucket/rules/upload evidence remains to be completed in issue #6.
-- Required document enforcement before submission is missing.
 - Blank decision-message validation is missing in `recordDecision()`.
-- Duplicate application prevention is not implemented.
-- Final `form` subfields depend on the issue #10 UI/schema agreement.
+- A top-level `documents` collection is not implemented; the approved current model embeds typed metadata in each application.
+- Legacy `documentPath` remains during compatibility migration and should not be treated as the required-document source of truth.
 - Email-log retention still depends on IS-06.
 - GDPR delete/anonymise behaviour and App Check are deferred.
 - Automated emulator tests for rules are not yet present.
 
-This document must be updated when issues #10, #11, #14, #15 or #19 change the implemented schema.
+This document must be updated when issues #10, #11, #14, #15, #19 or #69 change the implemented schema.
