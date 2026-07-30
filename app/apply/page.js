@@ -93,9 +93,64 @@ export default function ApplicationPage() {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => { if (!current[name]) return current; const next = { ...current }; delete next[name]; return next; });
   }
+  // Field-format validation (issue #178, PRD 8): every box is checked for a
+  // sensible value, not just for being non-empty, and each failure explains
+  // itself under the field.
   function validate() {
     const next = {};
-    for (const name of ["universityId", "courseName", "fullName", "dateOfBirth", "nationality", "passportNumber", "phone", "address", "previousQualification", "institutionName", "graduationYear", "gpa", "studyLevel", "intake", "personalStatement"]) if (!String(form[name]).trim()) next[name] = "This field is required.";
+    const val = (name) => String(form[name]).trim();
+    for (const name of ["universityId", "courseName", "fullName", "dateOfBirth", "nationality", "passportNumber", "phone", "address", "previousQualification", "institutionName", "graduationYear", "gpa", "studyLevel", "intake", "personalStatement"]) {
+      if (!val(name)) next[name] = "This field is required.";
+    }
+    const NAME_RE = /^[A-Za-z\u00C0-\u024F' -]+$/;
+    const hasLetter = (s) => /[A-Za-z\u00C0-\u024F]/.test(s);
+    const thisYear = new Date().getFullYear();
+    if (!next.fullName && (val("fullName").length < 2 || !NAME_RE.test(val("fullName")) || !hasLetter(val("fullName")))) {
+      next.fullName = "Enter your full name using letters only.";
+    }
+    if (!next.nationality && (val("nationality").length < 2 || !NAME_RE.test(val("nationality")) || !hasLetter(val("nationality")))) {
+      next.nationality = "Enter your nationality using letters only.";
+    }
+    if (!next.phone) {
+      const digits = val("phone").replace(/\D/g, "");
+      if (!/^[+()\d\s-]+$/.test(val("phone")) || digits.length < 7 || digits.length > 15) {
+        next.phone = "Enter a valid phone number (7 to 15 digits).";
+      }
+    }
+    if (!next.passportNumber && !/^[A-Za-z0-9-]{5,15}$/.test(val("passportNumber"))) {
+      next.passportNumber = "Enter a valid passport number (5 to 15 letters and digits).";
+    }
+    if (!next.dateOfBirth) {
+      const dob = new Date(val("dateOfBirth"));
+      const year = dob.getFullYear();
+      if (Number.isNaN(dob.getTime()) || year < thisYear - 100 || year > thisYear - 15) {
+        next.dateOfBirth = "Enter a real date of birth (applicants must be 15 to 100 years old).";
+      }
+    }
+    if (!next.graduationYear) {
+      const year = Number(val("graduationYear"));
+      if (!/^\d{4}$/.test(val("graduationYear")) || year < 1950 || year > thisYear + 1) {
+        next.graduationYear = "Enter a four digit year between 1950 and " + (thisYear + 1) + ".";
+      }
+    }
+    if (!next.gpa && val("gpa").length > 12) {
+      next.gpa = "Keep the grade short, for example 2:1 or 3.6.";
+    }
+    if (!next.courseName && !hasLetter(val("courseName"))) {
+      next.courseName = "Enter the course name.";
+    }
+    if (!next.institutionName && !hasLetter(val("institutionName"))) {
+      next.institutionName = "Enter the institution name.";
+    }
+    if (!next.previousQualification && !hasLetter(val("previousQualification"))) {
+      next.previousQualification = "Enter your previous qualification.";
+    }
+    if (!next.address && val("address").length < 5) {
+      next.address = "Enter your full address.";
+    }
+    if (!next.personalStatement && val("personalStatement").length < 30) {
+      next.personalStatement = "Write at least a short personal statement (30 characters or more).";
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
