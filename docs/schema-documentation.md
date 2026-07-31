@@ -105,7 +105,8 @@ Current enforcement is less strict than the intended lifecycle:
 - admin rules permit `under_review`, `offer` or `rejected` when the admin is correctly scoped, without checking the previous status;
 - `recordDecision()` accepts only `offer` and `rejected`;
 - a new decision can reverse a previous decision because each change adds an audit entry;
-- the page, `submitApplication()` and Firestore rules require non-empty paths for `documents.passportCopy`, `documents.transcripts` and `documents.certificates` before submission;
+- the page and `submitApplication()` require non-empty paths for `documents.passportCopy`, `documents.transcripts` and `documents.certificates` before submission;
+- Firestore rules require each mandatory `path` field to exist as a string, but do not currently check that the string length is greater than zero;
 - `documents.englishTest` is optional and does not block submission;
 - `recordDecision()` does not currently reject an empty/whitespace message.
 
@@ -213,6 +214,7 @@ Firebase Admin operations used by the seed script and protected notification/ema
 - Blank decision-message validation is missing in `recordDecision()`.
 - A top-level `documents` collection is not implemented; the approved current model embeds typed metadata in each application.
 - Legacy `documentPath` remains during compatibility migration and should not be treated as the required-document source of truth.
+- Firestore submission rules check that mandatory document paths are strings but do not explicitly reject empty strings; the page and service apply the stronger non-empty check.
 - Email-log fields are not yet uniform: the submission route stores the recipient address and uses different provider/error field names. This needs privacy and schema review.
 - Email-log retention still depends on IS-06.
 - GDPR delete/anonymise behaviour and App Check are deferred.

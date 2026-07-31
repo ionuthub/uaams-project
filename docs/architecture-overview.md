@@ -89,7 +89,7 @@ Firebase Authentication remains responsible for verification and password-reset 
 2. Application form data is stored in the application's `form` object.
 3. The document service validates and uploads typed files for `passportCopy`, `transcripts`, `certificates` and optional `englishTest`.
 4. Each upload is recorded under `applications.documents.{docType}` with `path`, `name` and `uploadedAt`. The latest path is also written to legacy `documentPath` so older records and views remain compatible.
-5. The application page, `submitApplication()` and Firestore rules all require the three mandatory document paths before submission.
+5. The application page and `submitApplication()` require non-empty paths for the three mandatory documents. Firestore rules independently require all three `path` fields to exist as strings before submission.
 6. Submission changes the status to `submitted` and adds `submittedAt`.
 7. An admin profile supplies `role: admin` and `universityId`.
 8. The admin query filters applications by that university and supported queue statuses.
@@ -97,6 +97,8 @@ Firebase Authentication remains responsible for verification and password-reset 
 10. `recordDecision()` writes the application status/message and a new decision-history entry in one batch.
 
 The required-document rule is deliberately enforced at three layers. The page disables or blocks submission and names missing documents, `submitApplication()` throws `DOCUMENTS_REQUIRED` if any required path is absent, and Firestore rules reject a direct `draft -> submitted` write unless all three paths are strings. The optional `englishTest` entry is not part of this gate.
+
+The Firestore rule currently checks the path type but not the string length. An empty string is therefore rejected by the page/service path but is not explicitly rejected at the Firestore boundary; this hardening gap is recorded below.
 
 ### Document upload and access flow
 
@@ -168,6 +170,7 @@ Required browser-side Firebase settings are stored in Vercel Preview and Product
 | Transactional email | Welcome, submission, under-review and decision routes are implemented through Resend and the verified `uaams.website` domain; production delivery passed, with some Gmail messages initially classified as Spam |
 | In-app notifications | Submission, under-review and decision events create server-side notifications; own-user reads and one-way read-state updates are enforced by Firestore rules |
 | Email logs | Implemented with server-side writes and university-scoped admin reads; the retention policy remains deferred |
+| Required-document Firestore rule | Requires all three mandatory `path` fields to be strings, but does not yet explicitly reject an empty string |
 | Firebase email template action URLs | Must be checked in the Firebase console for the merged `/verify-email` and `/reset-password` routes |
 | Duplicate applications | One application per student/university is not yet enforced |
 | GDPR deletion | Delete/anonymise behaviour is deferred pending IS-06 |
