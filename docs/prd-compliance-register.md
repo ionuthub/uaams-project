@@ -33,9 +33,9 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 
 | PRD ID | Requirement | Current position | Status | Corrective action | Owner area | Acceptance evidence |
 |---|---|---|---|---|---|---|
-| PRD-OV-01 | Manage the end-to-end university application process and centralise applications, documents, decisions and communication. | The minimum journey is designed, but the complete student-to-decision path is not integrated. | Partial | Complete and browser-test the end-to-end journey in issue #25. | Whole team; Ionut coordinates | Exact deployed build, end-to-end record and report reference |
+| PRD-OV-01 | Manage the end-to-end university application process and centralise applications, documents, decisions and communication. | The integrated student-to-decision journey is implemented and passed on production build `1b50522`. | Aligned | Repeat the end-to-end path after meaningful integrated changes. | Whole team; Ionut coordinates | Issue #25 pass/fail record, screenshots and report reference |
 | PRD-TECH-01 | React.js and Next.js frontend. | Next.js 15 and React 19 are used. | Aligned | Maintain supported versions and production build checks. | Frontend owners | `package.json`, successful build |
-| PRD-TECH-02 | Firebase Authentication, Firestore and Storage. | Auth and Firestore foundations exist; Storage live evidence remains incomplete. | Partial | Complete Storage #6 and integrated upload #11. | Dawid; UI owner supports | Firebase screenshots, rules, upload tests, merged PR |
+| PRD-TECH-02 | Firebase Authentication, Firestore and Storage. | Authentication, Firestore and Storage are integrated; required document upload and authorised viewing passed on production. | Aligned | Repeat security and upload checks after Firebase configuration or rule changes. | Dawid; UI owner supports | Issues #21/#25, rules, upload tests and production screenshots |
 | PRD-TECH-03 | Transactional email through SMTP provider. | Resend HTTPS API is used instead of direct SMTP. | Substituted | Record an architectural decision and obtain approval that Resend API satisfies the SMTP business outcome. | Email owner; Dawid reviews | Decision record, provider evidence, approval comment |
 | PRD-TECH-04 | Vercel plus Firebase hosting/environment integration. | Vercel preview/production exists. Firebase environment separation needs clarification. | Partial | Document whether development and production share Firebase; create the approved separation plan. | Ionut and Dawid | Configuration guide with redacted evidence |
 | PRD-ROLE-01 | Student role. | Implemented as `student`. | Aligned | Retain controlled self-registration. | Dawid and Alina | Profile and access tests |
@@ -46,28 +46,28 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 
 | PRD ID | Requirement | Current position | Status | Corrective action | Owner area | Acceptance evidence |
 |---|---|---|---|---|---|---|
-| PRD-AUTH-01 | Email/password authentication using Firebase Auth. | Shared Firebase Auth functions and screens exist. | Aligned | Complete deployed positive/negative tests. | Dawid and Alina | AUTH test results and screenshots |
+| PRD-AUTH-01 | Email/password authentication using Firebase Auth. | Shared Firebase Auth functions and screens are implemented and the deployed sign-in journey passed. | Aligned | Repeat positive and negative authentication checks after auth changes. | Dawid and Alina | Issues #21/#25 authentication results and screenshots |
 | PRD-AUTH-02 | Role-based access for Student and University Admin. | Rules and profile roles exist; full cross-role evidence remains. | Partial | Execute applicant/admin and cross-university denial tests. | Dawid; test owner verifies | Rules tests and browser evidence |
-| PRD-AUTH-03 | Email verification at registration. | Verification flow exists. | Partial | Prove registration-to-verification on the integrated deployment, including invalid/expired actions. | Dawid and Alina | Received email and AUTH-05-AUTH-07 |
+| PRD-AUTH-03 | Email verification at registration. | Registration-to-verification and the unverified-user application guard passed on production. | Aligned | Add repeat evidence for invalid and expired action links after authentication changes. | Dawid and Alina | Issue #25 received-email, verified-state and access-guard evidence |
 | PRD-AUTH-04 | Password reset by email. | Reset request/action screens and functions exist. | Partial | Test successful, invalid and expired reset actions. | Dawid and Alina | AUTH-08-AUTH-09 evidence |
 | PRD-AUTH-05 | Next.js route protection. | Firebase/rules protection exists; a complete protected-route policy is not proven for every route. | Partial | Define the protected-route map and test signed-out, wrong-role and unverified access. | Dawid and route owners | Route matrix and access tests |
 | PRD-REG-01 | Registration captures full name, email and password. | Implemented. | Aligned | Retain validation and accessibility evidence. | Alina | Registration tests |
-| PRD-REG-02 | Registration captures nationality. | Registration UI, profile write and Firestore allow-list now include nationality. | Partial | Execute and record a live persistence test. | Ionut and Dawid | Schema PR, field screenshot and stored-record test |
-| PRD-REG-03 | Registration captures intended study level: Bachelor/Master/PhD. | Removed because the value was discarded. | Missing | Add controlled values to approved schema/rules and restore the field. | Silvana, Dawid and Alina | Validation and persistence evidence |
-| PRD-REG-04 | Registration records privacy-policy acceptance. | Accessible consent, `/privacy` notice and server-timestamped consent record are implemented. | Partial | Obtain stakeholder wording approval and record a live persistence test. | Ionut coordinates; Silvana/Dawid review | Policy page, consent record and test |
-| PRD-DASH-01 | Student views all owned applications. | Query helper exists; finished dashboard remains active work. | Partial | Complete dashboard UI and ownership tests. | Alina and Dawid | Merged PR, preview and DASH tests |
-| PRD-DASH-02 | Show Draft, Submitted, Under Review, Offered and Rejected. | Lifecycle exists; stored value is `offer` rather than `offered`. | Partial | Document/standardise stored values and displayed labels; test all states. | Dawid and Alina | Schema mapping and status screenshots |
-| PRD-DASH-03 | Show university responses. | `latestDecisionMessage` supports the outcome; finished display is pending. | Partial | Display the trusted response and approved history. | Alina with Ionut/Dawid | Dashboard response test |
+| PRD-REG-02 | Registration captures nationality. | Registration UI, profile write and Firestore allow-list require and persist `nationality`. | Aligned | Retain field validation and persistence coverage. | Ionut and Dawid | `lib/auth.js`, `firestore.rules`, schema documentation and registration evidence |
+| PRD-REG-03 | Registration captures intended study level: Bachelor/Master/PhD. | Registration captures a controlled `studyLevel` value and stores it in the user profile. | Aligned | Keep UI choices, rules and schema documentation synchronized. | Silvana, Dawid and Alina | `lib/auth.js`, `firestore.rules` and schema documentation |
+| PRD-REG-04 | Registration records privacy-policy acceptance. | Accessible consent, `/privacy` notice and server-timestamped `privacyConsentAt` are implemented. | Aligned | Retain the consent gate and review wording when the privacy notice changes. | Ionut coordinates; Silvana/Dawid review | Registration evidence, consent record, privacy notice and schema documentation |
+| PRD-DASH-01 | Student views all owned applications. | The student dashboard lists the signed-in student's applications and links to read-only submitted details. | Aligned | Repeat ownership and empty-state checks after dashboard/query changes. | Alina and Dawid | Issue #25 dashboard/application-view evidence and Firestore ownership rules |
+| PRD-DASH-02 | Show Draft, Submitted, Under Review, Offered and Rejected. | All lifecycle states are mapped to clear display labels; stored `offer` is documented as the displayed "Offer made" outcome. | Aligned | Keep stored values and display labels documented together. | Dawid and Alina | Status mapping tests and issue #25 screenshots |
+| PRD-DASH-03 | Show university responses. | The latest decision message and outcome are displayed on the dashboard and application detail view. | Aligned | Repeat offer/rejection display checks after decision changes. | Alina with Ionut/Dawid | Issue #25 offer/rejection status and message evidence |
 | PRD-DASH-04 | Receive system notifications. | The student dashboard includes an in-app notification centre for submission, under-review and decision events, with read/unread state and corresponding emails. | Aligned | Repeat notification display, ownership and mark-as-read tests after material changes. | Ionut and Silvana | Issues #21/#25 notification-centre screenshots and email evidence |
 
 ### 4.3 Application and documents
 
 | PRD ID | Requirement | Current position | Status | Corrective action | Owner area | Acceptance evidence |
 |---|---|---|---|---|---|---|
-| PRD-APP-01 | Personal data: full name, date of birth, nationality and passport number. | Generic `form` map exists; mandatory fields are not defined or enforced. | Missing | Define typed fields, validation, rules and UI; minimise and protect personal data. | Silvana, Dawid and Alina | Schema, validation and persistence tests |
-| PRD-APP-02 | Academic data: qualification, institution, graduation year and GPA/grade. | Generic `form` map exists; required fields are not enforced. | Missing | Define approved field types/ranges, UI and rules. | Silvana, Dawid and Alina | Application tests and stored record |
-| PRD-APP-03 | Course data: university, course name and intended intake. | University helper exists; course/intake were labelled proposed Sprint 3. | Deferred mandatory requirement | Promote course/intake to required backlog unless removal is approved; resolve model and duplicate rules. | Ionut/Silvana; Dawid/Alina implement | Client decision, schema and selection tests |
-| PRD-APP-04 | Valid application can be submitted and managed. | Create/submit helpers exist; finished UI and required-field gate are incomplete. | Partial | Complete form, draft management and mandatory-field submission validation. | Alina and Dawid | APP-01/02/07/08 results |
+| PRD-APP-01 | Personal data: full name, date of birth, nationality and passport number. | The application form requires these fields and applies field-specific format, age and passport validation. | Aligned | Maintain data minimisation, validation and access controls. | Silvana, Dawid and Alina | Issue #25, `app/apply/page.js`, admin/student detail views and rules |
+| PRD-APP-02 | Academic data: qualification, institution, graduation year and GPA/grade. | The application form requires and validates qualification, institution, graduation year and grade data. | Aligned | Keep validation and display coverage synchronized with the schema. | Silvana, Dawid and Alina | Issue #25 and application/admin detail evidence |
+| PRD-APP-03 | Course data: university, course name and intended intake. | University, course name and intake are required application fields and are shown in student/admin detail views. | Aligned | Retain required-field validation and catalogue/reference consistency. | Ionut/Silvana; Dawid/Alina implement | Issue #25 and application-field implementation (#151) |
+| PRD-APP-04 | Valid application can be submitted and managed. | Draft resume, required-field validation, required-document gating and submission are implemented and passed end to end. | Aligned | Repeat positive and negative submission checks after form or rule changes. | Alina and Dawid | Issue #25 and automated E2E evidence |
 | PRD-DOC-01 | Upload passport copy, transcripts, certificates and optional English test. | Typed metadata and upload controls exist for all four types; passport copy, transcripts and certificates are required, while the English test is optional. | Aligned | Maintain the type list and required/optional rule together across UI, service and documentation changes. | Dawid and Alina; Silvana documents/tests | Issue #25 multi-document production test; architecture and schema documentation |
 | PRD-DOC-02 | Documents stored in Firebase Storage and metadata in Firestore. | Objects are stored below the application Storage path; Firestore stores `path`, `name` and `uploadedAt` in the application's `documents` map. | Aligned | Preserve owner/scoped-admin access and keep the legacy `documentPath` migration explicit. | Dawid; Silvana documents/tests | Issue #25 upload/admin-view evidence; `docs/schema-documentation.md` |
 | PRD-DOC-03 | File size and format validation. | Client validation and Storage rules enforce PDF/JPG/PNG and a 10 MB maximum; invalid type and oversized-file production tests passed. | Aligned | Repeat the negative tests after upload-policy or Storage-rule changes. | Dawid and test owner | Issue #25 invalid-type and oversized-file evidence |
@@ -77,17 +77,17 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 
 | PRD ID | Requirement | Current position | Status | Corrective action | Owner area | Acceptance evidence |
 |---|---|---|---|---|---|---|
-| PRD-ADM-01 | View all applications assigned to the admin's university. | Backend query exists; PR #63 adds the first UI. | Partial | Obtain scoping review, populated-list evidence and merge PR #63. | Ionut and Dawid | Merged PR, scoped screenshot and denial test |
-| PRD-ADM-02 | Filter applications by status. | No interactive filter UI. | Missing | Add accessible status filtering and tests. | Ionut | Filter screenshots/tests |
-| PRD-ADM-03 | Search by student name or application ID. | Not implemented. | Missing | Add scoped, indexed search appropriate to Firestore. | Ionut and Dawid | Search tests and query/index evidence |
-| PRD-ADM-04 | Show application counts per status. | Not implemented. | Missing | Add counts without unsafe/unbounded reads; test scope. | Ionut and Dawid | Count comparison and scope test |
-| PRD-ADM-05 | View full student profile. | Detail helper exists; full detail UI/profile join is incomplete. | Partial | Complete #13 with minimum necessary personal data. | Ionut and Dawid | Detail screenshot and access tests |
-| PRD-ADM-06 | Download uploaded documents securely. | Signed download helper exists; full UI/evidence is incomplete. | Partial | Add authorised document access and cross-university denial tests. | Ionut and Dawid | Download and denial evidence |
-| PRD-ADM-07 | Add internal notes. | Not implemented or modelled. | Missing | Define ownership, visibility, audit and retention; implement after approval. | Silvana and Dawid; Ionut UI | Schema, rules and note tests |
-| PRD-ADM-08 | Change status to Under Review, Offered or Rejected. | Status model exists; finished UI and transition evidence are incomplete. | Partial | Implement and test the allowed transition policy. | Ionut and Dawid | DEC and admin tests |
-| PRD-DEC-01 | Admin selects offer/rejection and adds a custom message. | Backend function exists; finished UI remains #15. | Partial | Complete decision UI and require a non-blank message if retained. | Ionut | Decision screenshots/tests |
-| PRD-DEC-02 | Decision saved in Firestore and history logged. | Atomic update plus append-only subcollection exists. | Aligned | Obtain live positive/denied evidence. | Dawid and Ionut | DEC-01-DEC-05 |
-| PRD-DEC-03 | Automated decision email sent to student. | Draft PR #65 has protected endpoint; UI trigger/live integration are pending. | Partial | Configure Firebase Admin privately, deploy reviewed rules, connect #15 and test outcomes. | Ionut/email owner; Dawid reviews | Offer/rejection delivery and log evidence |
+| PRD-ADM-01 | View all applications assigned to the admin's university. | The live queue queries by the signed-in admin's `universityId`; populated-list evidence passed. Cross-university browser proof remains limited by one seeded university. | Aligned | Add a second-university denial test when suitable seed data exists. | Ionut and Dawid | Issue #25 admin queue/detail evidence, scoped query and Firestore rules |
+| PRD-ADM-02 | Filter applications by status. | Accessible status controls filter the queue across submitted, under-review, offer and rejected states. | Aligned | Maintain filter tests after queue changes. | Ionut | Issue #25 and automated admin-path evidence (#153) |
+| PRD-ADM-03 | Search by student name or application ID. | The already university-scoped queue supports case-insensitive name and application-ID search. | Aligned | Review server-side search/indexing if dataset scale exceeds the current client-filtered approach. | Ionut and Dawid | Automated admin-path search evidence and `app/admin/page.js` |
+| PRD-ADM-04 | Show application counts per status. | The admin overview and filter controls show counts for each supported queue status. | Aligned | Review aggregation strategy before large-scale use. | Ionut and Dawid | Admin overview/filter evidence and `app/admin/page.js` |
+| PRD-ADM-05 | View full student profile. | The scoped application detail view shows the submitted personal, academic and course fields needed for review. | Aligned | Maintain data minimisation and scoped-access tests. | Ionut and Dawid | Issue #25 admin-detail evidence |
+| PRD-ADM-06 | Download uploaded documents securely. | The scoped admin detail view exposes authorised document-view controls; production document viewing passed. | Aligned | Add cross-university denial evidence when a second university is seeded. | Ionut and Dawid | Issue #25 document-view evidence and Storage/Firestore rules |
+| PRD-ADM-07 | Add internal notes. | Schema, helper and scoped-rule work exists on the unmerged `feature/internal-notes` branch, but it is not part of the integrated platform. | Partial | Complete review, merge the approved implementation and verify admin/student access boundaries. | Silvana and Dawid; Ionut UI | Feature-branch rules/tests, merged PR and browser evidence |
+| PRD-ADM-08 | Change status to Under Review, Offered or Rejected. | The admin detail flow supports under review, offer and rejection states with recorded history and notifications. | Aligned | Maintain transition and repeat-decision tests. | Ionut and Dawid | Issue #25 and automated admin-path evidence |
+| PRD-DEC-01 | Admin selects offer/rejection and adds a custom message. | The decision UI requires an offer/rejection choice and non-blank custom message. | Aligned | Retain blank-message and both-outcome tests. | Ionut | Issue #25 decision screenshots and negative test |
+| PRD-DEC-02 | Decision saved in Firestore and history logged. | Atomic update plus append-only history exists; live offer and rejection records passed. | Aligned | Add explicit denied-write evidence when multi-university test data is available. | Dawid and Ionut | Issue #25 decision history and provider evidence |
+| PRD-DEC-03 | Automated decision email sent to student. | The protected decision route is integrated with the UI; offer and rejection emails were delivered with provider IDs. | Aligned | Repeat both outcomes after material email or decision changes. | Ionut/email owner; Dawid reviews | Issue #25 received emails, history and provider-ID evidence |
 
 ### 4.5 Email and data structure
 
@@ -99,9 +99,9 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 | PRD-EMAIL-04 | Application status-update email. | A protected admin-scoped route sends the retained `under_review` event once and creates an in-app notification. | Aligned | Record any additional approved status events before implementation. | Ionut, email owner and Dawid | Issues #21/#25 under-review email and notification evidence |
 | PRD-EMAIL-05 | Offer and rejection notifications. | Protected decision delivery reads the committed decision/message, uses deterministic logging and updates the student notification view. | Aligned | Repeat both outcomes after material decision-flow changes. | Ionut and Dawid | Issue #25 provider IDs, received emails and screenshots |
 | PRD-EMAIL-06 | HTML templates, environment-held credentials, email logs and failed-delivery handling. | Server-only credentials, templates, deterministic send claims and sent/failed logging are implemented; production success passed. | Partial | Add explicit production-safe failure, retry and duplicate-send evidence and standardise submission-log fields. | Dawid reviews; Ionut coordinates | Route tests, provider IDs and redacted logs |
-| PRD-DATA-01 | `users` with role, profile data and timestamps. | Implemented with reduced profile. | Partial | Add approved PRD profile fields and privacy controls. | Dawid and Silvana | Schema and profile tests |
+| PRD-DATA-01 | `users` with role, profile data and timestamps. | User profiles include role, required registration profile fields, privacy consent and timestamps; admin scope is recorded only for admin profiles. | Aligned | Keep rules, registration writes and schema documentation synchronized. | Dawid and Silvana | `docs/schema-documentation.md`, `lib/auth.js` and `firestore.rules` |
 | PRD-DATA-02 | `universities` with name and `adminUserIds`. | University reference exists; admins instead carry `universityId`. | Substituted design | Record why the user-side foreign key replaces `adminUserIds`; test multi-admin/isolation. | Dawid and Silvana | Decision and rules tests |
-| PRD-DATA-03 | `applications` with student, university, course, status and timestamps. | Course is missing. | Partial | Add approved course/intake model. | Dawid and Alina | Schema and application test |
+| PRD-DATA-03 | `applications` with student, university, course, status and timestamps. | Applications store student/university identifiers, validated course and intake data in `form`, lifecycle status and timestamps. | Aligned | Keep the embedded form schema documented and validated. | Dawid and Alina | Schema documentation and issue #25 application evidence |
 | PRD-DATA-04 | `documents` with application, file type, URL/path and timestamp. | An embedded `applications.documents` map records typed entries with `path`, `name` and `uploadedAt`; no top-level collection is used. | Substituted | Confirm the embedded map as the accepted equivalent model and retire legacy `documentPath` when compatibility is no longer required. | Dawid and Silvana | `docs/schema-documentation.md`, issue #25 document tests and model review |
 | PRD-DATA-05 | `notifications` with user, message, read state and timestamp. | Implemented server-side with `userId`, `applicationId`, `message`, `readStatus` and `createdAt`; students read their own and may only mark them read. | Aligned | Repeat owner/denial checks after notification-rule changes. | Ionut and Silvana | `docs/schema-documentation.md`, `firestore.rules` and issues #21/#25 |
 
@@ -110,26 +110,26 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 | PRD ID | Requirement | Current position | Status | Corrective action | Owner area | Acceptance evidence |
 |---|---|---|---|---|---|---|
 | PRD-NFR-01 | Optimised Firestore queries. | Scoped queries/indexes are designed; evidence is incomplete. | Partial | Review query plans/indexes and avoid unbounded reads. | Dawid | Index export and query tests |
-| PRD-NFR-02 | Pagination for application lists. | Not implemented. | Missing | Implement cursor-based pagination for student/admin lists. | Dawid and UI owners | Pagination tests |
+| PRD-NFR-02 | Pagination for application lists. | The admin queue initially shows ten filtered results and progressively reveals further pages with an accessible "Show more" control. | Aligned | Move to cursor/server pagination if production volume makes client-side loading unsuitable. | Dawid and UI owners | Queue implementation (#153) and browser evidence |
 | PRD-NFR-03 | Lazy loading where applicable. | Not explicitly designed/evidenced. | Missing/evidence gap | Identify large routes/assets and document loading strategy. | Frontend owners | Build analysis and browser evidence |
 | PRD-NFR-04 | Security rules, role access, secure documents and no frontend credentials. | Rules and secret controls exist; live denial evidence is incomplete. | Partial | Complete allowed/denied tests and reviewed rule deployment. | Dawid | Rules tests, deployment evidence and secret scan |
 | PRD-NFR-05 | Multiple universities. | Model supports scoping; limited seeded evidence. | Partial | Seed a second university/admin and prove isolation. | Dawid and test owner | Cross-university test |
 | PRD-NFR-06 | Handle thousands of concurrent users. | Not demonstrated. | Missing/evidence gap | Define measurable capacity target and run approved non-destructive performance testing. | Dawid and Ionut | Results and limitations |
 | PRD-NFR-07 | Modular and maintainable architecture. | Shared services and documentation exist. | Aligned/ongoing | Maintain boundaries, checks and documentation. | Whole team | Code review and build checks |
 | PRD-NFR-08 | GDPR-compliant storage and deletion on request. | Deletion/anonymisation deferred; client deletion denied. | Missing | Define retention, export/delete/anonymise behaviour, implement and test a deletion request. | Ionut/Silvana; Dawid implements | Policy and deletion test |
-| PRD-UX-01 | Clean responsive academic UI. | Auth screens exist; full portal/admin evidence pending. | Partial | Finish screens and capture mobile/tablet/desktop evidence. | Alina and Ionut | Browser screenshots |
-| PRD-UX-02 | Clear status indicators. | Model exists; dashboard incomplete. | Partial | Show text-labelled accessible statuses. | Alina | Accessibility/status evidence |
+| PRD-UX-01 | Clean responsive academic UI. | Public, authentication and portal screens use a consistent academic design; applicant flows passed desktop and 390 px mobile checks. | Aligned | Repeat responsive checks after significant layout changes. | Alina and Ionut | Issue #21 browser evidence and frontend review |
+| PRD-UX-02 | Clear status indicators. | Student and admin views display text-labelled status badges and progress stages. | Aligned | Maintain text labels and colour-independent meaning. | Alina | Issue #25 status screenshots and status mapping tests |
 | PRD-UX-03 | Confirmation dialogs for critical actions. | Not consistently implemented. | Missing | Define critical actions and add accessible confirmations. | UI owners | Interaction tests |
-| PRD-UX-04 | Accessible forms and error messages. | Auth components address this; full coverage incomplete. | Partial | Run keyboard, label, error association and contrast checks. | UI owners/test owner | Accessibility checklist |
-| PRD-ERR-01 | Friendly errors and graceful network handling. | Some controlled states exist; full journey incomplete. | Partial | Test loading, empty, denied, timeout/offline and retry states. | Feature owners | Negative-path browser tests |
+| PRD-UX-04 | Accessible forms and error messages. | Authentication and application forms provide labels, field-specific validation and visible errors; a full accessibility audit remains incomplete. | Partial | Run keyboard, error-association and contrast checks across every retained route. | UI owners/test owner | Accessibility checklist and issue #25 validation evidence |
+| PRD-ERR-01 | Friendly errors and graceful network handling. | Controlled validation, loading, empty and denied states exist, but timeout/offline and retry coverage remains incomplete. | Partial | Test timeout/offline, provider failure and retry states. | Feature owners | Negative-path browser tests |
 | PRD-ERR-02 | Log auth failures, permission violations and email errors. | Email routes record limited sent/failed evidence server-side; a complete privacy-safe auth/permission logging and retention policy is still absent. | Partial | Define allowed auth/permission fields and retention; standardise email-log fields without exposing personal data. | Dawid and Silvana | Redacted log samples and approved logging policy |
-| PRD-TEST-01 | Unit tests for core logic. | Decision-email tests exist only on draft PR #65; other coverage is limited. | Partial | Add focused validation, lifecycle and authorisation tests. | Feature owners | CI output |
+| PRD-TEST-01 | Unit tests for core logic. | Merged tests cover decision email construction/idempotency, upload policy and status labels; broader validation, lifecycle and authorisation coverage remains limited. | Partial | Add focused tests for application validation, lifecycle and authorisation helpers. | Feature owners | CI output and `tests/*.test.mjs` |
 | PRD-TEST-02 | Integration testing for authentication/application flow. | The integrated applicant, admin review, document, decision, notification and email path was executed on production build `1b50522`. | Aligned | Repeat the smoke/demo path on meaningful integrated builds and record any regression. | Test and feature owners | Issue #25 pass/fail record, screenshots and `UAAMS_Test_Record_Week4.docx` |
 | PRD-TEST-03 | Manual UAT. | Planned but not completed. | Missing | Use representative users, approved scenarios and consent-safe findings. | Silvana/test owner | UAT protocol/findings |
 | PRD-TEST-04 | Email delivery testing. | Welcome, submission, under-review and decision delivery passed on production; deterministic duplicate protection is implemented in code. | Partial | Add explicit failure, retry and duplicate-send evidence. | Email/test owners | Issues #21/#25 received emails, provider IDs and logs |
 | PRD-DEP-01 | Development and production environments. | Vercel previews/production exist; Firebase separation unclear. | Partial | Document and approve separation and test-data policy. | Ionut and Dawid | Environment matrix |
 | PRD-DEP-02 | Next.js on Vercel, Firebase per environment and secure variables. | Vercel/secure variables exist; Firebase separation needs evidence. | Partial | Complete configuration guide without secret values. | Ionut and Dawid | Guide and redacted screenshots |
-| PRD-DEL-01 | Functional app, student submission portal and admin dashboard. | Incremental implementation only. | Partial | Complete all retained acceptance paths before final-delivery claim. | Whole team | Production/UAT evidence |
+| PRD-DEL-01 | Functional app, student submission portal and admin dashboard. | The retained production journey from applicant sign-in and submission through admin review, decision and student notification is functional. | Aligned | Repeat the integrated path on release candidates and record remaining limitations separately. | Whole team | Issues #21/#25 and `UAAMS_Test_Record_Week4.docx` |
 | PRD-DEL-02 | Architecture, schema, rules, API/service, environment and deployment documentation. | Architecture and schema documentation now describe the typed-document model, required-document rule, Storage policy and production evidence; wider handover documentation remains ongoing. | Partial | Complete remaining API/config/deployment and handover coverage and maintain this register after implementation changes. | Silvana, Dawid and Ionut | Issue #69 documentation PR and merged documentation reviews |
 | PRD-DEL-03 | Repository, README, initial admins, optional test data and support notes. | Repository/README/seed exist; final support/handover incomplete. | Partial | Prepare final seed, test-data, support and handover material. | Ionut and Dawid | Handover pack |
 
@@ -145,30 +145,25 @@ The PRD defines the product target. A sprint selects a smaller increment of that
 
 ## 5. Corrective implementation order
 
-### P0 - Restore control of the agreed scope
+### P0 - Close remaining security and scope decisions
 
-1. Obtain decisions for Resend API substitution, one-document interim scope, notification interpretation and Firebase environment separation.
-2. Keep payments, finance/compliance and other additions out of implementation until approved.
-3. Add PRD references to every affected story/task. Do not close a PRD requirement merely because a smaller sprint issue is Done.
+1. Record approval for the Resend API substitution and Firebase environment strategy.
+2. Add a second university/admin test fixture and prove cross-university isolation.
+3. Keep payments, finance/compliance and other additions out of implementation until approved.
 
-### P1 - Complete the core end-to-end journey
+### P1 - Close retained functional and reliability gaps
 
-1. Finish Storage and secure upload evidence.
-2. Complete required application fields and the submission gate.
-3. Complete university-scoped admin list/detail/document access.
-4. Complete decision UI, protected decision email and email logs.
-5. Complete dashboard status/response display.
-6. Execute the complete path on an exact deployment.
+1. Merge and verify the internal-notes implementation after schema/rules review.
+2. Add explicit non-empty required-document path checks to Firestore rules.
+3. Test password-reset edge cases and complete the protected-route matrix.
+4. Add production-safe email failure, retry and duplicate-send evidence.
 
-### P2 - Restore mandatory breadth omitted by the minimum increment
+### P2 - Complete non-functional evidence
 
-1. Nationality, intended study level and privacy-policy consent.
-2. Date of birth, passport and academic information.
-3. Course and intake.
-4. Typed multi-document model.
-5. Admin filtering, search, counts and internal notes.
-6. Submission/status emails and retained system notifications.
-7. Pagination, GDPR deletion and performance evidence.
+1. Implement and test the approved GDPR export/deletion/anonymisation process.
+2. Define and test measurable performance/capacity targets.
+3. Complete accessibility, error-state, query/index and environment-separation evidence.
+4. Run representative manual UAT and record consent-safe findings.
 
 ### P3 - Complete handover quality
 
