@@ -33,7 +33,11 @@ Path: `/users/{uid}` where `uid` matches the Firebase Authentication user ID.
 | `fullName` | string | Yes | Student registration or seeded admin profile |
 | `email` | string | Yes | Email associated with the Firebase Auth account |
 | `role` | string | Yes | `student` or `admin` |
-| `universityId` | string or null | Yes | Admin scope; student registration currently stores `null` |
+| `nationality` | string | Yes for students | Nationality captured during student registration |
+| `studyLevel` | string | Yes for students | Intended study level captured during student registration |
+| `privacyConsent` | boolean | Yes for students | Records acceptance of the privacy notice; must be `true` at registration |
+| `privacyConsentAt` | timestamp | Yes for students | Server timestamp recording when privacy consent was given |
+| `universityId` | string | Admin profiles only | University scope used for admissions access; student registration does not store this field |
 | `createdAt` | timestamp | Yes | Server timestamp at profile creation/seed |
 | `updatedAt` | timestamp | Optional | Allowed when a student updates `fullName`; no current UI writes it |
 
@@ -60,7 +64,7 @@ Path: `/applications/{applicationId}` with an automatically generated ID.
 | `studentUid` | string | Yes | Owning Firebase Auth user ID |
 | `universityId` | string | Yes | University receiving the application and admin-scope key |
 | `status` | string | Yes | One of the supported status values below |
-| `form` | map | Yes | Step 1 and step 4 application data; exact UI fields remain owned by issue #10 |
+| `form` | map | Yes | Application data captured by the implemented form fields delivered in issue #151 |
 | `documents` | map | Yes | Typed document metadata; starts as an empty map |
 | `documentPath` | string or null | Yes (legacy compatibility) | Most recently uploaded Firebase Storage object path; starts as `null` |
 | `createdAt` | timestamp | Yes | Server timestamp when the draft is created |
