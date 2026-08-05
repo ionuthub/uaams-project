@@ -1,28 +1,28 @@
-// app/login/page.js
-// Route: /login (issue #8, Figure A.2).
+// app/admin/login/page.js
+// Route: /admin/login (issue #196).
 //
-// Migration step: the form controls use React Aria (TextField / Button) for
-// accessibility, styled with Tailwind utilities. The two-column auth shell
-// layout stays on the shared global classes for now; it is converted in the
-// coordinated auth-layout pass so all auth pages move together.
+// A dedicated sign-in entrance for university staff, separate from the
+// applicant sign-in at /login. There is deliberately no "create an account"
+// link here: admin accounts are not self-served (see #195).
 //
-// #196: this is now the APPLICANT sign-in specifically. An admin account
-// signing in here is refused and the session is ended, with a pointer to the
-// staff sign-in at /admin/login. The role check is a routing and clarity
-// improvement, not a security boundary - the Firestore and Storage rules
-// remain the actual protection on every read.
+// A student account signing in here is refused and the session is ended.
+// The equivalent check for admin accounts on /login lives in that page.
+//
+// This separation is an interface and clarity improvement, NOT a new security
+// boundary - the real protection remains the Firestore and Storage rules,
+// which scope every read by role and universityId regardless of route.
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TextField, Label, Input, FieldError, Button } from "react-aria-components";
-import { loginWithRole } from "../../lib/auth";
-import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../lib/validation";
+import { loginWithRole } from "../../../lib/auth";
+import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../../lib/validation";
 
 const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_3px_var(--color-blue-100)]";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | loading | error
   const [serverError, setServerError] = useState(null);
-  const [showStaffLink, setShowStaffLink] = useState(false);
+  const [showApplicantLink, setShowApplicantLink] = useState(false);
 
   function validate() {
     const emailErr = validateEmail(email);
@@ -42,25 +42,25 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setServerError(null);
-    setShowStaffLink(false);
+    setShowApplicantLink(false);
     if (!validate()) return;
 
     setStatus("loading");
     try {
-      const { verified } = await loginWithRole(email.trim(), password, "student");
+      const { verified } = await loginWithRole(email.trim(), password, "admin");
       if (!verified) {
         router.push("/verify-email");
         return;
       }
-      router.push("/student");
+      router.push("/admin");
     } catch (err) {
-      console.error("Login failed:", err);
+      console.error("Staff sign-in failed:", err);
       const code = err.code || err.message;
       if (code === "app/wrong-portal") {
-        // Neutral wording: tells a genuine user where to go without
-        // confirming to a stranger that this address belongs to staff.
+        // Neutral wording: does not confirm to a stranger what kind of
+        // account this is, only that it does not belong on this route.
         setServerError("This account cannot sign in here.");
-        setShowStaffLink(true);
+        setShowApplicantLink(true);
       } else {
         setServerError(mapAuthErrorToMessage(code));
       }
@@ -69,35 +69,35 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="auth-shell" aria-labelledby="login-title">
+    <main className="auth-shell" aria-labelledby="admin-login-title">
       <aside className="auth-story">
         <div className="auth-story-main">
           <a className="back-link light-link" href="/">
             <span aria-hidden="true">&#8592;</span> Back to UAAMS
           </a>
           <span className="brand-mark light-mark" aria-hidden="true">U</span>
-          <p className="eyebrow">Applicant portal</p>
-          <h2>One secure sign-in for all your applications.</h2>
-          <p>Follow status updates, respond to document requests and view decisions in one place.</p>
+          <p className="eyebrow">Staff portal</p>
+          <h2>Admissions sign-in for university staff.</h2>
+          <p>Review applications for your institution, open supporting documents and record decisions.</p>
         </div>
       </aside>
 
       <div className="auth-panel">
         <form className="auth-card" onSubmit={handleSubmit} noValidate>
           <div className="auth-heading">
-            <p className="eyebrow">Sign in</p>
-            <h1 id="login-title">Welcome back to UAAMS</h1>
-            <p>Enter your account credentials to reach your applicant portal.</p>
+            <p className="eyebrow">Staff sign in</p>
+            <h1 id="admin-login-title">Admissions portal</h1>
+            <p>Sign in with the staff account issued by your institution.</p>
           </div>
 
           {status === "error" && serverError && (
             <div className="auth-alert is-error" role="alert">
               {serverError}
-              {showStaffLink && (
+              {showApplicantLink && (
                 <>
                   {" "}
-                  If you are university staff, use the{" "}
-                  <a href="/admin/login">staff sign-in</a>.
+                  Applicants should use the{" "}
+                  <a href="/login">main sign-in</a>.
                 </>
               )}
             </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
             isRequired
             className="grid gap-2"
           >
-            <Label className="!flex items-center gap-1">Email address<span className="text-error" aria-hidden="true">*</span></Label>
+            <Label className="!flex items-center gap-1">Work email address<span className="text-error" aria-hidden="true">*</span></Label>
             <Input autoComplete="email" className={INPUT} />
             <FieldError className="field-error">{errors.email}</FieldError>
           </TextField>
@@ -154,12 +154,8 @@ export default function LoginPage() {
           </Button>
 
           <p className="auth-footer-links">
-            Do not have an account?{" "}
-            <a href="/register">Create one</a>
-          </p>
-          <p className="auth-footer-links">
-            University staff?{" "}
-            <a href="/admin/login">Staff sign-in</a>
+            Applying to a university?{" "}
+            <a href="/login">Applicant sign-in</a>
           </p>
         </form>
       </div>
