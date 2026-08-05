@@ -28,7 +28,7 @@ test.describe("UAAMS admin path", () => {
 
   test("sign in, find via search and filter, review, decide", async ({ page }) => {
     // 1. Sign in as the admissions officer
-    await page.goto("/login");
+    await page.goto("/admin/login");
     await page.locator('input[autocomplete="email"]').fill(EMAIL);
     await page.locator('input[autocomplete="current-password"]').fill(PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
