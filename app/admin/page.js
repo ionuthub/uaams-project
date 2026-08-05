@@ -25,7 +25,10 @@ const ADMIN_NAV = [
   },
 ];
 
-const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
+// #196: the Student view link is gone. Staff accounts are not applicant
+// accounts, so the admin portal no longer offers a route into the student
+// area - an admin following it would only ever see an empty dashboard.
+const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
 
 const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
 const TD = "px-[0.9rem] py-[0.7rem] border-b border-border align-middle text-[0.95rem] text-ink max-sm:p-[0.6rem]";
@@ -146,7 +149,7 @@ export default function AdminListPage() {
           You need to sign in with an admissions account to view this page.
         </AlertBanner>
         <p className="text-muted text-[0.9rem]">
-          <a className="text-link" href="/login">Go to login</a>
+          <a className="text-link" href="/admin/login">Go to staff sign-in</a>
         </p>
       </AuthCard>
     );
