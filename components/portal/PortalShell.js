@@ -58,9 +58,15 @@ export default function PortalShell({
   const who = user?.displayName || user?.email || roleLabel;
   const avatar = who.slice(0, 2).toUpperCase();
 
+  // #196: staff and applicants now have separate sign-in routes, so send
+  // people back to the door they came in through. Derived from the current
+  // path rather than a prop so no call site can be missed - an admin bounced
+  // to /login would simply be refused there.
   async function handleLogout() {
+    const inAdminArea =
+      typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
     await logout();
-    window.location.assign("/login");
+    window.location.assign(inAdminArea ? "/admin/login" : "/login");
   }
 
   return (
