@@ -109,6 +109,7 @@ export default function AdminLoginPage() {
             value={email}
             onChange={(v) => { setEmail(v); setErrors((prev) => (prev.email ? { ...prev, email: null } : prev)); }}
             isInvalid={!!errors.email}
+            isRequired
             className="grid gap-2"
           >
             <Label className="!flex items-center gap-1">Work email address<span className="text-error" aria-hidden="true">*</span></Label>
@@ -122,6 +123,7 @@ export default function AdminLoginPage() {
             value={password}
             onChange={(v) => { setPassword(v); setErrors((prev) => (prev.password ? { ...prev, password: null } : prev)); }}
             isInvalid={!!errors.password}
+            isRequired
             className="grid gap-2"
           >
             <Label className="!flex items-center gap-1">Password<span className="text-error" aria-hidden="true">*</span></Label>
