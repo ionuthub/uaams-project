@@ -5,13 +5,19 @@
 // accessibility, styled with Tailwind utilities. The two-column auth shell
 // layout stays on the shared global classes for now; it is converted in the
 // coordinated auth-layout pass so all auth pages move together.
+//
+// #196: this is now the APPLICANT sign-in specifically. An admin account
+// signing in here is refused and the session is ended, with a pointer to the
+// staff sign-in at /admin/login. The role check is a routing and clarity
+// improvement, not a security boundary - the Firestore and Storage rules
+// remain the actual protection on every read.
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TextField, Label, Input, FieldError, Button } from "react-aria-components";
-import { login, getUserProfile } from "../../lib/auth";
+import { loginWithRole } from "../../lib/auth";
 import { validateEmail, validateRequired, mapAuthErrorToMessage } from "../../lib/validation";
 
 const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_3px_var(--color-blue-100)]";
@@ -24,6 +30,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | loading | error
   const [serverError, setServerError] = useState(null);
+  const [showStaffLink, setShowStaffLink] = useState(false);
 
   function validate() {
     const emailErr = validateEmail(email);
@@ -35,26 +42,28 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setServerError(null);
+    setShowStaffLink(false);
     if (!validate()) return;
 
     setStatus("loading");
     try {
-      const { user, verified } = await login(email.trim(), password);
+      const { verified } = await loginWithRole(email.trim(), password, "student");
       if (!verified) {
         router.push("/verify-email");
         return;
       }
-      let destination = "/student";
-      try {
-        const profile = await getUserProfile(user.uid);
-        if (profile?.role === "admin") destination = "/admin";
-      } catch {
-        // profile lookup is a routing nicety; the dashboard guards handle the rest
-      }
-      router.push(destination);
+      router.push("/student");
     } catch (err) {
       console.error("Login failed:", err);
-      setServerError(mapAuthErrorToMessage(err.code || err.message));
+      const code = err.code || err.message;
+      if (code === "app/wrong-portal") {
+        // Neutral wording: tells a genuine user where to go without
+        // confirming to a stranger that this address belongs to staff.
+        setServerError("This account cannot sign in here.");
+        setShowStaffLink(true);
+      } else {
+        setServerError(mapAuthErrorToMessage(code));
+      }
       setStatus("error");
     }
   }
@@ -64,10 +73,10 @@ export default function LoginPage() {
       <aside className="auth-story">
         <div className="auth-story-main">
           <a className="back-link light-link" href="/">
-            <span aria-hidden="true">←</span> Back to UAAMS
+            <span aria-hidden="true">&#8592;</span> Back to UAAMS
           </a>
           <span className="brand-mark light-mark" aria-hidden="true">U</span>
-          <p className="eyebrow">Applicant and staff portal</p>
+          <p className="eyebrow">Applicant portal</p>
           <h2>One secure sign-in for all your applications.</h2>
           <p>Follow status updates, respond to document requests and view decisions in one place.</p>
         </div>
@@ -78,11 +87,20 @@ export default function LoginPage() {
           <div className="auth-heading">
             <p className="eyebrow">Sign in</p>
             <h1 id="login-title">Welcome back to UAAMS</h1>
-            <p>Enter your account credentials to reach your applicant or staff portal.</p>
+            <p>Enter your account credentials to reach your applicant portal.</p>
           </div>
 
           {status === "error" && serverError && (
-            <div className="auth-alert is-error" role="alert">{serverError}</div>
+            <div className="auth-alert is-error" role="alert">
+              {serverError}
+              {showStaffLink && (
+                <>
+                  {" "}
+                  If you are university staff, use the{" "}
+                  <a href="/admin/login">staff sign-in</a>.
+                </>
+              )}
+            </div>
           )}
 
           <TextField
@@ -136,6 +154,10 @@ export default function LoginPage() {
           <p className="auth-footer-links">
             Do not have an account?{" "}
             <a href="/register">Create one</a>
+          </p>
+          <p className="auth-footer-links">
+            University staff?{" "}
+            <a href="/admin/login">Staff sign-in</a>
           </p>
         </form>
       </div>
