@@ -153,6 +153,29 @@ export default function Harness() {
       <button onClick={run("refresh my applications", async () => setMyApps(await getStudentApplications(user.uid)))}>
         Refresh my applications
       </button>
+      <button onClick={run("#194: withdraw first submitted/under_review app", async () => {
+        const apps = await getStudentApplications(user.uid);
+        const t = apps.find(a => a.status === "submitted" || a.status === "under_review");
+        if (!t) throw new Error("NO_WITHDRAWABLE_APP");
+        await withdrawApplication(t.id);
+        say(`Withdrew ${t.id}`);
+        setMyApps(await getStudentApplications(user.uid));
+      })}>#194: withdraw submitted app</button>
+
+      <button onClick={run("#194: try withdraw offer/rejected (EXPECT DENIED)", async () => {
+        const apps = await getStudentApplications(user.uid);
+        const t = apps.find(a => a.status === "offer" || a.status === "rejected");
+        if (!t) throw new Error("NO_TERMINAL_APP");
+        await withdrawApplication(t.id);
+        say(`UNEXPECTED SUCCESS on ${t.id}`);
+      })}>#194: try withdraw offer/rejected (expect denied)</button>
+
+      <button onClick={run("#128: read notes on my first app (EXPECT DENIED as student)", async () => {
+        const apps = await getStudentApplications(user.uid);
+        if (!apps.length) throw new Error("NO_APPS");
+        const notes = await getInternalNotes(apps[0].id);
+        say(`Read ${notes.length} notes on ${apps[0].id}`);
+      })}>#128: read notes on my first app (student: expect denied)</button>
       <ul>
         {myApps.map((a) => (
           <li key={a.id}>
@@ -169,41 +192,12 @@ export default function Harness() {
       >
         Load applications for my university
       </button>
-      <button
-        onClick={run("admin: add internal note", async () => {
-          const apps = await getApplicationsForUniversity(profile.universityId);
-          if (!apps.length) throw new Error("NO_APPLICATIONS");
-          const id = await addInternalNote(
-            apps[0].id,
-            profile.universityId,
-            user.uid,
-            profile.fullName || "Admin",
-            "Test internal note"
-          );
-          say(`Note added: ${id} on application ${apps[0].id}`);
-        })}
-      >
-        admin: add internal note (to first application)
-      </button>
-      <button
-        onClick={run("read internal notes", async () => {
-          const apps = await getApplicationsForUniversity(profile.universityId);
-          const targetId = apps[0]?.id;
-          if (!targetId) throw new Error("NO_APPLICATION");
-          const notes = await getInternalNotes(targetId);
-          say(`Notes read on ${targetId}: ${notes.length} — ${notes.map((n) => n.body).join(", ") || "none"}`);
-        })}
-      >
-        read internal notes (first application)
-      </button>
-      <button
-        onClick={run("TEST: student reads note-bearing app", async () => {
-          const notes = await getInternalNotes("RuPjGaKnjqzWG5L0fit7");
-          say(`Notes read: ${notes.length}`);
-        })}
-      >
-        TEST: read notes on RuPjGa
-      </button>
+      <button onClick={run("#128: admin add note to first app in queue", async () => {
+        const apps = await getApplicationsForUniversity(profile.universityId);
+        if (!apps.length) throw new Error("NO_APPS");
+        const id = await addInternalNote(apps[0].id, profile.universityId, user.uid, profile.fullName || "Admin", "Evidence test note");
+        say(`Note added ${id} on ${apps[0].id}`);
+      })}>#128: admin add note</button>
       <ul>
         {adminApps.map((a) => (
           <li key={a.id}>
