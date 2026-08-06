@@ -21,6 +21,7 @@ import {
   getUniversities,
   createApplication,
   submitApplication,
+  withdrawApplication,
   getStudentApplications,
   getApplicationsForUniversity,
   recordDecision,
@@ -137,6 +138,17 @@ export default function Harness() {
         })}
       >
         Submit application
+      </button>
+      <button
+        onClick={run("student: withdraw newest submitted app", async () => {
+          const apps = await getStudentApplications(user.uid);
+          const target = apps.find((a) => a.status === "submitted" || a.status === "under_review");
+          if (!target) throw new Error("NO_WITHDRAWABLE_APP");
+          await withdrawApplication(target.id);
+          say(`Withdrew application ${target.id}`);
+        })}
+      >
+        student: withdraw newest submitted/under_review app
       </button>
       <button onClick={run("refresh my applications", async () => setMyApps(await getStudentApplications(user.uid)))}>
         Refresh my applications
