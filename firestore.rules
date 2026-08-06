@@ -29,8 +29,6 @@ service cloud.firestore {
 
     // ---- users ----
     match /users/{uid} {
-      // A user reads/creates their own profile. Role is fixed to "student"
-      // on self-creation - admin accounts are made only by the seed script.
       allow read: if signedIn() && request.auth.uid == uid;
       allow create: if signedIn()
                     && request.auth.uid == uid
@@ -69,8 +67,8 @@ service cloud.firestore {
                     && request.resource.data.keys()
                          .hasAll(['studentUid', 'universityId', 'status', 'form', 'createdAt', 'updatedAt']);
 
-      // Student: may edit allowed draft fields only, and may move
-      // status draft -> submitted. Admin: may write decision fields only.
+      // Student: may edit allowed draft fields OR withdraw submitted/under_review application.
+      // Admin: may write decision fields only.
       allow update: if isVerified() && (
         (
           resource.data.studentUid == request.auth.uid
@@ -79,12 +77,19 @@ service cloud.firestore {
                .hasOnly(['form', 'documentPath', 'documents', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
               || (request.resource.data.status == 'submitted'
-                  // PRD 4.2.3 (issue #152): the three mandatory document
-                  // types must be attached before submission. English test
-                  // stays optional. documentPath remains for back-compat.
                   && request.resource.data.documents.passportCopy.path is string
                   && request.resource.data.documents.transcripts.path is string
                   && request.resource.data.documents.certificates.path is string))
+        )
+        ||
+        // NEW (#194): withdrawal — student may withdraw their OWN application only from
+        // active state (submitted / under_review), changing only status + updatedAt.
+        (
+          resource.data.studentUid == request.auth.uid
+          && resource.data.status in ['submitted', 'under_review']
+          && request.resource.data.status == 'withdrawn'
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'updatedAt'])
         )
         ||
         (
@@ -109,7 +114,7 @@ service cloud.firestore {
                            .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
                       && request.resource.data.keys()
                            .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
-        allow update, delete: if false; // decisions are never edited or removed
+        allow update, delete: if false;
       }
 
       // ---- internal admin notes (PRD 4.3.2): scoped-admin only; students never ----
@@ -123,8 +128,6 @@ service cloud.firestore {
     }
 
     // ---- in-app notifications (PRD 4.2.2, issue #164) ----
-    // Created only by the server routes (Admin SDK bypasses rules). A student
-    // reads their own notifications and may only flip readStatus to true.
     match /notifications/{noticeId} {
       allow read: if isVerified() && resource.data.userId == request.auth.uid;
       allow update: if isVerified()
@@ -139,7 +142,7 @@ service cloud.firestore {
     match /emailLogs/{logId} {
       allow read: if isAdmin()
                   && resource.data.universityId == userDoc().universityId;
-      allow write: if false; // Firebase Admin performs authorised server writes
+      allow write: if false;
     }
   }
 }
