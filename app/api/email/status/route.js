@@ -1,24 +1,18 @@
+// app/api/email/status/route.js
+// Status-update email (PRD 5, issue #165): when an admissions officer moves
+// an application to Under review, the student is told by email. Mirrors the
+// decision route's guards and emailLogs idempotency exactly; one log per
+// application per status so admin retries can never double-send.
+
 import { NextResponse } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "../../../../lib/firebase-admin";
-import {
-  buildDecisionEmail,
-  decisionEmailIdempotencyKey,
-  getBearerToken,
-} from "../../../../lib/decision-email.mjs";
+import { getBearerToken } from "../../../../lib/decision-email.mjs";
 import { sendEmail } from "../../../../lib/email";
 
 export const runtime = "nodejs";
 
 const ACTIVE_SEND_LEASE_MS = 2 * 60 * 1000;
-
-class RouteError extends Error {
-  constructor(code, status) {
-    super(code);
-    this.code = code;
-    this.status = status;
-  }
-}
 
 function errorResponse(code, status) {
   return NextResponse.json({ ok: false, error: code }, { status });
@@ -29,23 +23,41 @@ function safeErrorCode(error) {
   return /^[a-z0-9/_-]+$/i.test(code) ? code : "email/send-failed";
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function buildStatusEmail(universityName) {
+  const uni = universityName || "your chosen university";
+  const subject = "Your application is now under review";
+  const text = [
+    "Hello,",
+    "",
+    `Good news: ${uni} has started reviewing your application.`,
+    "You do not need to do anything right now. We will email you again as soon as a decision is made.",
+    "",
+    "You can follow progress any time from your dashboard: https://www.uaams.website/student",
+    "",
+    "UAAMS team",
+  ].join("\n");
+  const html = `<p>Hello,</p><p>Good news: <strong>${escapeHtml(uni)}</strong> has started reviewing your application.</p><p>You do not need to do anything right now. We will email you again as soon as a decision is made.</p><p>You can follow progress any time from <a href="https://www.uaams.website/student">your dashboard</a>.</p><p>UAAMS team</p>`;
+  return { subject, text, html };
+}
+
 async function claimEmailLog(db, logRef, logData) {
   return db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(logRef);
     const existing = snapshot.exists ? snapshot.data() : null;
-
     if (existing?.status === "sent") {
-      return {
-        state: "sent",
-        providerId: existing.providerMessageId || null,
-      };
+      return { state: "sent", providerId: existing.providerMessageId || null };
     }
-
     if (existing?.status === "sending" && existing.startedAt?.toMillis) {
       const ageMs = Date.now() - existing.startedAt.toMillis();
       if (ageMs < ACTIVE_SEND_LEASE_MS) return { state: "sending" };
     }
-
     const now = Timestamp.now();
     transaction.set(
       logRef,
@@ -61,7 +73,6 @@ async function claimEmailLog(db, logRef, logData) {
       },
       { merge: true }
     );
-
     return { state: "claimed" };
   });
 }
@@ -76,7 +87,6 @@ async function handlePost(request) {
   } catch {
     return errorResponse("request/invalid-json", 400);
   }
-
   const applicationId =
     body && typeof body.applicationId === "string" ? body.applicationId.trim() : "";
   if (
@@ -92,7 +102,7 @@ async function handlePost(request) {
     auth = getAdminAuth();
     db = getAdminDb();
   } catch (error) {
-    console.error("[decision-email] server configuration failed:", safeErrorCode(error));
+    console.error("[status-email] server configuration failed:", safeErrorCode(error));
     return errorResponse("server/configuration-error", 500);
   }
 
@@ -112,47 +122,17 @@ async function handlePost(request) {
     return errorResponse("auth/admin-required", 403);
   }
 
-  const applicationRef = db.collection("applications").doc(applicationId);
-  const applicationSnapshot = await applicationRef.get();
-  if (!applicationSnapshot.exists) {
-    return errorResponse("application/not-found", 404);
-  }
-
+  const applicationSnapshot = await db.collection("applications").doc(applicationId).get();
+  if (!applicationSnapshot.exists) return errorResponse("application/not-found", 404);
   const application = applicationSnapshot.data();
   if (application.universityId !== adminProfile.universityId) {
     return errorResponse("application/not-found", 404);
   }
-  if (!["offer", "rejected"].includes(application.status)) {
-    return errorResponse("decision/not-committed", 409);
+  if (application.status !== "under_review") {
+    return errorResponse("status/not-under-review", 409);
   }
   if (!application.studentUid) {
     return errorResponse("application/missing-student", 409);
-  }
-
-  const decisionsSnapshot = await applicationRef
-    .collection("decisions")
-    .orderBy("decidedAt", "desc")
-    .limit(1)
-    .get();
-  if (decisionsSnapshot.empty) {
-    return errorResponse("decision/history-missing", 409);
-  }
-
-  const decisionSnapshot = decisionsSnapshot.docs[0];
-  const latestDecision = decisionSnapshot.data();
-  const committedMessage =
-    typeof application.latestDecisionMessage === "string"
-      ? application.latestDecisionMessage.trim()
-      : "";
-  const historyMessage =
-    typeof latestDecision.message === "string" ? latestDecision.message.trim() : "";
-
-  if (
-    latestDecision.decision !== application.status ||
-    !committedMessage ||
-    historyMessage !== committedMessage
-  ) {
-    return errorResponse("decision/history-mismatch", 409);
   }
 
   let student;
@@ -165,52 +145,36 @@ async function handlePost(request) {
     return errorResponse("application/student-email-unavailable", 409);
   }
 
-  let message;
-  try {
-    message = buildDecisionEmail({
-      decision: application.status,
-      message: committedMessage,
-    });
-  } catch {
-    return errorResponse("decision/invalid-content", 409);
-  }
-
-  const logId = `decision-${applicationId}-${decisionSnapshot.id}`;
+  const message = buildStatusEmail(application.form?.universityName);
+  const logId = `status-under_review-${applicationId}`;
   const logRef = db.collection("emailLogs").doc(logId);
   const claim = await claimEmailLog(db, logRef, {
-    eventType: "decision",
+    eventType: "status-update",
     provider: "resend",
     applicationId,
-    decisionId: decisionSnapshot.id,
-    decision: application.status,
+    statusValue: "under_review",
     studentUid: application.studentUid,
     universityId: application.universityId,
     requestedBy: caller.uid,
   });
 
   if (claim.state === "sent") {
-    return NextResponse.json({
-      ok: true,
-      alreadySent: true,
-      providerId: claim.providerId,
-      logId,
-    });
+    return NextResponse.json({ ok: true, alreadySent: true, providerId: claim.providerId, logId });
   }
   if (claim.state === "sending") {
     return errorResponse("email/send-in-progress", 409);
   }
 
-  // In-app notification (PRD 4.2.2, issue #164). One per decision; a
-  // failure here never blocks the email.
+  // In-app notification (PRD 4.2.2, issue #164). One per event; a failure
+  // here never blocks the email.
   await db.collection("notifications").doc(`${logId}-notice`).set({
     userId: application.studentUid,
     applicationId,
-    message: `${application.form?.universityName || application.universityId} has issued a decision on your application. Open it to read the message.`,
+    message: `${application.form?.universityName || application.universityId} has started reviewing your application.`,
     readStatus: false,
     createdAt: Timestamp.now(),
   }, { merge: true }).catch(() => {});
 
-  const idempotencyKey = decisionEmailIdempotencyKey(applicationId, decisionSnapshot.id);
   let providerId;
   try {
     const result = await sendEmail({
@@ -218,10 +182,14 @@ async function handlePost(request) {
       subject: message.subject,
       text: message.text,
       html: message.html,
-      idempotencyKey,
+      idempotencyKey: logId,
     });
     providerId = result.providerId;
-    if (!providerId) throw new RouteError("email/missing-provider-id", 502);
+    if (!providerId) {
+      const err = new Error("email/missing-provider-id");
+      err.code = "email/missing-provider-id";
+      throw err;
+    }
   } catch (error) {
     const code = safeErrorCode(error);
     await logRef
@@ -229,19 +197,17 @@ async function handlePost(request) {
         {
           status: "failed",
           lastErrorCode: code,
-          providerStatus: Number.isInteger(error?.providerStatus)
-            ? error.providerStatus
-            : null,
+          providerStatus: Number.isInteger(error?.providerStatus) ? error.providerStatus : null,
           failedAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         },
         { merge: true }
       )
       .catch((logError) => {
-        console.error("[decision-email] failed to record send failure:", safeErrorCode(logError));
+        console.error("[status-email] failed to record send failure:", safeErrorCode(logError));
       });
-    console.error("[decision-email] send failed:", code);
-    return errorResponse(code, error instanceof RouteError ? error.status : 502);
+    console.error("[status-email] send failed:", code);
+    return errorResponse(code, 502);
   }
 
   try {
@@ -257,7 +223,7 @@ async function handlePost(request) {
       { merge: true }
     );
   } catch (error) {
-    console.error("[decision-email] sent but log update failed:", safeErrorCode(error));
+    console.error("[status-email] sent but log update failed:", safeErrorCode(error));
     return errorResponse("email/log-update-failed", 500);
   }
 
@@ -268,7 +234,7 @@ export async function POST(request) {
   try {
     return await handlePost(request);
   } catch (error) {
-    console.error("[decision-email] request failed:", safeErrorCode(error));
+    console.error("[status-email] request failed:", safeErrorCode(error));
     return errorResponse("server/internal-error", 500);
   }
 }

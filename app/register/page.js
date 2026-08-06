@@ -82,13 +82,26 @@ export default function RegisterPage() {
 
     setStatus("loading");
     try {
-      const { verificationEmailSent } = await registerStudent(
+      const { user, verificationEmailSent } = await registerStudent(
         form.email.trim(),
         form.password,
         form.fullName.trim(),
         form.nationality.trim(),
         form.studyLevel.trim()
       );
+      // PRD 5 registration confirmation (#165): fire-and-forget welcome email.
+      // A failure here must never block or fail the registration flow.
+      user
+        .getIdToken()
+        .then((token) =>
+          fetch("/api/email/welcome", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+        .catch((error) => {
+          console.warn("Welcome email request failed:", error?.message || error);
+        });
       setStatus("success");
       router.push(verificationEmailSent ? "/verify-email" : "/verify-email?sent=0");
     } catch (err) {

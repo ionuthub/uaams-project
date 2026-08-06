@@ -5,8 +5,8 @@ import AlertBanner from "../../components/auth/AlertBanner";
 import AuthCard from "../../components/auth/AuthCard";
 import LoadingButton from "../../components/auth/LoadingButton";
 import PortalShell from "../../components/portal/PortalShell";
-import { watchAuth } from "../../lib/auth";
-import { getStudentApplications } from "../../lib/db";
+import { watchAuth, getUserProfile } from "../../lib/auth";
+import { getStudentApplications, getNotifications, markNotificationRead } from "../../lib/db";
 import { statusMeta } from "../../components/StatusBadge";
 
 
@@ -28,9 +28,46 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? "Not submitted" : date.toLocaleDateString("en-GB");
 }
 
+// Figma dashboard alignment (Sprint 2): the design's "Your next action" banner,
+// adapted to the live data model. Payment and finance-check stages from the
+// mock-up are out of scope per the PRD, so actions only cover draft, offer
+// and rejected states.
+function getNextAction(applications) {
+  const draft = applications.find((a) => a.status === "draft");
+  if (draft) {
+    return {
+      title: "Finish your draft application",
+      detail: "You have a saved draft. Complete the remaining sections and submit it when you are ready.",
+      cta: "Continue draft",
+      href: "/apply",
+    };
+  }
+  const offer = applications.find((a) => a.status === "offer");
+  if (offer) {
+    return {
+      title: "You have received an offer",
+      detail: "Open the application to read the decision and the university's message.",
+      cta: "View decision",
+      href: "/student/applications/" + offer.id,
+    };
+  }
+  const rejected = applications.find((a) => a.status === "rejected");
+  if (rejected) {
+    return {
+      title: "A decision has been issued",
+      detail: "Open the application to read the university's decision message.",
+      cta: "View decision",
+      href: "/student/applications/" + rejected.id,
+    };
+  }
+  return null;
+}
+
 export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
   const [applications, setApplications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [profileName, setProfileName] = useState("");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -46,8 +83,22 @@ export default function StudentDashboardPage() {
         return;
       }
       setUser(current);
+      // Issue #177: older accounts have no Auth displayName, so fall back to
+      // the profile fullName for the greeting and the sidebar chip.
+      if (!current.displayName) {
+        try {
+          const profile = await getUserProfile(current.uid);
+          if (active && profile?.fullName) setProfileName(profile.fullName);
+        } catch (error) {
+          console.warn("Profile name unavailable:", error?.code || error?.message);
+        }
+      }
       try {
         setApplications(await getStudentApplications(current.uid));
+        // Notifications (PRD 4.2.2, #164). Fails soft: if the rules are not
+        // deployed yet the dashboard still works without the panel.
+        try { setNotifications(await getNotifications(current.uid)); }
+        catch (error) { console.warn("Notifications unavailable:", error?.code || error?.message); }
         if (active) setPhase("ready");
       } catch (error) {
         console.error("Student dashboard failed to load:", error);
@@ -65,17 +116,63 @@ export default function StudentDashboardPage() {
   if (phase === "unverified") return <AuthCard title="Verify your email"><AlertBanner variant="info">Verify your email before starting an application.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="My applications"><AlertBanner variant="error">We could not load your applications. Please try again.</AlertBanner><LoadingButton loading={false} onClick={() => window.location.reload()}>Try again</LoadingButton></AuthCard>;
 
+  const bestName = (user && user.displayName) || profileName;
+  const firstName = bestName ? bestName.split(" ")[0] : "";
+  const activeCount = applications.filter((a) => ["draft", "submitted", "under_review"].includes(a.status)).length;
+  const action = getNextAction(applications);
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const unreadCount = notifications.filter((n) => !n.readStatus).length;
+  const navWithCounts = [
+    { key: "home", label: "Home", href: "/" },
+    {
+      key: "student-dashboard",
+      label: "Dashboard",
+      children: [
+        { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
+        { key: "apply", label: "New application", href: "/apply" },
+        { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
+      ],
+    },
+  ];
+
+  async function handleMarkRead(notificationId) {
+    try {
+      await markNotificationRead(notificationId);
+      setNotifications((current) =>
+        current.map((n) => (n.id === notificationId ? { ...n, readStatus: true } : n))
+      );
+    } catch (error) {
+      console.warn("Mark as read failed:", error?.code || error?.message);
+    }
+  }
+  const subtitle = applications.length === 0
+    ? "Choose a university and start your first application."
+    : activeCount > 0
+      ? "You have " + activeCount + " active application" + (activeCount === 1 ? "" : "s") + ". Here is what needs your attention."
+      : "All of your applications have received a decision.";
+
   return (
-    <PortalShell user={user} current="dashboard">
+    <PortalShell user={{ displayName: bestName, email: user?.email }} current="dashboard" nav={navWithCounts}>
       <div className="max-w-[960px] mx-auto px-10 pt-[52px] pb-20 max-[900px]:px-5 max-[900px]:pt-9 max-[900px]:pb-16">
-        <header className="mb-[34px] flex items-end justify-between gap-8 flex-wrap">
+        <header className="mb-[30px] flex items-end justify-between gap-8 flex-wrap">
           <div>
-            <p className="mt-0 mb-2.5 text-blue-600 text-xs font-bold tracking-[0.12em] uppercase">Applicant portal</p>
-            <h1 className="mt-0 mb-2.5 text-navy-900 font-editorial text-[clamp(30px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.12]">My applications</h1>
-            <p className="m-0 max-w-[560px] text-muted">Track your drafts, submissions and university decisions in one place.</p>
+            <p className="mt-0 mb-2.5 text-blue-600 text-xs font-bold tracking-[0.12em] uppercase">{today}</p>
+            <h1 className="mt-0 mb-2.5 text-navy-900 font-editorial text-[clamp(30px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.12]">Welcome back{firstName ? ", " + firstName : ""}</h1>
+            <p className="m-0 max-w-[560px] text-muted">{subtitle}</p>
           </div>
           <a className="button button-primary" href="/apply">New application</a>
         </header>
+
+        {action && (
+          <section aria-label="Your next action" className="mb-[26px] px-7 py-6 flex items-center justify-between gap-6 flex-wrap border border-[#e7d9b8] border-l-4 border-l-[#d9a441] rounded-[14px] bg-[#fdf8ec]">
+            <div>
+              <p className="mt-0 mb-1.5 text-[#8a6d1f] text-[10px] font-bold tracking-[0.12em] uppercase">Your next action</p>
+            <h2 className="mt-0 mb-1 text-navy-900 text-[19px]">{action.title}</h2>
+              <p className="m-0 max-w-[560px] text-muted text-sm">{action.detail}</p>
+            </div>
+            <a className="button button-secondary !text-[#8a6d1f] !border-[#b3801f] hover:!bg-[#f6ecd4]" href={action.href}>{action.cta}</a>
+          </section>
+        )}
 
         {applications.length === 0 ? (
           <section className="px-8 py-16 grid justify-items-center text-center gap-3 border border-border rounded-[14px] bg-white shadow-sm">
@@ -141,6 +238,28 @@ export default function StudentDashboardPage() {
                 </article>
               );
             })}
+          </section>
+        )}
+
+        {notifications.length > 0 && (
+          <section id="notifications" className="mt-[26px] border border-border rounded-[14px] bg-white shadow-sm px-7 py-6" aria-label="Notifications">
+            <h2 className="mt-0 mb-1 text-navy-900 text-[19px]">Notifications{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}</h2>
+            <p className="mt-0 mb-4 text-muted text-sm">Updates about your applications appear here as well as by email.</p>
+            <ol className="m-0 p-0 list-none grid gap-2">
+              {notifications.slice(0, 8).map((notice) => (
+                <li key={notice.id} className={"px-4 py-3 rounded-lg border flex items-start justify-between gap-4 flex-wrap " + (notice.readStatus ? "border-border bg-white" : "border-blue-600/30 bg-info-bg")}>
+                  <div className="min-w-0">
+                    <p className="m-0 text-sm text-ink">{notice.message}</p>
+                    <p className="mt-1 mb-0 text-xs text-quiet">{formatDate(notice.createdAt)}{notice.readStatus ? "" : " - unread"}</p>
+                  </div>
+                  {!notice.readStatus && (
+                    <button type="button" className="shrink-0 px-3 py-1.5 rounded-full border border-border bg-white text-muted text-xs font-semibold cursor-pointer hover:border-border-strong" onClick={() => handleMarkRead(notice.id)}>
+                      Mark as read
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ol>
           </section>
         )}
       </div>

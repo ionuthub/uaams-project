@@ -1,3 +1,6 @@
+// Collects the full PRD 4.2.3 application content: personal details including
+// passport number, academic history with institution, graduation year and grade,
+// and the course applied for alongside the university and intake.
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +12,7 @@ import LoadingButton from "../../components/auth/LoadingButton";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth } from "../../lib/auth";
 import { createApplication, findDraftApplication, getLatestDraft, getUniversities, submitApplication, updateApplicationDraft } from "../../lib/db";
-import { uploadDocument, validateFile } from "../../lib/storage";
+import { uploadTypedDocument, validateFile, DOC_TYPES } from "../../lib/storage";
 
 const FIELD =
   "w-full box-border border border-border-strong rounded-md px-[0.7rem] py-[0.55rem] text-[0.9rem] text-ink bg-white focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_var(--color-blue-100)]";
@@ -23,7 +26,7 @@ const FILE_INPUT = "block w-full my-[0.8rem] mb-4";
 const SECTION =
   "my-4 p-[1.4rem] border border-border rounded-[0.9rem] bg-white shadow-sm max-sm:p-4 [&>h2]:mt-0 [&>h2]:text-[1.25rem] [&>h2]:text-navy-900";
 
-const INITIAL_FORM = { universityId: "", fullName: "", dateOfBirth: "", nationality: "", phone: "", address: "", previousQualification: "", studyLevel: "", intake: "", personalStatement: "" };
+const INITIAL_FORM = { universityId: "", courseName: "", fullName: "", dateOfBirth: "", nationality: "", passportNumber: "", phone: "", address: "", previousQualification: "", institutionName: "", graduationYear: "", gpa: "", studyLevel: "", intake: "", personalStatement: "" };
 
 const FILE_ERRORS = {
   NO_FILE: "Choose a document first.",
@@ -59,8 +62,9 @@ export default function ApplicationPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [applicationId, setApplicationId] = useState(null);
-  const [file, setFile] = useState(null);
-  const [documentPath, setDocumentPath] = useState(null);
+  const [files, setFiles] = useState({});
+  const [documents, setDocuments] = useState({});
+  const [uploadingType, setUploadingType] = useState(null);
   const [message, setMessage] = useState(null);
   const [busy, setBusy] = useState(false);
   const hydratedRef = useRef(false);
@@ -78,7 +82,7 @@ export default function ApplicationPage() {
           hydratedRef.current = true;
           setApplicationId(draft.id);
           setForm(() => ({ ...INITIAL_FORM, ...(draft.form || {}) }));
-          if (draft.documentPath) setDocumentPath(draft.documentPath);
+          if (draft.documents) setDocuments(draft.documents);
           setMessage({ type: "info", text: "We resumed your saved draft. Review it, then keep editing or submit." });
         }
       } catch (error) { console.error("Draft resume failed:", error); }
@@ -89,9 +93,66 @@ export default function ApplicationPage() {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => { if (!current[name]) return current; const next = { ...current }; delete next[name]; return next; });
   }
+  // Field-format validation (issue #178, PRD 8): every box is checked for a
+  // sensible value, not just for being non-empty, and each failure explains
+  // itself under the field.
   function validate() {
     const next = {};
-    for (const name of ["universityId", "fullName", "dateOfBirth", "nationality", "phone", "address", "previousQualification", "studyLevel", "intake", "personalStatement"]) if (!String(form[name]).trim()) next[name] = "This field is required.";
+    const val = (name) => String(form[name]).trim();
+    for (const name of ["universityId", "courseName", "fullName", "dateOfBirth", "nationality", "passportNumber", "phone", "address", "previousQualification", "institutionName", "graduationYear", "gpa", "studyLevel", "intake", "personalStatement"]) {
+      if (!val(name)) next[name] = "This field is required.";
+    }
+    const NAME_RE = /^[A-Za-z\u00C0-\u024F' -]+$/;
+    const hasLetter = (s) => /[A-Za-z\u00C0-\u024F]/.test(s);
+    const thisYear = new Date().getFullYear();
+    if (!next.fullName && (val("fullName").length < 2 || !NAME_RE.test(val("fullName")) || !hasLetter(val("fullName")))) {
+      next.fullName = "Enter your full name using letters only.";
+    }
+    if (!next.nationality && (val("nationality").length < 2 || !NAME_RE.test(val("nationality")) || !hasLetter(val("nationality")))) {
+      next.nationality = "Enter your nationality using letters only.";
+    }
+    if (!next.phone) {
+      const digits = val("phone").replace(/\D/g, "");
+      const ukLocal = digits.length === 11 && digits.startsWith("0");
+      const ukIntl = digits.length === 12 && digits.startsWith("44");
+      if (!/^[+()\d\s-]+$/.test(val("phone")) || (!ukLocal && !ukIntl)) {
+        next.phone = "Enter a valid UK phone number (11 digits starting 0, or +44).";
+      }
+    }
+    if (!next.passportNumber && !/^[A-Za-z0-9-]{5,15}$/.test(val("passportNumber"))) {
+      next.passportNumber = "Enter a valid passport number (5 to 15 letters and digits).";
+    }
+    if (!next.dateOfBirth) {
+      const dob = new Date(val("dateOfBirth"));
+      const year = dob.getFullYear();
+      if (Number.isNaN(dob.getTime()) || year < thisYear - 100 || year > thisYear - 18) {
+        next.dateOfBirth = "Enter a real date of birth (applicants must be 18 to 100 years old).";
+      }
+    }
+    if (!next.graduationYear) {
+      const year = Number(val("graduationYear"));
+      if (!/^\d{4}$/.test(val("graduationYear")) || year < 1950 || year > thisYear + 1) {
+        next.graduationYear = "Enter a four digit year between 1950 and " + (thisYear + 1) + ".";
+      }
+    }
+    if (!next.gpa && val("gpa").length > 12) {
+      next.gpa = "Keep the grade short, for example 2:1 or 3.6.";
+    }
+    if (!next.courseName && !hasLetter(val("courseName"))) {
+      next.courseName = "Enter the course name.";
+    }
+    if (!next.institutionName && !hasLetter(val("institutionName"))) {
+      next.institutionName = "Enter the institution name.";
+    }
+    if (!next.previousQualification && !hasLetter(val("previousQualification"))) {
+      next.previousQualification = "Enter your previous qualification.";
+    }
+    if (!next.address && val("address").length < 5) {
+      next.address = "Enter your full address.";
+    }
+    if (!next.personalStatement && val("personalStatement").length < 30) {
+      next.personalStatement = "Write at least a short personal statement (30 characters or more).";
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -121,21 +182,46 @@ export default function ApplicationPage() {
     catch (error) { if (error.message !== "FORM_INVALID") setMessage({ type: "error", text: "The draft could not be saved. Please try again." }); }
     finally { setBusy(false); }
   }
-  async function upload() {
+  const REQUIRED_DOCS = DOC_TYPES.filter(([, , required]) => required).map(([key]) => key);
+  const missingDocs = REQUIRED_DOCS.filter((key) => !documents[key]?.path);
+
+  async function uploadOne(docType) {
     setMessage(null);
+    const file = files[docType];
     const problem = validateFile(file);
     if (problem) { setMessage({ type: "error", text: uploadError(problem) }); return; }
-    setBusy(true);
-    try { const id = await ensureDraft(); const path = await uploadDocument(id, file); setDocumentPath(path); setMessage({ type: "success", text: "Document uploaded and linked to your draft." }); }
+    setUploadingType(docType);
+    try {
+      const id = await ensureDraft();
+      const path = await uploadTypedDocument(id, docType, file);
+      setDocuments((current) => ({ ...current, [docType]: { path, name: file.name } }));
+      setMessage({ type: "success", text: "Document uploaded and linked to your draft." });
+    }
     catch (error) { if (error.message !== "FORM_INVALID") setMessage({ type: "error", text: uploadError(error) }); }
-    finally { setBusy(false); }
+    finally { setUploadingType(null); }
   }
   async function submit() {
     setMessage(null);
-    if (!documentPath) { setMessage({ type: "error", text: "Upload one permitted document before submitting." }); return; }
+    if (missingDocs.length > 0) {
+      const labels = DOC_TYPES.filter(([key]) => missingDocs.includes(key)).map(([, label]) => label).join(", ");
+      setMessage({ type: "error", text: "Upload the required documents before submitting: " + labels + "." });
+      return;
+    }
     setBusy(true);
-    try { const id = await ensureDraft(); await submitApplication(id); setMessage({ type: "success", text: "Application submitted successfully." }); setTimeout(() => router.push("/student"), 700); }
-    catch (error) { setMessage({ type: "error", text: error.message === "DOCUMENT_REQUIRED" ? "Upload a document before submitting." : "The application could not be submitted." }); }
+    try { const id = await ensureDraft(); await submitApplication(id);
+      // Confirmation email (PRD s5). Fire and forget: the submission is already
+      // committed, so a send failure is logged server-side rather than shown
+      // as a false submission error. The route is idempotent per application.
+      try {
+        const idToken = await user.getIdToken();
+        fetch("/api/email/submission", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + idToken },
+          body: JSON.stringify({ applicationId: id }),
+        }).catch((error) => console.error("Submission email dispatch failed:", error));
+      } catch (error) { console.error("Submission email dispatch failed:", error); }
+      setMessage({ type: "success", text: "Application submitted successfully." }); setTimeout(() => router.push("/student"), 700); }
+    catch (error) { setMessage({ type: "error", text: error.message === "DOCUMENTS_REQUIRED" || error.message === "DOCUMENT_REQUIRED" ? "Upload the required documents before submitting." : "The application could not be submitted." }); }
     finally { setBusy(false); }
   }
 
@@ -147,10 +233,21 @@ export default function ApplicationPage() {
   return <PortalShell user={user} current="apply"><div className="min-h-screen pt-8 px-4 pb-16 bg-transparent text-ink"><form className="max-w-[52rem] mx-auto [&>header]:mb-6 [&>header_h1]:mt-[0.2rem] [&>header_h1]:mb-2 [&>header_h1]:text-[clamp(2rem,5vw,3rem)] [&>header_h1]:text-navy-900" onSubmit={(event) => event.preventDefault()} noValidate>
     <header><p className="m-0 text-blue-600 font-extrabold uppercase tracking-[0.08em]">Student application</p><h1>Apply to a university</h1><p>Complete the required details, save a draft, attach evidence and submit.</p></header>
     {message && <AlertBanner variant={message.type}>{message.text}</AlertBanner>}
-    <section className={SECTION}><h2>1. University and intake</h2><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="universityId">University</label><select className={SELECT} id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className="text-xs font-medium text-error">{errors.universityId}</p>}</div><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="studyLevel">Intended study level</label><select className={SELECT} id="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} aria-invalid={!!errors.studyLevel}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>{errors.studyLevel && <p className="text-xs font-medium text-error">{errors.studyLevel}</p>}</div><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div></section>
-    <section className={SECTION}><h2>2. Personal details</h2><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Full name" name="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} error={errors.fullName} /><FormField label="Date of birth" name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} error={errors.dateOfBirth} /><FormField label="Nationality" name="nationality" value={form.nationality} onChange={(e) => update("nationality", e.target.value)} error={errors.nationality} /><FormField label="Phone" name="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} error={errors.phone} /></div><FormField label="Address" name="address" value={form.address} onChange={(e) => update("address", e.target.value)} error={errors.address} /></section>
-    <section className={SECTION}><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><div className="flex flex-col gap-1 mt-4"><label className="text-sm font-medium text-ink" htmlFor="personalStatement">Personal statement</label><textarea className={TEXTAREA} id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className="text-xs font-medium text-error">{errors.personalStatement}</p>}</div></section>
-    <section className={SECTION}><h2>4. Supporting document</h2><p>Upload one PDF, JPG or PNG file, no larger than 10 MB.</p><input className={FILE_INPUT} type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/pjpeg,image/png" onChange={(e) => { setFile(e.target.files?.[0] || null); setDocumentPath(null); setMessage(null); }} /><LoadingButton type="button" loading={busy} onClick={upload}>Upload document</LoadingButton>{documentPath && <p className="text-success font-bold" role="status">Document attached.</p>}</section>
-    <div className="flex items-center gap-3 flex-wrap mt-6 [&>a]:ml-auto max-sm:flex-col max-sm:items-stretch max-sm:[&>*]:w-full max-sm:[&>*]:text-center max-sm:[&>a]:ml-0"><LoadingButton type="button" variant="secondary" full={false} loading={busy} onClick={saveDraft}>Save draft</LoadingButton><LoadingButton type="button" variant="primary" full={false} loading={busy} onClick={submit} disabled={!documentPath}>Submit application</LoadingButton><a className="text-link" href="/student">Cancel</a></div>
+    <section className={SECTION}><h2>1. University and intake</h2><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="universityId">University</label><select className={SELECT} id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className="text-xs font-medium text-error">{errors.universityId}</p>}</div><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="studyLevel">Intended study level</label><select className={SELECT} id="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} aria-invalid={!!errors.studyLevel}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>{errors.studyLevel && <p className="text-xs font-medium text-error">{errors.studyLevel}</p>}</div><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div><FormField label="Course name" name="courseName" placeholder="e.g. BSc Computer Science" value={form.courseName} onChange={(e) => update("courseName", e.target.value)} error={errors.courseName} /></section>
+    <section className={SECTION}><h2>2. Personal details</h2><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Full name" name="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} error={errors.fullName} /><FormField label="Date of birth" name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} error={errors.dateOfBirth} /><FormField label="Nationality" name="nationality" value={form.nationality} onChange={(e) => update("nationality", e.target.value)} error={errors.nationality} /><FormField label="Phone" name="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} error={errors.phone} /><FormField label="Passport number" name="passportNumber" value={form.passportNumber} onChange={(e) => update("passportNumber", e.target.value)} error={errors.passportNumber} /></div><FormField label="Address" name="address" value={form.address} onChange={(e) => update("address", e.target.value)} error={errors.address} /></section>
+    <section className={SECTION}><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><div className="grid grid-cols-3 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Institution name" name="institutionName" value={form.institutionName} onChange={(e) => update("institutionName", e.target.value)} error={errors.institutionName} /><FormField label="Graduation year" name="graduationYear" placeholder="e.g. 2024" value={form.graduationYear} onChange={(e) => update("graduationYear", e.target.value)} error={errors.graduationYear} /><FormField label="GPA / Grade" name="gpa" placeholder="e.g. 2:1 or 3.6" value={form.gpa} onChange={(e) => update("gpa", e.target.value)} error={errors.gpa} /></div><div className="flex flex-col gap-1 mt-4"><label className="text-sm font-medium text-ink" htmlFor="personalStatement">Personal statement</label><textarea className={TEXTAREA} id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className="text-xs font-medium text-error">{errors.personalStatement}</p>}</div></section>
+    <section className={SECTION}><h2>4. Supporting documents</h2><p>Upload each document as PDF, JPG or PNG, no larger than 10 MB. Passport copy, academic transcripts and certificates are required; the English language test is optional.</p>
+      {DOC_TYPES.map(([docType, label, required]) => (
+        <div key={docType} className="my-3 px-4 py-3 border border-border rounded-lg bg-[#fbfcfd]">
+          <p className="mt-0 mb-1 text-sm font-semibold text-ink">{label}{required ? "" : " (optional)"}{documents[docType]?.path && <span className="ml-2 text-success font-bold" role="status">Attached</span>}</p>
+          {documents[docType]?.name && <p className="mt-0 mb-2 text-xs text-muted">{documents[docType].name}</p>}
+          <div className="flex items-center gap-3 flex-wrap">
+            <input className="block flex-1 min-w-[220px]" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/pjpeg,image/png" onChange={(e) => { setFiles((current) => ({ ...current, [docType]: e.target.files?.[0] || null })); setMessage(null); }} />
+            <LoadingButton type="button" full={false} loading={uploadingType === docType} onClick={() => uploadOne(docType)}>{documents[docType]?.path ? "Replace" : "Upload"}</LoadingButton>
+          </div>
+        </div>
+      ))}
+    </section>
+    <div className="flex items-center gap-3 flex-wrap mt-6 [&>a]:ml-auto max-sm:flex-col max-sm:items-stretch max-sm:[&>*]:w-full max-sm:[&>*]:text-center max-sm:[&>a]:ml-0"><LoadingButton type="button" variant="secondary" full={false} loading={busy} onClick={saveDraft}>Save draft</LoadingButton><LoadingButton type="button" variant="primary" full={false} loading={busy} onClick={submit} disabled={missingDocs.length > 0}>Submit application</LoadingButton><a className="text-link" href="/student">Cancel</a></div>
   </form></div></PortalShell>;
 }

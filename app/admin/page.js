@@ -25,7 +25,10 @@ const ADMIN_NAV = [
   },
 ];
 
-const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
+// #196: the Student view link is gone. Staff accounts are not applicant
+// accounts, so the admin portal no longer offers a route into the student
+// area - an admin following it would only ever see an empty dashboard.
+const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
 
 const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
 const TD = "px-[0.9rem] py-[0.7rem] border-b border-border align-middle text-[0.95rem] text-ink max-sm:p-[0.6rem]";
@@ -50,6 +53,10 @@ export default function AdminListPage() {
   const [profile, setProfile] = useState(null);
   const [universityName, setUniversityName] = useState(null);
   const [applications, setApplications] = useState([]);
+  // Issue #153 (PRD 4.3.1): status filter, name/ID search, paginated list.
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [query, setQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     let active = true;
@@ -142,7 +149,7 @@ export default function AdminListPage() {
           You need to sign in with an admissions account to view this page.
         </AlertBanner>
         <p className="text-muted text-[0.9rem]">
-          <a className="text-link" href="/login">Go to login</a>
+          <a className="text-link" href="/admin/login">Go to staff sign-in</a>
         </p>
       </AuthCard>
     );
@@ -174,11 +181,41 @@ export default function AdminListPage() {
     );
   }
 
+  const navWithCounts = ADMIN_NAV.map((item) =>
+    item.children
+      ? {
+          ...item,
+          children: item.children.map((child) =>
+            child.key === "queue"
+              ? { ...child, badge: applications.length || null }
+              : child
+          ),
+        }
+      : item
+  );
+
+  const q = query.trim().toLowerCase();
+  const filtered = applications.filter(
+    (a) =>
+      (statusFilter === "all" || a.status === statusFilter) &&
+      (!q ||
+        a.id.toLowerCase().includes(q) ||
+        (a.form?.fullName || "").toLowerCase().includes(q))
+  );
+  const visible = filtered.slice(0, visibleCount);
+  const FILTERS = [
+    ["all", "All"],
+    ["submitted", "Submitted"],
+    ["under_review", "Under review"],
+    ["offer", "Offer"],
+    ["rejected", "Rejected"],
+  ];
+
   return (
     <PortalShell
       user={{ displayName: profile.fullName, email: profile.email }}
       current="queue"
-      nav={ADMIN_NAV}
+      nav={navWithCounts}
       subtitle="Admissions"
       roleLabel="Admissions officer"
       footerLinks={ADMIN_FOOTER}
@@ -187,17 +224,113 @@ export default function AdminListPage() {
         <header className="flex justify-between items-start gap-4 mb-6 flex-wrap">
           <div>
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Admissions</p>
-            <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Application queue</h1>
+            <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Admissions overview</h1>
             <p className="text-muted text-[0.9rem] m-0">
-              {universityName} — {profile.fullName} ({profile.email})
+              Operational workload and application progress for {universityName}. Signed in as {profile.fullName} ({profile.email}).
             </p>
           </div>
+          <a className="button button-primary" href="#queue">Open queue</a>
         </header>
+
+        {(() => {
+          // Figma "Admissions overview" alignment, computed from live queue
+          // data only. The mock-up's median review time is not derivable from
+          // the current data model, so it is deliberately not shown.
+          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0 };
+          applications.forEach((a) => {
+            if (counts[a.status] !== undefined) counts[a.status] += 1;
+          });
+          const open = counts.submitted + counts.under_review;
+          const decided = counts.offer + counts.rejected;
+          const offerRate = decided
+            ? Math.round((counts.offer / decided) * 100) + "% offer rate"
+            : "No decisions issued yet";
+          const stages = [
+            ["Submitted", counts.submitted],
+            ["Under review", counts.under_review],
+            ["Offer issued", counts.offer],
+            ["Rejected", counts.rejected],
+          ];
+          const max = Math.max(1, ...stages.map((s) => s[1]));
+          const CARD = "border border-border rounded-[14px] bg-white shadow-sm px-6 py-5";
+          return (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-6 max-sm:grid-cols-1">
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Open applications</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{open}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">Submitted or under review</p>
+                </div>
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Awaiting first review</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{counts.submitted}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">Newest submissions appear first in the queue</p>
+                </div>
+                <div className={CARD}>
+                  <p className="mt-0 mb-2 text-quiet text-[11px] font-bold uppercase tracking-[0.08em]">Decisions issued</p>
+                  <p className="m-0 text-navy-900 text-3xl font-semibold">{decided}</p>
+                  <p className="mt-1 mb-0 text-muted text-xs">{offerRate}</p>
+                </div>
+              </div>
+              <div className="border border-border rounded-[14px] bg-white shadow-sm px-6 py-5 mb-8">
+                <p className="mt-0 mb-1 text-blue-700 text-[11px] font-bold uppercase tracking-[0.08em]">Workload</p>
+                <h2 className="mt-0 mb-4 text-navy-900 text-lg">Applications by stage</h2>
+                <dl className="m-0 grid gap-3">
+                  {stages.map(([label, value]) => (
+                    <div key={label} className="grid grid-cols-[140px_1fr_32px] items-center gap-3 max-sm:grid-cols-[110px_1fr_28px]">
+                      <dt className="text-muted text-xs">{label}</dt>
+                      <dd className="m-0 h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <span className="block h-full rounded-full bg-blue-600" style={{ width: ((value / max) * 100) + "%" }} />
+                      </dd>
+                      <dd className="m-0 text-ink text-sm font-semibold text-right">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              <h2 id="queue" className="mt-0 mb-3 text-navy-900 text-lg">Application queue</h2>
+            </>
+          );
+        })()}
+
+        {applications.length > 0 && (
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <label className="sr-only" htmlFor="queue-search">Search by student name or application ID</label>
+            <input
+              id="queue-search"
+              type="search"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setVisibleCount(10); }}
+              placeholder="Search by student name or application ID"
+              className="min-w-[260px] flex-1 max-w-[360px] px-3 py-2 border border-border rounded-lg bg-white text-sm text-ink"
+            />
+            <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Filter by status">
+              {FILTERS.map(([value, label]) => {
+                const count = value === "all" ? applications.length : applications.filter((a) => a.status === value).length;
+                const active = statusFilter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => { setStatusFilter(value); setVisibleCount(10); }}
+                    aria-pressed={active}
+                    className={"px-3 py-1.5 rounded-full border text-xs font-semibold cursor-pointer transition-colors " + (active ? "bg-navy-900 text-white border-navy-900" : "bg-white text-muted border-border hover:border-border-strong")}
+                  >
+                    {label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {applications.length === 0 ? (
           <AlertBanner variant="info">
             No submitted applications for {universityName} yet. New submissions
             appear here automatically, newest first.
+          </AlertBanner>
+        ) : filtered.length === 0 ? (
+          <AlertBanner variant="info">
+            No applications match the current filter or search.
           </AlertBanner>
         ) : (
           <div className="w-full overflow-x-auto">
@@ -215,7 +348,7 @@ export default function AdminListPage() {
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child_td]:border-b-0">
-                {applications.map((app) => (
+                {visible.map((app) => (
                   <tr key={app.id} className="hover:bg-blue-100">
                     <td className={TD}><span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{app.id}</span></td>
                     <td className={TD}><StatusBadge status={app.status} /></td>
@@ -228,6 +361,13 @@ export default function AdminListPage() {
                 ))}
               </tbody>
             </table>
+            {filtered.length > visibleCount && (
+              <div className="mt-3 flex justify-center">
+                <button type="button" className="button button-secondary" onClick={() => setVisibleCount((n) => n + 10)}>
+                  Show more ({filtered.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

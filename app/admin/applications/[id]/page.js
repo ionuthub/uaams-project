@@ -24,23 +24,30 @@ import {
   getDecisionHistory,
   getDecisionEmailLog,
   recordDecision,
+  startReview,
 } from "../../../../lib/db";
-import { getDocumentUrl } from "../../../../lib/storage";
+import { getDocumentUrl, DOC_TYPES } from "../../../../lib/storage";
 import PortalShell from "../../../../components/portal/PortalShell";
 
 const FORM_FIELDS = [
   ["fullName", "Full name"],
   ["dateOfBirth", "Date of birth"],
+  ["passportNumber", "Passport number"],
   ["nationality", "Nationality"],
   ["phone", "Phone"],
   ["address", "Address"],
   ["previousQualification", "Previous qualification"],
+  ["institutionName", "Institution name"],
+  ["graduationYear", "Graduation year"],
+  ["gpa", "GPA / Grade"],
+  ["courseName", "Course name"],
   ["studyLevel", "Intended study level"],
   ["intake", "Intake"],
 ];
 
 const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
-const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
+// #196: Student view removed - staff accounts are not applicant accounts.
+const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -78,6 +85,7 @@ export default function AdminApplicationDetailPage() {
   const [message, setMessage] = useState("");
   const [formErrors, setFormErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [reviewBusy, setReviewBusy] = useState(false);
   const [emailBusy, setEmailBusy] = useState(false);
   const [notice, setNotice] = useState(null);
   const [documentError, setDocumentError] = useState(null);
@@ -181,6 +189,45 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
+  async function handleStartReview() {
+    setReviewBusy(true);
+    setNotice(null);
+    try {
+      await startReview(applicationId);
+    } catch (error) {
+      console.error("Start review failed:", error);
+      setNotice({ type: "error", text: "The status could not be changed. Please try again." });
+      setReviewBusy(false);
+      return;
+    }
+    let emailOk = false;
+    let emailCode = null;
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/email/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ applicationId }),
+      });
+      const data = await response.json().catch(() => ({}));
+      emailOk = response.ok && data.ok;
+      if (!emailOk) emailCode = data.error || `http-${response.status}`;
+    } catch {
+      emailCode = "network-error";
+    }
+    try {
+      await refresh();
+    } catch (error) {
+      console.warn("Refresh after review failed:", error?.code || error?.message);
+    }
+    setReviewBusy(false);
+    if (emailOk) {
+      setNotice({ type: "success", text: "Application moved to under review and the student was emailed." });
+    } else {
+      setNotice({ type: "error", text: `Application moved to under review, but the status email did not send (${emailCode}). The attempt is logged.` });
+    }
+  }
+
   async function handleDecision(event) {
     event.preventDefault();
     const trimmedMessage = message.trim();
@@ -237,10 +284,10 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
-  async function handleOpenDocument() {
+  async function handleOpenDocument(path) {
     setDocumentError(null);
     try {
-      const url = await getDocumentUrl(application.documentPath);
+      const url = await getDocumentUrl(path);
       window.open(url, "_blank", "noopener");
     } catch (error) {
       console.error("Document open failed:", error);
@@ -259,7 +306,7 @@ export default function AdminApplicationDetailPage() {
     return (
       <AuthCard title="Application detail">
         <AlertBanner variant="error">Sign in with an admissions account to view this application.</AlertBanner>
-        <p className="text-muted text-[0.9rem] my-1"><a href="/login">Go to login</a></p>
+        <p className="text-muted text-[0.9rem] my-1"><a href="/admin/login">Go to staff sign-in</a></p>
       </AuthCard>
     );
   }
@@ -337,20 +384,35 @@ export default function AdminApplicationDetailPage() {
       </section>
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="supporting-document">
-        <h2 id="supporting-document">Supporting document</h2>
-        {application.documentPath ? (
+        <h2 id="supporting-document">Supporting documents</h2>
+        {application.documents && Object.keys(application.documents).length > 0 ? (
+          <ul className="m-0 p-0 list-none grid gap-2">
+            {DOC_TYPES.filter(([key]) => application.documents[key]?.path).map(([key, label]) => (
+              <li key={key} className="flex items-center justify-between gap-3 flex-wrap px-3 py-2 border border-border rounded-lg bg-slate-50">
+                <span className="text-[0.9rem]"><strong>{label}</strong><span className="text-muted"> {application.documents[key].name || ""}</span></span>
+                <LoadingButton loading={false} full={false} onClick={() => handleOpenDocument(application.documents[key].path)}>View</LoadingButton>
+              </li>
+            ))}
+          </ul>
+        ) : application.documentPath ? (
           <>
             <p className="text-muted text-[0.9rem] my-1">{application.documentPath.split("/").pop()}</p>
-            <LoadingButton loading={false} onClick={handleOpenDocument}>View document</LoadingButton>
-            {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
+            <LoadingButton loading={false} onClick={() => handleOpenDocument(application.documentPath)}>View document</LoadingButton>
           </>
         ) : (
-          <p className="text-muted text-[0.9rem] my-1">No document is attached to this application.</p>
+          <p className="text-muted text-[0.9rem] my-1">No documents are attached to this application.</p>
         )}
+        {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
       </section>
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
         <h2 id="record-decision">Record a decision</h2>
+        {application.status === "submitted" && (
+          <div className="mb-4 px-[0.85rem] py-[0.7rem] bg-slate-50 border border-border rounded-lg text-[0.9rem] flex items-center justify-between gap-3 flex-wrap">
+            <span>This application has not been reviewed yet. Moving it to under review tells the student their application is being processed (PRD 4.3.2).</span>
+            <LoadingButton loading={reviewBusy} onClick={handleStartReview}>Move to under review</LoadingButton>
+          </div>
+        )}
         {decidable ? (
           <form onSubmit={handleDecision} noValidate>
             <fieldset className="m-0 mb-2 p-0 border-0 grid gap-2 [&_legend]:text-[0.9rem] [&_legend]:font-semibold [&_legend]:mb-1.5">

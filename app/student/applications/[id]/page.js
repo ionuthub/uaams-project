@@ -19,15 +19,20 @@ import StatusBadge from "../../../../components/StatusBadge";
 import PortalShell from "../../../../components/portal/PortalShell";
 import { watchAuth } from "../../../../lib/auth";
 import { getApplication, getDecisionHistory } from "../../../../lib/db";
-import { getDocumentUrl } from "../../../../lib/storage";
+import { getDocumentUrl, DOC_TYPES } from "../../../../lib/storage";
 
 const FORM_FIELDS = [
   ["fullName", "Full name"],
   ["dateOfBirth", "Date of birth"],
+  ["passportNumber", "Passport number"],
   ["nationality", "Nationality"],
   ["phone", "Phone"],
   ["address", "Address"],
   ["previousQualification", "Previous qualification"],
+  ["institutionName", "Institution name"],
+  ["graduationYear", "Graduation year"],
+  ["gpa", "GPA / Grade"],
+  ["courseName", "Course name"],
   ["studyLevel", "Intended study level"],
   ["intake", "Intake"],
 ];
@@ -114,10 +119,10 @@ export default function StudentApplicationDetailPage() {
     };
   }, [applicationId]);
 
-  async function handleOpenDocument() {
+  async function handleOpenDocument(path) {
     setDocumentError(null);
     try {
-      const url = await getDocumentUrl(application.documentPath);
+      const url = await getDocumentUrl(path);
       window.open(url, "_blank", "noopener");
     } catch (error) {
       console.error("Document open failed:", error);
@@ -218,16 +223,25 @@ export default function StudentApplicationDetailPage() {
         </section>
 
         <section className={CARD} aria-labelledby="your-document">
-          <h2 id="your-document">Supporting document</h2>
-          {application.documentPath ? (
+          <h2 id="your-document">Supporting documents</h2>
+          {application.documents && Object.keys(application.documents).length > 0 ? (
+            <ul className="m-0 p-0 list-none grid gap-2">
+              {DOC_TYPES.filter(([key]) => application.documents[key]?.path).map(([key, label]) => (
+                <li key={key} className="flex items-center justify-between gap-3 flex-wrap px-3 py-2 border border-border rounded-lg bg-slate-50">
+                  <span className="text-[0.9rem]"><strong>{label}</strong><span className="text-muted"> {application.documents[key].name || ""}</span></span>
+                  <LoadingButton loading={false} full={false} onClick={() => handleOpenDocument(application.documents[key].path)}>View</LoadingButton>
+                </li>
+              ))}
+            </ul>
+          ) : application.documentPath ? (
             <>
               <p className={MUTED}>{application.documentPath.split("/").pop()}</p>
-              <LoadingButton loading={false} full={false} onClick={handleOpenDocument}>View document</LoadingButton>
-              {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
+              <LoadingButton loading={false} full={false} onClick={() => handleOpenDocument(application.documentPath)}>View document</LoadingButton>
             </>
           ) : (
-            <p className={MUTED}>No document is attached to this application.</p>
+            <p className={MUTED}>No documents are attached to this application.</p>
           )}
+          {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
         </section>
 
         {decisions.length > 0 && (

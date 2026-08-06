@@ -65,7 +65,7 @@ service cloud.firestore {
                     && request.resource.data.studentUid == request.auth.uid
                     && request.resource.data.status == 'draft'
                     && request.resource.data.keys()
-                         .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'createdAt', 'updatedAt'])
+                         .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'documents', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
                          .hasAll(['studentUid', 'universityId', 'status', 'form', 'createdAt', 'updatedAt']);
 
@@ -76,11 +76,15 @@ service cloud.firestore {
           resource.data.studentUid == request.auth.uid
           && resource.data.status == 'draft'
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['form', 'documentPath', 'status', 'submittedAt', 'updatedAt'])
+               .hasOnly(['form', 'documentPath', 'documents', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
               || (request.resource.data.status == 'submitted'
-                  && request.resource.data.documentPath is string
-                  && request.resource.data.documentPath.size() > 0))
+                  // PRD 4.2.3 (issue #152): the three mandatory document
+                  // types must be attached before submission. English test
+                  // stays optional. documentPath remains for back-compat.
+                  && request.resource.data.documents.passportCopy.path is string
+                  && request.resource.data.documents.transcripts.path is string
+                  && request.resource.data.documents.certificates.path is string))
         )
         ||
         (
@@ -116,6 +120,19 @@ service cloud.firestore {
                       && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId;
         allow update, delete: if false;
       }
+    }
+
+    // ---- in-app notifications (PRD 4.2.2, issue #164) ----
+    // Created only by the server routes (Admin SDK bypasses rules). A student
+    // reads their own notifications and may only flip readStatus to true.
+    match /notifications/{noticeId} {
+      allow read: if isVerified() && resource.data.userId == request.auth.uid;
+      allow update: if isVerified()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['readStatus'])
+                    && request.resource.data.readStatus == true;
+      allow create, delete: if false;
     }
 
     // ---- email logs (written only by the protected server route) ----
