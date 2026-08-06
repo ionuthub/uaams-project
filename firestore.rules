@@ -125,6 +125,23 @@ service cloud.firestore {
                       && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId;
         allow update, delete: if false;
       }
+
+      // ---- internal admin notes (PRD 4.3.2) ----
+      // Scoped admins of the owning university only. Students can never read
+      // these, which is the whole point of an internal note. Append-only for
+      // the same reason as decisions: a note is a record of what was thought
+      // at the time, so it is never edited or deleted.
+      match /notes/{noteId} {
+        allow read: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
+                      && request.resource.data.authorUid == request.auth.uid
+                      && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId
+                      && request.resource.data.keys()
+                           .hasOnly(['body', 'authorUid', 'authorName', 'universityId', 'createdAt'])
+                      && request.resource.data.body is string
+                      && request.resource.data.body.size() > 0;
+        allow update, delete: if false;
+      }
     }
 
     // ---- in-app notifications (PRD 4.2.2, issue #164) ----
