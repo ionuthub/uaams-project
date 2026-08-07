@@ -138,6 +138,32 @@ export default function ApplicationPage() {
     if (!next.gpa && val("gpa").length > 12) {
       next.gpa = "Keep the grade short, for example 2:1 or 3.6.";
     }
+    // Intake must be a real month and year, and must be in the future - an
+    // application is for an upcoming intake, so "September 2024" (or a typo
+    // like "sdptember") is a mistake the form should catch, not store.
+    if (!next.intake) {
+      const intakeRaw = val("intake").trim();
+      const intakeMatch = intakeRaw.match(
+        /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})$/i
+      );
+      if (!intakeMatch) {
+        next.intake = 'Enter the intake as a month and year, e.g. "September 2027".';
+      } else {
+        const MONTHS = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+        const intakeYear = Number(intakeMatch[2]);
+        const intakeMonth = MONTHS.indexOf(intakeMatch[1].toLowerCase());
+        const today = new Date();
+        const notYetPast =
+          intakeYear > today.getFullYear() ||
+          (intakeYear === today.getFullYear() && intakeMonth >= today.getMonth());
+        if (!notYetPast) {
+          next.intake = "The intake must be in the future - this one has already started.";
+        } else if (intakeYear > today.getFullYear() + 5) {
+          next.intake = "Choose an intake within the next five years.";
+        }
+      }
+    }
+
     if (!next.courseName && !hasLetter(val("courseName"))) {
       next.courseName = "Enter the course name.";
     }
