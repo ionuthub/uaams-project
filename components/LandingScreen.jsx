@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Check } from "lucide-react";
-import { SOLENT, coursesForUniversity } from "../lib/course-catalog.mjs";
+import { UNIVERSITIES, coursesForUniversity } from "../lib/course-catalog.mjs";
 
 export default function LandingScreen({ setScreen, universities, onSelectCourse, user, onSignOut }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,7 +114,9 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           </div>
         </div>
         <div className="institution-list">
-          {[{ id: SOLENT.id, name: SOLENT.name, city: SOLENT.city }].map((uni) => (
+          {/* #25: was a hard-coded single institution. Renders the whole
+              catalogue now, so a new university appears here automatically. */}
+          {UNIVERSITIES.map((uni) => (
               <article key={uni.id || uni.name}>
                 <span className="institution-mark">{uni.code || uni.name.substring(0, 2).toUpperCase()}</span>
                 <div>
