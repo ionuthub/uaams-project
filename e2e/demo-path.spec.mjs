@@ -50,8 +50,8 @@ test.describe("UAAMS demo path", () => {
     await expect(uni.locator("option")).not.toHaveCount(1, { timeout: 30_000 });
     await uni.selectOption({ index: 1 });
     await page.locator("#studyLevel").selectOption("Bachelors");
+    await page.locator("#apply-intake").selectOption("September 2026");
     const fields = {
-      "Intake": "September 2026",
       "Course name": "BSc Computer Science",
       "Full name": "Playwright Test Student",
       "Nationality": "Romanian",
