@@ -3,15 +3,19 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Heart } from "lucide-react";
-import { ALL_COURSES } from "../lib/course-catalog.mjs";
+import { ALL_COURSES, UNIVERSITIES } from "../lib/course-catalog.mjs";
 
-// Course search over the real catalogue for the participating university
-// (lib/course-catalog.mjs). The placeholder multi-university course list
-// from the design prototype is gone.
+// Course search over the real catalogue (lib/course-catalog.mjs). The
+// placeholder multi-university course list from the design prototype is gone.
+//
+// #25: with more than one participating institution, "which university" is
+// the first question an applicant asks, so it is a filter in its own right
+// rather than something to be typed into the search box and hoped for.
 
 export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCourse }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedUniversities, setSelectedUniversities] = useState([]);
   const [savedCourses, setSavedCourses] = useState({});
 
   const filteredCourses = ALL_COURSES.filter((c) => {
@@ -23,7 +27,11 @@ export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCour
       c.subject.toLowerCase().includes(q) ||
       c.school.toLowerCase().includes(q);
     const matchesLevel = selectedLevels.length === 0 || selectedLevels.includes(c.level.toLowerCase());
-    return matchesQuery && matchesLevel;
+    // No selection means no restriction, which is the convention the study
+    // level filter already uses.
+    const matchesUniversity =
+      selectedUniversities.length === 0 || selectedUniversities.includes(c.universityId);
+    return matchesQuery && matchesLevel && matchesUniversity;
   });
 
   const toggleSave = (id) => {
@@ -37,7 +45,7 @@ export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCour
       <div className="directory-hero">
         <p className="eyebrow">Explore programmes</p>
         <h1 id="courses-title">Find a course that fits your ambition.</h1>
-        <p>Compare entry requirements, study modes and application deadlines at Southampton Solent University.</p>
+        <p>Compare entry requirements, study modes and application deadlines across every participating university.</p>
         <form className="directory-search" onSubmit={(e) => e.preventDefault()}>
           <span className="directory-search-icon"><Search className="w-4 h-4" /></span>
           <input
@@ -55,10 +63,25 @@ export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCour
         <aside className="filter-panel">
           <div className="filter-heading">
             <strong>Filters</strong>
-            <button className="text-button" type="button" onClick={() => { setSearchQuery(""); setSelectedLevels([]); }}>
+            <button className="text-button" type="button" onClick={() => { setSearchQuery(""); setSelectedLevels([]); setSelectedUniversities([]); }}>
               Clear all
             </button>
           </div>
+          <fieldset>
+            <legend>University</legend>
+            {UNIVERSITIES.map((uni) => (
+              <label key={uni.id}>
+                <input
+                  type="checkbox"
+                  checked={selectedUniversities.includes(uni.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelectedUniversities([...selectedUniversities, uni.id]);
+                    else setSelectedUniversities(selectedUniversities.filter((id) => id !== uni.id));
+                  }}
+                /> {uni.name}
+              </label>
+            ))}
+          </fieldset>
           <fieldset>
             <legend>Study level</legend>
             <label>
