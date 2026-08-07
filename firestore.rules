@@ -5,7 +5,10 @@ rules_version = '2';
 //   1. Students only ever see their own applications.
 //   2. Admins only see applications for THEIR university (scoping).
 // Field-level allow-lists on user/application updates added after PR review.
-// Sprint 3 TODO: value-format validation, App Check, GDPR delete cascade (IS-06).
+// Sprint 3 TODO: App Check, GDPR delete cascade (IS-06).
+// Value-length limits added (#190) - see capped() and formWithinLimits() below.
+// Still outstanding: format validation (a name is length-checked but not
+// pattern-checked here), and Silvana empty-string finding on other fields.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,6 +26,34 @@ service cloud.firestore {
     function isAdmin() {
       return isVerified() && userDoc().role == 'admin';
     }
+    // ---- value limits (#190) ----
+    // The apply form caps every free-text field, but the form runs in the
+    // browser and can be bypassed, so the same caps live here. Without these
+    // the rules only checked that a field EXISTS, not what is in it - which is
+    // why a 100,000 character name could be written directly to Firestore.
+    //
+    // Reads through get() with an empty default so an absent optional field is
+    // simply within its limit rather than an error, and non-string values are
+    // left alone for the field-specific rules to handle.
+    function capped(form, field, max) {
+      return !(form.get(field, '') is string) || form.get(field, '').size() <= max;
+    }
+
+    function formWithinLimits(form) {
+      return capped(form, 'fullName', 100)
+             && capped(form, 'nationality', 60)
+             && capped(form, 'passportNumber', 20)
+             && capped(form, 'phone', 20)
+             && capped(form, 'address', 250)
+             && capped(form, 'previousQualification', 120)
+             && capped(form, 'institutionName', 120)
+             && capped(form, 'graduationYear', 4)
+             && capped(form, 'gpa', 20)
+             && capped(form, 'courseName', 120)
+             && capped(form, 'intake', 40)
+             && capped(form, 'personalStatement', 4000);
+    }
+
     function adminOf(universityId) {
       return isAdmin() && userDoc().universityId == universityId;
     }
@@ -64,6 +95,7 @@ service cloud.firestore {
       allow create: if isVerified()
                     && request.resource.data.studentUid == request.auth.uid
                     && request.resource.data.status == 'draft'
+                    && formWithinLimits(request.resource.data.form)
                     && request.resource.data.keys()
                          .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'documents', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
@@ -94,6 +126,7 @@ service cloud.firestore {
         (
           resource.data.studentUid == request.auth.uid
           && resource.data.status == 'draft'
+          && formWithinLimits(request.resource.data.form)
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['form', 'documentPath', 'documents', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
