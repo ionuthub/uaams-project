@@ -209,6 +209,7 @@ export default function AdminListPage() {
     ["under_review", "Under review"],
     ["offer", "Offer"],
     ["rejected", "Rejected"],
+    ["withdrawn", "Withdrawn"],
   ];
 
   return (
@@ -236,7 +237,7 @@ export default function AdminListPage() {
           // Figma "Admissions overview" alignment, computed from live queue
           // data only. The mock-up's median review time is not derivable from
           // the current data model, so it is deliberately not shown.
-          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0 };
+          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0, withdrawn: 0 };
           applications.forEach((a) => {
             if (counts[a.status] !== undefined) counts[a.status] += 1;
           });
@@ -250,6 +251,7 @@ export default function AdminListPage() {
             ["Under review", counts.under_review],
             ["Offer issued", counts.offer],
             ["Rejected", counts.rejected],
+            ["Withdrawn", counts.withdrawn],
           ];
           const max = Math.max(1, ...stages.map((s) => s[1]));
           const CARD = "border border-border rounded-[14px] bg-white shadow-sm px-6 py-5";
