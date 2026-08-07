@@ -10,7 +10,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import AuthCard from "../../../../components/auth/AuthCard";
 import AlertBanner from "../../../../components/auth/AlertBanner";
@@ -18,7 +18,12 @@ import LoadingButton from "../../../../components/auth/LoadingButton";
 import StatusBadge from "../../../../components/StatusBadge";
 import PortalShell from "../../../../components/portal/PortalShell";
 import { watchAuth } from "../../../../lib/auth";
-import { getApplication, getDecisionHistory } from "../../../../lib/db";
+import {
+  getApplication,
+  getDecisionHistory,
+  withdrawApplication,
+  WITHDRAWABLE_STATUSES,
+} from "../../../../lib/db";
 import { getDocumentUrl, DOC_TYPES } from "../../../../lib/storage";
 
 const FORM_FIELDS = [
@@ -63,6 +68,13 @@ export default function StudentApplicationDetailPage() {
   const [application, setApplication] = useState(null);
   const [decisions, setDecisions] = useState([]);
   const [documentError, setDocumentError] = useState(null);
+
+  // #194: withdrawing is the one action a student can take on a submitted
+  // application, so it is deliberately behind a confirmation and cannot be
+  // triggered by a single stray click.
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState(null);
+  const confirmRef = useRef(null);
 
   useEffect(() => {
     if (!applicationId) {
@@ -130,6 +142,39 @@ export default function StudentApplicationDetailPage() {
     }
   }
 
+  function openConfirm() {
+    setWithdrawError(null);
+    // showModal gives focus trapping and Escape-to-close for free, which a
+    // hand-rolled overlay would have to reimplement.
+    confirmRef.current?.showModal();
+  }
+
+  async function handleWithdraw() {
+    setWithdrawError(null);
+    setWithdrawing(true);
+    try {
+      await withdrawApplication(application.id);
+      confirmRef.current?.close();
+      // Reflect the new state without a reload; the record is unchanged
+      // apart from its status, so refetching the whole thing is wasteful.
+      setApplication((prev) => ({ ...prev, status: "withdrawn" }));
+    } catch (error) {
+      console.error("Withdraw failed:", error);
+      const code = error?.code || error?.message;
+      if (code === "ALREADY_WITHDRAWN") {
+        setWithdrawError("This application has already been withdrawn.");
+      } else if (code === "NOT_WITHDRAWABLE") {
+        setWithdrawError("This application can no longer be withdrawn.");
+      } else if (code === "permission-denied") {
+        setWithdrawError("You do not have permission to withdraw this application.");
+      } else {
+        setWithdrawError("The application could not be withdrawn. Please try again.");
+      }
+    } finally {
+      setWithdrawing(false);
+    }
+  }
+
   if (phase === "loading") {
     return (
       <AuthCard title="Your application">
@@ -172,6 +217,9 @@ export default function StudentApplicationDetailPage() {
 
   const university = application.form?.universityName || application.universityId;
   const isDraft = application.status === "draft";
+  const isWithdrawn = application.status === "withdrawn";
+  const canWithdraw = WITHDRAWABLE_STATUSES.includes(application.status);
+  const courseName = application.form?.courseName;
 
   return (
     <PortalShell user={user} current="dashboard">
@@ -191,6 +239,13 @@ export default function StudentApplicationDetailPage() {
         {isDraft && (
           <AlertBanner variant="info">
             This application is still a draft and has not been submitted yet.
+          </AlertBanner>
+        )}
+
+        {isWithdrawn && (
+          <AlertBanner variant="info">
+            You withdrew this application. It is no longer being considered by the
+            university, and the record is kept for your reference.
           </AlertBanner>
         )}
 
@@ -260,6 +315,53 @@ export default function StudentApplicationDetailPage() {
             </ol>
           </section>
         )}
+
+        {canWithdraw && (
+          <section className={CARD} aria-labelledby="withdraw-heading">
+            <h2 id="withdraw-heading">Withdraw this application</h2>
+            <p className={MUTED}>
+              If you no longer want {university} to consider this application, you can
+              withdraw it. The application and its history are kept, but the university
+              stops reviewing it. This cannot be undone.
+            </p>
+            {withdrawError && <AlertBanner variant="error">{withdrawError}</AlertBanner>}
+            <LoadingButton loading={false} full={false} onClick={openConfirm}>
+              Withdraw application
+            </LoadingButton>
+          </section>
+        )}
+
+        <dialog
+          ref={confirmRef}
+          aria-labelledby="withdraw-confirm-title"
+          className="border border-border rounded-[14px] p-0 max-w-[460px] backdrop:bg-black/40"
+        >
+          <div className="px-7 py-6 grid gap-4">
+            <h2 id="withdraw-confirm-title" className="m-0 text-[1.1rem] text-navy-900">
+              Withdraw this application?
+            </h2>
+            <p className="m-0 text-[0.95rem] leading-relaxed">
+              You are about to withdraw your application to <strong>{university}</strong>
+              {courseName ? <> for <strong>{courseName}</strong></> : null}. The university
+              will stop reviewing it and <strong>this cannot be undone</strong>. You would
+              need to start a new application to apply again.
+            </p>
+            {withdrawError && <AlertBanner variant="error">{withdrawError}</AlertBanner>}
+            <div className="flex gap-3 flex-wrap">
+              <LoadingButton loading={withdrawing} full={false} onClick={handleWithdraw}>
+                {withdrawing ? "Withdrawing..." : "Yes, withdraw it"}
+              </LoadingButton>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => confirmRef.current?.close()}
+                disabled={withdrawing}
+              >
+                Keep my application
+              </button>
+            </div>
+          </div>
+        </dialog>
 
         <p className="m-0">
           {isDraft ? (
