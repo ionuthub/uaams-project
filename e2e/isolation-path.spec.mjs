@@ -87,14 +87,21 @@ test.describe("Cross-university isolation", () => {
 
       // ---- University B: must not see it in the queue ----
       await signInAsAdmin(pageB, B_EMAIL, B_PASSWORD);
+      // Let this university's own queue finish loading first, otherwise the
+      // assertion below can pass or fail on timing rather than on isolation.
+      await pageB.waitForLoadState("networkidle");
       await pageB.locator("#queue-search").fill(APPLICANT);
       await pageB.screenshot({
         path: "e2e-results/11-isolation-university-b-queue-empty.png",
         fullPage: true,
       });
 
-      // Searching for the other university's applicant returns nothing.
-      await expect(pageB.getByRole("link", { name: "View details" })).toHaveCount(0);
+      // The property that matters is that the other university's applicant
+      // does not appear - NOT that the search box returned zero rows. The
+      // first version asserted the latter, which tests the search feature and
+      // fails against a queue that legitimately holds this university's own
+      // applications.
+      await expect(pageB.getByText(APPLICANT)).toHaveCount(0);
 
       // ---- University B: must not reach it by guessing the address ----
       // The interface guard is a courtesy; the Firestore rules are the real
