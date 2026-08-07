@@ -153,6 +153,36 @@ export default function ApplicationPage() {
     if (!next.personalStatement && val("personalStatement").length < 30) {
       next.personalStatement = "Write at least a short personal statement (30 characters or more).";
     }
+    // Nothing above bounds how LONG a value may be, so a name of 100,000
+    // characters passed every check. These caps are deliberately generous -
+    // they exist to catch mistakes and abuse, not to argue with unusual but
+    // real names, addresses or qualifications.
+    //
+    // The same limits are enforced in firestore.rules. This file runs in the
+    // browser and can be bypassed, so on its own it is guidance rather than
+    // protection.
+    const MAX_LENGTHS = {
+      fullName: 100,
+      nationality: 60,
+      passportNumber: 20,
+      phone: 20,
+      address: 250,
+      previousQualification: 120,
+      institutionName: 120,
+      graduationYear: 4,
+      gpa: 20,
+      courseName: 120,
+      intake: 40,
+      personalStatement: 4000,
+    };
+    for (const field of Object.keys(MAX_LENGTHS)) {
+      if (next[field]) continue; // a more specific message already won
+      const value = val(field);
+      if (typeof value === "string" && value.length > MAX_LENGTHS[field]) {
+        next[field] = `Keep this to ${MAX_LENGTHS[field]} characters or fewer.`;
+      }
+    }
+
     setErrors(next);
     return Object.keys(next).length === 0;
   }
