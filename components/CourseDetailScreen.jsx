@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
-import { SOLENT_COURSES } from "../lib/course-catalog.mjs";
+import { ALL_COURSES } from "../lib/course-catalog.mjs";
 
 // Course detail rendered entirely from the catalogue entry the visitor
 // selected (lib/course-catalog.mjs). Refreshing or deep-linking without a
@@ -9,7 +9,7 @@ import { SOLENT_COURSES } from "../lib/course-catalog.mjs";
 // placeholder from the old prototype.
 
 export default function CourseDetailScreen({ setScreen, selectedCourse, user, onStartApplication }) {
-  const course = selectedCourse || SOLENT_COURSES[0];
+  const course = selectedCourse || ALL_COURSES[0];
 
   return (
     <section className="screen directory-screen is-active" data-screen="course-detail">

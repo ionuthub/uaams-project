@@ -72,6 +72,25 @@ service cloud.firestore {
       // Student: may edit allowed draft fields only, and may move
       // status draft -> submitted. Admin: may write decision fields only.
       allow update: if isVerified() && (
+        // ---- #194: student withdraws a submitted application ----
+        // This is the ONLY case where a student may change an application
+        // after submission, so it is deliberately narrow:
+        //   - only the owning student
+        //   - only FROM submitted or under_review (a draft was never
+        //     submitted; a decided application is never rewritten)
+        //   - only TO withdrawn, never to any other status
+        //   - only the status/withdrawnAt/updatedAt fields
+        // 'withdrawn' is absent from the from-list on purpose: once set there
+        // is no route back out of it, so a withdrawal cannot be undone by the
+        // student or turned into an offer.
+        (
+          resource.data.studentUid == request.auth.uid
+          && resource.data.status in ['submitted', 'under_review']
+          && request.resource.data.status == 'withdrawn'
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'withdrawnAt', 'updatedAt'])
+        )
+        ||
         (
           resource.data.studentUid == request.auth.uid
           && resource.data.status == 'draft'
@@ -110,6 +129,23 @@ service cloud.firestore {
                       && request.resource.data.keys()
                            .hasAll(['decision', 'message', 'decidedBy', 'decidedAt']);
         allow update, delete: if false; // decisions are never edited or removed
+      }
+
+      // ---- internal admin notes (PRD 4.3.2) ----
+      // Scoped admins of the owning university only. Students can never read
+      // these, which is the whole point of an internal note. Append-only for
+      // the same reason as decisions: a note is a record of what was thought
+      // at the time, so it is never edited or deleted.
+      match /notes/{noteId} {
+        allow read: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId);
+        allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
+                      && request.resource.data.authorUid == request.auth.uid
+                      && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId
+                      && request.resource.data.keys()
+                           .hasOnly(['body', 'authorUid', 'authorName', 'universityId', 'createdAt'])
+                      && request.resource.data.body is string
+                      && request.resource.data.body.size() > 0;
+        allow update, delete: if false;
       }
     }
 

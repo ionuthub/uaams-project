@@ -43,6 +43,10 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [serverError, setServerError] = useState(null);
+  // #192: kept alongside the message so the banner can offer a way forward
+  // when the cause is an account that already exists, rather than only
+  // telling the person what went wrong.
+  const [serverErrorCode, setServerErrorCode] = useState(null);
 
   function update(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -78,6 +82,7 @@ export default function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setServerError(null);
+    setServerErrorCode(null);
     if (!validate()) return;
 
     setStatus("loading");
@@ -106,6 +111,7 @@ export default function RegisterPage() {
       router.push(verificationEmailSent ? "/verify-email" : "/verify-email?sent=0");
     } catch (err) {
       setServerError(mapAuthErrorToMessage(err.code));
+      setServerErrorCode(err.code || null);
       setStatus("error");
     }
   }
@@ -135,27 +141,36 @@ export default function RegisterPage() {
           </div>
 
           {status === "error" && serverError && (
-            <div className="auth-alert is-error" role="alert">{serverError}</div>
+            <div className="auth-alert is-error" role="alert">
+              {serverError}
+              {serverErrorCode === "auth/email-already-in-use" && (
+                <>
+                  {" "}
+                  <a href="/login">Go to sign in</a>, or{" "}
+                  <a href="/reset-password">reset your password</a>.
+                </>
+              )}
+            </div>
           )}
           {status === "success" && (
             <div className="auth-alert is-success" role="status">Account created. Taking you to verify your email...</div>
           )}
 
-          <TextField name="fullName" value={form.fullName} onChange={(v) => update("fullName", v)} isInvalid={!!errors.fullName} className="grid gap-2">
+          <TextField name="fullName" value={form.fullName} onChange={(v) => update("fullName", v)} isInvalid={!!errors.fullName} isRequired className="grid gap-2">
             <Label className={LABEL}>Full name<span className="text-error" aria-hidden="true">*</span></Label>
             <Input autoComplete="name" placeholder="e.g. Amara Osei" className={INPUT} />
             <FieldError className="field-error">{errors.fullName}</FieldError>
           </TextField>
 
           <div className="field-grid">
-            <TextField name="nationality" value={form.nationality} onChange={(v) => update("nationality", v)} isInvalid={!!errors.nationality} className="grid gap-2">
+            <TextField name="nationality" value={form.nationality} onChange={(v) => update("nationality", v)} isInvalid={!!errors.nationality} isRequired className="grid gap-2">
               <Label className={LABEL}>Nationality<span className="text-error" aria-hidden="true">*</span></Label>
               <Input autoComplete="country-name" className={INPUT} />
               <FieldError className="field-error">{errors.nationality}</FieldError>
             </TextField>
             <div className="grid gap-2">
               <label className={LABEL} htmlFor="reg-level">Intended study level<span className="text-error" aria-hidden="true">*</span></label>
-              <select id="reg-level" value={form.studyLevel} aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)}>
+              <select id="reg-level" required aria-required="true" value={form.studyLevel} aria-invalid={!!errors.studyLevel} onChange={(e) => update("studyLevel", e.target.value)}>
                 <option value="">Select a study level</option>
                 <option value="Foundation">Foundation</option>
                 <option value="Bachelors">Bachelors</option>
@@ -166,27 +181,27 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <TextField name="email" type="email" value={form.email} onChange={(v) => update("email", v)} isInvalid={!!errors.email} className="grid gap-2">
+          <TextField name="email" type="email" value={form.email} onChange={(v) => update("email", v)} isInvalid={!!errors.email} isRequired className="grid gap-2">
             <Label className={LABEL}>Email address<span className="text-error" aria-hidden="true">*</span></Label>
             <Input autoComplete="email" placeholder="you@example.com" className={INPUT} />
             <FieldError className="field-error">{errors.email}</FieldError>
           </TextField>
 
-          <TextField name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={(v) => update("password", v)} isInvalid={!!errors.password} className="grid gap-2">
+          <TextField name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={(v) => update("password", v)} isInvalid={!!errors.password} isRequired className="grid gap-2">
             <Label className={LABEL}>Password<span className="text-error" aria-hidden="true">*</span></Label>
             <div className="relative">
               <Input autoComplete="new-password" className={INPUT + " pr-16"} />
-              <Button type="button" onPress={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showPassword ? "Hide" : "Show"}</Button>
+              <Button type="button" onPress={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 -translate-y-1/2 min-h-6 min-w-11 grid place-items-center px-2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showPassword ? "Hide" : "Show"}</Button>
             </div>
             <FieldError className="field-error">{errors.password}</FieldError>
             {!errors.password && strength && (<span className={`auth-strength is-${strength}`}>Password strength: {STRENGTH_LABEL[strength]}</span>)}
           </TextField>
 
-          <TextField name="confirmPassword" type={showConfirm ? "text" : "password"} value={form.confirmPassword} onChange={(v) => update("confirmPassword", v)} isInvalid={!!errors.confirmPassword} className="grid gap-2">
+          <TextField name="confirmPassword" type={showConfirm ? "text" : "password"} value={form.confirmPassword} onChange={(v) => update("confirmPassword", v)} isInvalid={!!errors.confirmPassword} isRequired className="grid gap-2">
             <Label className={LABEL}>Confirm password<span className="text-error" aria-hidden="true">*</span></Label>
             <div className="relative">
               <Input autoComplete="new-password" className={INPUT + " pr-16"} />
-              <Button type="button" onPress={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showConfirm ? "Hide" : "Show"}</Button>
+              <Button type="button" onPress={() => setShowConfirm((v) => !v)} aria-label={showConfirm ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 -translate-y-1/2 min-h-6 min-w-11 grid place-items-center px-2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer">{showConfirm ? "Hide" : "Show"}</Button>
             </div>
             <FieldError className="field-error">{errors.confirmPassword}</FieldError>
           </TextField>

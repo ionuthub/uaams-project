@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PublicHeader from "./PublicHeader";
 import { Search, Heart } from "lucide-react";
-import { SOLENT_COURSES } from "../lib/course-catalog.mjs";
+import { ALL_COURSES } from "../lib/course-catalog.mjs";
 
 // Course search over the real catalogue for the participating university
 // (lib/course-catalog.mjs). The placeholder multi-university course list
@@ -14,7 +14,7 @@ export default function CoursesScreen({ setScreen, user, onSignOut, onSelectCour
   const [selectedLevels, setSelectedLevels] = useState([]);
   const [savedCourses, setSavedCourses] = useState({});
 
-  const filteredCourses = SOLENT_COURSES.filter((c) => {
+  const filteredCourses = ALL_COURSES.filter((c) => {
     const q = searchQuery.trim().toLowerCase();
     const matchesQuery =
       q === "" ||

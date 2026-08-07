@@ -46,7 +46,8 @@ const FORM_FIELDS = [
 ];
 
 const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
-const ADMIN_FOOTER = [{ label: "Student view", href: "/student" }];
+// #196: Student view removed - staff accounts are not applicant accounts.
+const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -305,7 +306,7 @@ export default function AdminApplicationDetailPage() {
     return (
       <AuthCard title="Application detail">
         <AlertBanner variant="error">Sign in with an admissions account to view this application.</AlertBanner>
-        <p className="text-muted text-[0.9rem] my-1"><a href="/login">Go to login</a></p>
+        <p className="text-muted text-[0.9rem] my-1"><a href="/admin/login">Go to staff sign-in</a></p>
       </AuthCard>
     );
   }

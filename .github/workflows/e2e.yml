@@ -31,6 +31,10 @@ jobs:
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          # Second university admin (#25, #199). The isolation spec skips itself
+          # when these are absent, so the suite stays green until they are set.
+          E2E_ADMIN2_EMAIL: ${{ secrets.E2E_ADMIN2_EMAIL }}
+          E2E_ADMIN2_PASSWORD: ${{ secrets.E2E_ADMIN2_PASSWORD }}
         run: npx playwright test -c e2e/playwright.config.mjs
       - name: Upload evidence (screenshots, videos, report)
         if: always()

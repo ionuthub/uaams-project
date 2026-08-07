@@ -99,14 +99,21 @@ export default function PublicHeader({ setScreen, currentScreen, user, onSignOut
       <div className="header-actions">
         {user ? (
           <>
+            {/* #196: one portal per role. Staff and applicant accounts are
+                mutually exclusive, so offering both here let an admin walk
+                into the student portal through the front door and undid the
+                point of separating the sign-ins. Until the role is known,
+                neither is shown rather than guessing. */}
             {role === "admin" && (
               <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/admin"; })}>
                 Admin queue
               </button>
             )}
-            <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/student"; })}>
-              Student Dashboard
-            </button>
+            {role === "student" && (
+              <button className="button button-quiet" type="button" onClick={() => go(() => { window.location.href = "/student"; })}>
+                Student Dashboard
+              </button>
+            )}
             <button className="button button-secondary" type="button" onClick={() => go(onSignOut)}>
               Sign out
             </button>
