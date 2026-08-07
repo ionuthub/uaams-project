@@ -209,6 +209,10 @@ export default function AdminListPage() {
     ["under_review", "Under review"],
     ["offer", "Offer"],
     ["rejected", "Rejected"],
+  // #194: withdrawn is a terminal, student-initiated status. It is filterable
+  // so staff can find one, but it is excluded from the workload counts below
+  // because it is not work sitting in anyone tray.
+  ["withdrawn", "Withdrawn"],
   ];
 
   return (
@@ -236,7 +240,7 @@ export default function AdminListPage() {
           // Figma "Admissions overview" alignment, computed from live queue
           // data only. The mock-up's median review time is not derivable from
           // the current data model, so it is deliberately not shown.
-          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0 };
+          const counts = { submitted: 0, under_review: 0, offer: 0, rejected: 0, withdrawn: 0 };
           applications.forEach((a) => {
             if (counts[a.status] !== undefined) counts[a.status] += 1;
           });
