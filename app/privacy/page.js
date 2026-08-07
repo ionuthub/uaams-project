@@ -48,13 +48,21 @@ function PrivacyContent({ returnHref, returnLabel }) {
       <h2>Access and storage</h2>
       <p>Firebase Authentication, Firestore and Cloud Storage hold the proof-of-concept data. Applicants can access their own records. Admissions officers can access only applications associated with their assigned university.</p>
       <h2>Your choices</h2>
-      <p>Do not submit real sensitive evidence during development testing. Requests to correct or remove test data should be sent to the UAAMS team. The production-ready retention and deletion process must be approved before real-world use.</p>
+      <p>Do not submit real sensitive evidence during development testing. Requests to correct or remove test data should be sent to <a href="mailto:privacy@uaams.website">privacy@uaams.website</a>. The production-ready retention and deletion process must be approved before real-world use.</p>
+      <h2>Who is responsible</h2>
+      <p>
+        This service is operated by the UAAMS project team at Southampton Solent
+        University as part of a Level 6 industrial consulting project. Questions about
+        this notice, or about how information is handled, can be sent to{" "}
+        <a href="mailto:privacy@uaams.website">privacy@uaams.website</a>.
+      </p>
       <h2>Requesting your data or its deletion</h2>
       <p>
         You can ask what personal data this service holds about you, ask for it to be
-        corrected, or ask for it to be erased. Send the request to the UAAMS team from
-        the email address the account was registered with, so that the account can be
-        identified without asking you for further personal details.
+        corrected, or ask for it to be erased. Send the request to{" "}
+        <a href="mailto:privacy@uaams.website">privacy@uaams.website</a> from the email
+        address the account was registered with, so that the account can be identified
+        without asking you for further personal details.
       </p>
       <p>
         Requests are answered within one month. Erasure is carried out by the UAAMS team.
