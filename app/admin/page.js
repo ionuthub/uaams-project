@@ -197,19 +197,26 @@ export default function AdminListPage() {
   const q = query.trim().toLowerCase();
   const filtered = applications.filter(
     (a) =>
-      (statusFilter === "all" || a.status === statusFilter) &&
+      (statusFilter === "all" ? a.status !== "withdrawn" : a.status === statusFilter) &&
       (!q ||
         a.id.toLowerCase().includes(q) ||
         (a.form?.fullName || "").toLowerCase().includes(q))
   );
   const visible = filtered.slice(0, visibleCount);
   const FILTERS = [
-    ["all", "All"],
+    ["all", "All active"],
     ["submitted", "Submitted"],
     ["under_review", "Under review"],
     ["offer", "Offer"],
     ["rejected", "Rejected"],
-    ["withdrawn", "Withdrawn"],
+  // #194: withdrawn sits OFF the pipeline. Submitted, under review, offer and
+  // rejected are stages of staff work; withdrawn is the applicant stepping out
+  // of it, and nobody ever actions one. So it is deliberately excluded from the
+  // default "All active" view and reachable only by choosing it, rather than
+  // being scattered through a queue an officer is trying to work through.
+  // It is also absent from the open and decided figures, so a withdrawal never
+  // counts as workload or as a decision.
+  ["withdrawn", "Withdrawn"],
   ];
 
   return (

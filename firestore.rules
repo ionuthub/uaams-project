@@ -5,7 +5,14 @@ rules_version = '2';
 //   1. Students only ever see their own applications.
 //   2. Admins only see applications for THEIR university (scoping).
 // Field-level allow-lists on user/application updates added after PR review.
-// Sprint 3 TODO: value-format validation, App Check, GDPR delete cascade (IS-06).
+// Sprint 3 TODO: App Check, GDPR delete cascade (IS-06).
+// Value limits added (#190): every string a client can write is now bounded,
+// and text a human will read (decision messages, notes, names) must actually
+// say something - see capped(), fieldCapped() and meaningfulText() below.
+// Empty strings no longer satisfy a presence check (Silvana, #190): document
+// paths, names, decision messages and notes must contain something.
+// Still outstanding: pattern validation (a name is length-checked here, not
+// checked for shape), and App Check.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,6 +30,56 @@ service cloud.firestore {
     function isAdmin() {
       return isVerified() && userDoc().role == 'admin';
     }
+    // ---- value limits (#190) ----
+    // The apply form caps every free-text field, but the form runs in the
+    // browser and can be bypassed, so the same caps live here. Without these
+    // the rules only checked that a field EXISTS, not what is in it - which is
+    // why a 100,000 character name could be written directly to Firestore.
+    //
+    // Reads through get() with an empty default so an absent optional field is
+    // simply within its limit rather than an error, and non-string values are
+    // left alone for the field-specific rules to handle.
+    function capped(form, field, max) {
+      return !(form.get(field, '') is string) || form.get(field, '').size() <= max;
+    }
+
+    // For a single top-level string field rather than one inside the form map.
+    // Absent is allowed here; callers add their own presence checks where a
+    // field is mandatory.
+    function fieldCapped(data, field, max) {
+      return !(data.get(field, '') is string) || data.get(field, '').size() <= max;
+    }
+
+    // A message a human wrote and another human will read. Must actually say
+    // something (Silvana's finding: a blank decision message was accepted) and
+    // must not be unbounded.
+    function meaningfulText(value, max) {
+      return value is string && value.size() > 0 && value.size() <= max;
+    }
+
+    // Silvana's first finding (#190): a rule that checks a path "is string"
+    // also accepts the empty string, so an application could be submitted with
+    // three documents attached in name only. A storage path must actually
+    // point somewhere.
+    function realPath(value) {
+      return value is string && value.size() > 0 && value.size() <= 500;
+    }
+
+    function formWithinLimits(form) {
+      return capped(form, 'fullName', 100)
+             && capped(form, 'nationality', 60)
+             && capped(form, 'passportNumber', 20)
+             && capped(form, 'phone', 20)
+             && capped(form, 'address', 250)
+             && capped(form, 'previousQualification', 120)
+             && capped(form, 'institutionName', 120)
+             && capped(form, 'graduationYear', 4)
+             && capped(form, 'gpa', 20)
+             && capped(form, 'courseName', 120)
+             && capped(form, 'intake', 40)
+             && capped(form, 'personalStatement', 4000);
+    }
+
     function adminOf(universityId) {
       return isAdmin() && userDoc().universityId == universityId;
     }
@@ -36,6 +93,10 @@ service cloud.firestore {
                     && request.auth.uid == uid
                     && request.resource.data.role == 'student'
                     && request.resource.data.privacyConsent == true
+                    && meaningfulText(request.resource.data.fullName, 100)
+                    && fieldCapped(request.resource.data, 'nationality', 60)
+                    && fieldCapped(request.resource.data, 'studyLevel', 40)
+                    && fieldCapped(request.resource.data, 'email', 254)
                     && request.resource.data.keys()
                          .hasOnly(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
@@ -43,7 +104,8 @@ service cloud.firestore {
       allow update: if signedIn()
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
-                   .hasOnly(['fullName', 'updatedAt']);
+                   .hasOnly(['fullName', 'updatedAt'])
+              && meaningfulText(request.resource.data.fullName, 100);
       allow delete: if false; // GDPR delete cascade is a Sprint 3 item (IS-06)
     }
 
@@ -64,6 +126,7 @@ service cloud.firestore {
       allow create: if isVerified()
                     && request.resource.data.studentUid == request.auth.uid
                     && request.resource.data.status == 'draft'
+                    && formWithinLimits(request.resource.data.form)
                     && request.resource.data.keys()
                          .hasOnly(['studentUid', 'universityId', 'status', 'form', 'documentPath', 'documents', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
@@ -94,6 +157,7 @@ service cloud.firestore {
         (
           resource.data.studentUid == request.auth.uid
           && resource.data.status == 'draft'
+          && formWithinLimits(request.resource.data.form)
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['form', 'documentPath', 'documents', 'status', 'submittedAt', 'updatedAt'])
           && (request.resource.data.status == 'draft'
@@ -101,9 +165,9 @@ service cloud.firestore {
                   // PRD 4.2.3 (issue #152): the three mandatory document
                   // types must be attached before submission. English test
                   // stays optional. documentPath remains for back-compat.
-                  && request.resource.data.documents.passportCopy.path is string
-                  && request.resource.data.documents.transcripts.path is string
-                  && request.resource.data.documents.certificates.path is string))
+                  && realPath(request.resource.data.documents.passportCopy.path)
+                  && realPath(request.resource.data.documents.transcripts.path)
+                  && realPath(request.resource.data.documents.certificates.path)))
         )
         ||
         (
@@ -111,6 +175,11 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['status', 'latestDecisionMessage', 'updatedAt'])
           && request.resource.data.status in ['under_review', 'offer', 'rejected']
+          // A decision message is optional when simply moving to under review,
+          // but if one is written it must be real text and bounded. The blank
+          // case is caught in the decisions subcollection below, where the
+          // message is mandatory.
+          && fieldCapped(request.resource.data, 'latestDecisionMessage', 2000)
         )
       );
 
@@ -124,6 +193,10 @@ service cloud.firestore {
         allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
                       && request.resource.data.decidedBy == request.auth.uid
                       && request.resource.data.decision in ['offer', 'rejected']
+                      // Silvana's finding: a blank decision message was accepted
+                      // and written to an append-only log that can never be
+                      // corrected, only superseded.
+                      && meaningfulText(request.resource.data.message, 2000)
                       && request.resource.data.keys()
                            .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
                       && request.resource.data.keys()
@@ -143,8 +216,7 @@ service cloud.firestore {
                       && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId
                       && request.resource.data.keys()
                            .hasOnly(['body', 'authorUid', 'authorName', 'universityId', 'createdAt'])
-                      && request.resource.data.body is string
-                      && request.resource.data.body.size() > 0;
+                      && meaningfulText(request.resource.data.body, 2000);
         allow update, delete: if false;
       }
     }
