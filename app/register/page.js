@@ -43,6 +43,10 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [serverError, setServerError] = useState(null);
+  // #192: kept alongside the message so the banner can offer a way forward
+  // when the cause is an account that already exists, rather than only
+  // telling the person what went wrong.
+  const [serverErrorCode, setServerErrorCode] = useState(null);
 
   function update(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -78,6 +82,7 @@ export default function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setServerError(null);
+    setServerErrorCode(null);
     if (!validate()) return;
 
     setStatus("loading");
@@ -106,6 +111,7 @@ export default function RegisterPage() {
       router.push(verificationEmailSent ? "/verify-email" : "/verify-email?sent=0");
     } catch (err) {
       setServerError(mapAuthErrorToMessage(err.code));
+      setServerErrorCode(err.code || null);
       setStatus("error");
     }
   }
@@ -135,7 +141,16 @@ export default function RegisterPage() {
           </div>
 
           {status === "error" && serverError && (
-            <div className="auth-alert is-error" role="alert">{serverError}</div>
+            <div className="auth-alert is-error" role="alert">
+              {serverError}
+              {serverErrorCode === "auth/email-already-in-use" && (
+                <>
+                  {" "}
+                  <a href="/login">Go to sign in</a>, or{" "}
+                  <a href="/reset-password">reset your password</a>.
+                </>
+              )}
+            </div>
           )}
           {status === "success" && (
             <div className="auth-alert is-success" role="status">Account created. Taking you to verify your email...</div>
