@@ -13,6 +13,7 @@ export const STATUS_META = {
   under_review: { label: "Under review", tone: "warning" },
   offer: { label: "Offer made", tone: "success" },
   rejected: { label: "Not successful", tone: "error" },
+  withdrawn: { label: "Withdrawn", tone: "neutral" },
 };
 
 export function statusMeta(status) {

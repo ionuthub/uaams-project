@@ -54,6 +54,24 @@ function uploadError(problem) {
     : "The document could not be uploaded. Please try again.";
 }
 
+// Intakes are offered, not typed: January, May and September over the next
+// three years, past months excluded. The validate() rule stays as the
+// backstop for bypassed forms; drafts saved before the dropdown keep their
+// free-text value selectable rather than having it silently discarded.
+const INTAKE_OPTIONS = (() => {
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const OFFERED = ["January", "May", "September"];
+  const now = new Date();
+  const options = [];
+  for (let year = now.getFullYear(); year <= now.getFullYear() + 2; year += 1) {
+    for (const month of OFFERED) {
+      if (year === now.getFullYear() && MONTH_NAMES.indexOf(month) < now.getMonth()) continue;
+      options.push(month + " " + year);
+    }
+  }
+  return options;
+})();
+
 export default function ApplicationPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -138,6 +156,32 @@ export default function ApplicationPage() {
     if (!next.gpa && val("gpa").length > 12) {
       next.gpa = "Keep the grade short, for example 2:1 or 3.6.";
     }
+    // Intake must be a real month and year, and must be in the future - an
+    // application is for an upcoming intake, so "September 2024" (or a typo
+    // like "sdptember") is a mistake the form should catch, not store.
+    if (!next.intake) {
+      const intakeRaw = val("intake").trim();
+      const intakeMatch = intakeRaw.match(
+        /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})$/i
+      );
+      if (!intakeMatch) {
+        next.intake = 'Enter the intake as a month and year, e.g. "September 2027".';
+      } else {
+        const MONTHS = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+        const intakeYear = Number(intakeMatch[2]);
+        const intakeMonth = MONTHS.indexOf(intakeMatch[1].toLowerCase());
+        const today = new Date();
+        const notYetPast =
+          intakeYear > today.getFullYear() ||
+          (intakeYear === today.getFullYear() && intakeMonth >= today.getMonth());
+        if (!notYetPast) {
+          next.intake = "The intake must be in the future - this one has already started.";
+        } else if (intakeYear > today.getFullYear() + 5) {
+          next.intake = "Choose an intake within the next five years.";
+        }
+      }
+    }
+
     if (!next.courseName && !hasLetter(val("courseName"))) {
       next.courseName = "Enter the course name.";
     }
@@ -263,7 +307,24 @@ export default function ApplicationPage() {
   return <PortalShell user={user} current="apply"><div className="min-h-screen pt-8 px-4 pb-16 bg-transparent text-ink"><form className="max-w-[52rem] mx-auto [&>header]:mb-6 [&>header_h1]:mt-[0.2rem] [&>header_h1]:mb-2 [&>header_h1]:text-[clamp(2rem,5vw,3rem)] [&>header_h1]:text-navy-900" onSubmit={(event) => event.preventDefault()} noValidate>
     <header><p className="m-0 text-blue-600 font-extrabold uppercase tracking-[0.08em]">Student application</p><h1>Apply to a university</h1><p>Complete the required details, save a draft, attach evidence and submit.</p></header>
     {message && <AlertBanner variant={message.type}>{message.text}</AlertBanner>}
-    <section className={SECTION}><h2>1. University and intake</h2><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="universityId">University</label><select className={SELECT} id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className="text-xs font-medium text-error">{errors.universityId}</p>}</div><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="studyLevel">Intended study level</label><select className={SELECT} id="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} aria-invalid={!!errors.studyLevel}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>{errors.studyLevel && <p className="text-xs font-medium text-error">{errors.studyLevel}</p>}</div><FormField label="Intake" name="intake" placeholder="e.g. September 2026" value={form.intake} onChange={(e) => update("intake", e.target.value)} error={errors.intake} /></div><FormField label="Course name" name="courseName" placeholder="e.g. BSc Computer Science" value={form.courseName} onChange={(e) => update("courseName", e.target.value)} error={errors.courseName} /></section>
+    <section className={SECTION}><h2>1. University and intake</h2><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="universityId">University</label><select className={SELECT} id="universityId" value={form.universityId} onChange={(e) => update("universityId", e.target.value)} aria-invalid={!!errors.universityId}><option value="">Select a university</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{errors.universityId && <p className="text-xs font-medium text-error">{errors.universityId}</p>}</div><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><div className="flex flex-col gap-1"><label className="text-sm font-medium text-ink" htmlFor="studyLevel">Intended study level</label><select className={SELECT} id="studyLevel" value={form.studyLevel} onChange={(e) => update("studyLevel", e.target.value)} aria-invalid={!!errors.studyLevel}><option value="">Select a study level</option><option value="Foundation">Foundation</option><option value="Bachelors">Bachelors</option><option value="Masters">Masters</option><option value="PhD">PhD</option></select>{errors.studyLevel && <p className="text-xs font-medium text-error">{errors.studyLevel}</p>}</div><div>
+            <label htmlFor="apply-intake">Intake</label>
+            <select
+              id="apply-intake"
+              value={form.intake}
+              aria-invalid={!!errors.intake}
+              onChange={(e) => update("intake", e.target.value)}
+            >
+              <option value="">Select an intake</option>
+              {form.intake && !INTAKE_OPTIONS.includes(form.intake) && (
+                <option value={form.intake}>{form.intake}</option>
+              )}
+              {INTAKE_OPTIONS.map((intake) => (
+                <option key={intake} value={intake}>{intake}</option>
+              ))}
+            </select>
+            {errors.intake && <p className="text-xs font-medium text-error">{errors.intake}</p>}
+          </div></div><FormField label="Course name" name="courseName" placeholder="e.g. BSc Computer Science" value={form.courseName} onChange={(e) => update("courseName", e.target.value)} error={errors.courseName} /></section>
     <section className={SECTION}><h2>2. Personal details</h2><div className="grid grid-cols-2 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Full name" name="fullName" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} error={errors.fullName} /><FormField label="Date of birth" name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} error={errors.dateOfBirth} /><FormField label="Nationality" name="nationality" value={form.nationality} onChange={(e) => update("nationality", e.target.value)} error={errors.nationality} /><FormField label="Phone" name="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} error={errors.phone} /><FormField label="Passport number" name="passportNumber" value={form.passportNumber} onChange={(e) => update("passportNumber", e.target.value)} error={errors.passportNumber} /></div><FormField label="Address" name="address" value={form.address} onChange={(e) => update("address", e.target.value)} error={errors.address} /></section>
     <section className={SECTION}><h2>3. Academic information</h2><FormField label="Previous qualification" name="previousQualification" value={form.previousQualification} onChange={(e) => update("previousQualification", e.target.value)} error={errors.previousQualification} /><div className="grid grid-cols-3 gap-4 my-4 max-sm:grid-cols-1"><FormField label="Institution name" name="institutionName" value={form.institutionName} onChange={(e) => update("institutionName", e.target.value)} error={errors.institutionName} /><FormField label="Graduation year" name="graduationYear" placeholder="e.g. 2024" value={form.graduationYear} onChange={(e) => update("graduationYear", e.target.value)} error={errors.graduationYear} /><FormField label="GPA / Grade" name="gpa" placeholder="e.g. 2:1 or 3.6" value={form.gpa} onChange={(e) => update("gpa", e.target.value)} error={errors.gpa} /></div><div className="flex flex-col gap-1 mt-4"><label className="text-sm font-medium text-ink" htmlFor="personalStatement">Personal statement</label><textarea className={TEXTAREA} id="personalStatement" rows="7" value={form.personalStatement} onChange={(e) => update("personalStatement", e.target.value)} aria-invalid={!!errors.personalStatement} />{errors.personalStatement && <p className="text-xs font-medium text-error">{errors.personalStatement}</p>}</div></section>
     <section className={SECTION}><h2>4. Supporting documents</h2><p>Upload each document as PDF, JPG or PNG, no larger than 10 MB. Passport copy, academic transcripts and certificates are required; the English language test is optional.</p>
