@@ -358,7 +358,7 @@ export default function StaffPortal({
                       <section className="case-section">
                         <h2>Application Profile & Evidence (PRD 4.3.2)</h2>
                         <p><strong>Student ID:</strong> {selectedApp.studentUid}</p>
-                        <p><strong>Course:</strong> {selectedApp.courseName || "BSc (Hons) Computer Science"}</p>
+                        <p><strong>Course:</strong> {selectedApp.courseName || "Not provided"}</p>
                         <p><strong>Uploaded Document:</strong> {selectedApp.documentPath || "No evidence document uploaded yet"}</p>
                         {selectedApp.documentPath && (
                           <button
