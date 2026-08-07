@@ -34,7 +34,19 @@ function buildSubmissionEmail({ universityName, courseName, applicationId }) {
   return { subject, text, html };
 }
 
-async function claimSubmissionLog(db, key, recipient) {
+// #190 (Silvana): the emailLogs entries written by the four routes used
+// different names for the same concepts - claimedAt vs startedAt, providerId
+// vs providerMessageId, errorCode vs lastErrorCode - which made the collection
+// hard to query and impossible to document accurately. This route now matches
+// the decision route, which is the reference shape.
+//
+// Two real defects came out of that comparison:
+//   1. No universityId was recorded, and the emailLogs read rule requires it
+//      (resource.data.universityId == userDoc().universityId), so a submission
+//      log could never be read by any admin.
+//   2. The provider id was read from result.id, but sendEmail returns
+//      providerId, so it was always null.
+async function claimSubmissionLog(db, key, logData) {
   const ref = db.collection("emailLogs").doc(key);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
@@ -43,18 +55,22 @@ async function claimSubmissionLog(db, key, recipient) {
       if (data.status === "sent") return { claimed: false, reason: "already-sent" };
       if (
         data.status === "sending" &&
-        data.claimedAt &&
-        Date.now() - data.claimedAt.toMillis() < ACTIVE_SEND_LEASE_MS
+        data.startedAt &&
+        Date.now() - data.startedAt.toMillis() < ACTIVE_SEND_LEASE_MS
       ) {
         return { claimed: false, reason: "in-progress" };
       }
     }
+    const now = Timestamp.now();
     tx.set(ref, {
-      eventType: "submission-confirmation",
-      recipient,
+      ...logData,
       status: "sending",
-      claimedAt: Timestamp.now(),
       attempts: FieldValue.increment(1),
+      startedAt: now,
+      updatedAt: now,
+      lastErrorCode: null,
+      providerStatus: null,
+      ...(snap.exists ? {} : { createdAt: now }),
     }, { merge: true });
     return { claimed: true };
   });
@@ -99,7 +115,16 @@ export async function POST(request) {
   if (!recipient) return fail(422, "application/student-email-unavailable");
 
   const key = `submission-${applicationId}`;
-  const claim = await claimSubmissionLog(db, key, recipient);
+  const claim = await claimSubmissionLog(db, key, {
+    eventType: "submission-confirmation",
+    provider: "resend",
+    applicationId,
+    studentUid: application.studentUid,
+    // Required by the emailLogs read rule; without it the scoped admin who
+    // owns this application cannot read the delivery record.
+    universityId: application.universityId,
+    requestedBy: decoded.uid,
+  });
   if (!claim.claimed) {
     return NextResponse.json({ ok: true, code: `email/${claim.reason}` });
   }
@@ -126,15 +151,20 @@ export async function POST(request) {
     const result = await sendEmail({ to: recipient, subject, text, html, idempotencyKey: key });
     await logRef.set({
       status: "sent",
-      providerId: result?.id || null,
+      providerMessageId: result?.providerId || null,
       sentAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      lastErrorCode: null,
+      providerStatus: null,
     }, { merge: true });
     return NextResponse.json({ ok: true, code: "email/sent" });
   } catch (error) {
     await logRef.set({
       status: "failed",
       failedAt: Timestamp.now(),
-      errorCode: error?.code || error?.message || "unknown",
+      updatedAt: Timestamp.now(),
+      lastErrorCode: error?.code || error?.message || "unknown",
+      providerStatus: Number.isInteger(error?.providerStatus) ? error.providerStatus : null,
     }, { merge: true }).catch(() => {});
     return fail(502, "email/provider-error");
   }
