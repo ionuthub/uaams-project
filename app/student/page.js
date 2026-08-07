@@ -65,6 +65,35 @@ function getNextAction(applications) {
 
 export default function StudentDashboardPage() {
   const [phase, setPhase] = useState("loading");
+  // #196: staff accounts are not applicant accounts. The public header no
+  // longer offers this portal to an admin, but the URL is still typeable, so
+  // the page refuses it too. This is a clarity guard, not a security control -
+  // an admin reading applications they own is legitimately allowed by the
+  // rules, because those check ownership rather than role.
+  const [staffAccount, setStaffAccount] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const stop = watchAuth(async (current) => {
+      if (!active) return;
+      if (!current) {
+        setStaffAccount(false);
+        return;
+      }
+      try {
+        const profile = await getUserProfile(current.uid);
+        if (active) setStaffAccount(profile?.role === "admin");
+      } catch {
+        // Fail open: if the role cannot be read, show the applicant view
+        // rather than locking someone out of their own dashboard.
+        if (active) setStaffAccount(false);
+      }
+    });
+    return () => {
+      active = false;
+      stop();
+    };
+  }, []);
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [profileName, setProfileName] = useState("");
@@ -112,6 +141,20 @@ export default function StudentDashboardPage() {
   }, []);
 
   if (phase === "loading") return <AuthCard title="My applications"><p role="status">Loading your applications...</p></AuthCard>;
+  if (staffAccount) {
+    return (
+      <AuthCard title="Your applications">
+        <AlertBanner variant="info">
+          This is the applicant portal. You are signed in with a staff account,
+          which does not hold applications.
+        </AlertBanner>
+        <p className="text-muted text-[0.9rem]">
+          <a className="text-link" href="/admin">Go to the application queue</a>
+        </p>
+      </AuthCard>
+    );
+  }
+
   if (phase === "signed-out") return <AuthCard title="My applications"><AlertBanner variant="error">Sign in to view your applications.</AlertBanner><a href="/login">Go to login</a></AuthCard>;
   if (phase === "unverified") return <AuthCard title="Verify your email"><AlertBanner variant="info">Verify your email before starting an application.</AlertBanner><a href="/verify-email">Verification help</a></AuthCard>;
   if (phase === "error") return <AuthCard title="My applications"><AlertBanner variant="error">We could not load your applications. Please try again.</AlertBanner><LoadingButton loading={false} onClick={() => window.location.reload()}>Try again</LoadingButton></AuthCard>;
