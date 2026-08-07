@@ -149,6 +149,22 @@ export default function StudentApplicationDetailPage() {
     confirmRef.current?.showModal();
   }
 
+  async function notifyAdminsOfWithdrawal(id) {
+    try {
+      const token = await user.getIdToken();
+      await fetch("/api/notifications/withdrawal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ applicationId: id }),
+      });
+    } catch {
+      // Quiet by design - see the call site.
+    }
+  }
+
   async function handleWithdraw() {
     setWithdrawError(null);
     setWithdrawing(true);
@@ -158,6 +174,10 @@ export default function StudentApplicationDetailPage() {
       // Reflect the new state without a reload; the record is unchanged
       // apart from its status, so refetching the whole thing is wasteful.
       setApplication((prev) => ({ ...prev, status: "withdrawn" }));
+      // Best-effort admin notification (#194). The withdrawal above already
+      // succeeded, so a failure here is deliberately invisible to the student:
+      // the notification is a bonus, never part of the withdrawal itself.
+      notifyAdminsOfWithdrawal(application.id);
     } catch (error) {
       console.error("Withdraw failed:", error);
       const code = error?.code || error?.message;
