@@ -133,7 +133,7 @@ export default function AdminLoginPage() {
                 type="button"
                 onPress={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 min-h-6 min-w-11 grid place-items-center px-2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer"
               >
                 {showPassword ? "Hide" : "Show"}
               </Button>
