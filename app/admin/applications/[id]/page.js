@@ -338,7 +338,8 @@ export default function AdminApplicationDetailPage() {
   }
 
   const latestDecision = decisions[0] || null;
-  const decidable = ["submitted", "under_review", "offer", "rejected"].includes(application.status);
+  const isWithdrawn = application.status === "withdrawn";
+  const decidable = !isWithdrawn && ["submitted", "under_review", "offer", "rejected"].includes(application.status);
   const showRetryEmail = latestDecision && (!emailLog || emailLog.status !== "sent");
 
   return (
@@ -407,69 +408,77 @@ export default function AdminApplicationDetailPage() {
 
       <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
         <h2 id="record-decision">Record a decision</h2>
-        {application.status === "submitted" && (
-          <div className="mb-4 px-[0.85rem] py-[0.7rem] bg-slate-50 border border-border rounded-lg text-[0.9rem] flex items-center justify-between gap-3 flex-wrap">
-            <span>This application has not been reviewed yet. Moving it to under review tells the student their application is being processed (PRD 4.3.2).</span>
-            <LoadingButton loading={reviewBusy} onClick={handleStartReview}>Move to under review</LoadingButton>
-          </div>
-        )}
-        {decidable ? (
-          <form onSubmit={handleDecision} noValidate>
-            <fieldset className="m-0 mb-2 p-0 border-0 grid gap-2 [&_legend]:text-[0.9rem] [&_legend]:font-semibold [&_legend]:mb-1.5">
-              <legend>Decision</legend>
-              <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
-                <input
-                  type="radio"
-                  name="decision"
-                  value="offer"
-                  checked={choice === "offer"}
-                  onChange={() => { setChoice("offer"); setFormErrors((prev) => ({ ...prev, choice: null })); }}
-                />
-                Offer a place
-              </label>
-              <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
-                <input
-                  type="radio"
-                  name="decision"
-                  value="rejected"
-                  checked={choice === "rejected"}
-                  onChange={() => { setChoice("rejected"); setFormErrors((prev) => ({ ...prev, choice: null })); }}
-                />
-                Reject the application
-              </label>
-            </fieldset>
-            {formErrors.choice && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.choice}</p>}
-
-            <label className="block mt-[0.9rem] mb-1.5 text-[0.9rem] font-semibold" htmlFor="decision-message">Message to the student</label>
-            <textarea
-              id="decision-message"
-                  className="w-full px-3 py-[0.65rem] border border-border-strong rounded-lg text-[0.95rem] resize-y text-ink bg-white font-[inherit] focus:outline-[3px] focus:outline-blue-100 focus:border-blue-600"
-              rows="5"
-              value={message}
-              onChange={(event) => {
-                setMessage(event.target.value);
-                setFormErrors((prev) => (prev.message ? { ...prev, message: null } : prev));
-              }}
-              aria-invalid={!!formErrors.message}
-              placeholder="This message is included in the decision email and shown on the student's dashboard."
-            />
-            {formErrors.message && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.message}</p>}
-
-            <div className="mt-4 flex gap-3 items-center flex-wrap">
-              <LoadingButton type="submit" loading={busy}>
-                Record decision and send email
-              </LoadingButton>
-            </div>
-            {latestDecision && (
-              <p className="text-muted text-[0.9rem] my-1">
-                Recording a new decision replaces the current status; every decision stays in the audit log below.
-              </p>
-            )}
-          </form>
-        ) : (
+        {isWithdrawn ? (
           <AlertBanner variant="info">
-            This application is still a draft, so a decision cannot be recorded yet.
+            The applicant withdrew this application. It is no longer under consideration and no further action can be taken.
           </AlertBanner>
+        ) : (
+          <>
+            {application.status === "submitted" && (
+              <div className="mb-4 px-[0.85rem] py-[0.7rem] bg-slate-50 border border-border rounded-lg text-[0.9rem] flex items-center justify-between gap-3 flex-wrap">
+                <span>This application has not been reviewed yet. Moving it to under review tells the student their application is being processed (PRD 4.3.2).</span>
+                <LoadingButton loading={reviewBusy} onClick={handleStartReview}>Move to under review</LoadingButton>
+              </div>
+            )}
+            {decidable ? (
+              <form onSubmit={handleDecision} noValidate>
+                <fieldset className="m-0 mb-2 p-0 border-0 grid gap-2 [&_legend]:text-[0.9rem] [&_legend]:font-semibold [&_legend]:mb-1.5">
+                  <legend>Decision</legend>
+                  <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
+                    <input
+                      type="radio"
+                      name="decision"
+                      value="offer"
+                      checked={choice === "offer"}
+                      onChange={() => { setChoice("offer"); setFormErrors((prev) => ({ ...prev, choice: null })); }}
+                    />
+                    Offer a place
+                  </label>
+                  <label className="flex items-center gap-2.5 min-h-11 px-3 py-1.5 border border-border-strong rounded-lg text-[0.95rem] cursor-pointer [&_input]:w-[1.05rem] [&_input]:h-[1.05rem] [&_input]:accent-blue-600">
+                    <input
+                      type="radio"
+                      name="decision"
+                      value="rejected"
+                      checked={choice === "rejected"}
+                      onChange={() => { setChoice("rejected"); setFormErrors((prev) => ({ ...prev, choice: null })); }}
+                    />
+                    Reject the application
+                  </label>
+                </fieldset>
+                {formErrors.choice && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.choice}</p>}
+
+                <label className="block mt-[0.9rem] mb-1.5 text-[0.9rem] font-semibold" htmlFor="decision-message">Message to the student</label>
+                <textarea
+                  id="decision-message"
+                  className="w-full px-3 py-[0.65rem] border border-border-strong rounded-lg text-[0.95rem] resize-y text-ink bg-white font-[inherit] focus:outline-[3px] focus:outline-blue-100 focus:border-blue-600"
+                  rows="5"
+                  value={message}
+                  onChange={(event) => {
+                    setMessage(event.target.value);
+                    setFormErrors((prev) => (prev.message ? { ...prev, message: null } : prev));
+                  }}
+                  aria-invalid={!!formErrors.message}
+                  placeholder="This message is included in the decision email and shown on the student's dashboard."
+                />
+                {formErrors.message && <p className="text-error text-[0.85rem] mt-1.5 mb-0" role="alert">{formErrors.message}</p>}
+
+                <div className="mt-4 flex gap-3 items-center flex-wrap">
+                  <LoadingButton type="submit" loading={busy}>
+                    Record decision and send email
+                  </LoadingButton>
+                </div>
+                {latestDecision && (
+                  <p className="text-muted text-[0.9rem] my-1">
+                    Recording a new decision replaces the current status; every decision stays in the audit log below.
+                  </p>
+                )}
+              </form>
+            ) : (
+              <AlertBanner variant="info">
+                This application is still a draft, so a decision cannot be recorded yet.
+              </AlertBanner>
+            )}
+          </>
         )}
       </section>
 

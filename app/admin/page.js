@@ -14,7 +14,12 @@ import LoadingButton from "../../components/auth/LoadingButton";
 import StatusBadge from "../../components/StatusBadge";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile, logout } from "../../lib/auth";
-import { getApplicationsForUniversity, getUniversities } from "../../lib/db";
+import {
+  getApplicationsForUniversity,
+  getUniversities,
+  getNotifications,
+  markNotificationRead,
+} from "../../lib/db";
 
 const ADMIN_NAV = [
   { key: "home", label: "Home", href: "/" },
@@ -53,6 +58,7 @@ export default function AdminListPage() {
   const [profile, setProfile] = useState(null);
   const [universityName, setUniversityName] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   // Issue #153 (PRD 4.3.1): status filter, name/ID search, paginated list.
   const [statusFilter, setStatusFilter] = useState("all");
   const [query, setQuery] = useState("");
@@ -98,9 +104,12 @@ export default function AdminListPage() {
             return;
           }
 
-          const [apps, universities] = await Promise.all([
+          const [apps, universities, notices] = await Promise.all([
             getApplicationsForUniversity(userProfile.universityId),
             getUniversities(),
+            // The queue must still load if notifications cannot (#194); the
+            // panel simply stays hidden.
+            getNotifications(user.uid).catch(() => []),
           ]);
           if (!isCurrent()) return;
 
@@ -110,6 +119,7 @@ export default function AdminListPage() {
           setProfile(userProfile);
           setUniversityName(university ? university.name : userProfile.universityId);
           setApplications(apps);
+          setNotifications(notices);
           setPhase("ready");
         } catch (error) {
           if (isCurrent()) showLoadError(error);
@@ -124,6 +134,17 @@ export default function AdminListPage() {
       unsubscribe();
     };
   }, []);
+
+  async function handleMarkRead(notificationId) {
+    try {
+      await markNotificationRead(notificationId);
+      setNotifications((current) =>
+        current.map((n) => (n.id === notificationId ? { ...n, readStatus: true } : n))
+      );
+    } catch (error) {
+      console.error("Mark notification read failed:", error);
+    }
+  }
 
   async function handleLogout() {
     try {
@@ -240,6 +261,39 @@ export default function AdminListPage() {
           <a className="button button-primary" href="#queue">Open queue</a>
         </header>
 
+        {notifications.length > 0 && (() => {
+          const unreadCount = notifications.filter((n) => !n.readStatus).length;
+          return (
+            <section className="mb-6 border border-border rounded-[14px] bg-white shadow-sm px-6 py-5" aria-label="Notifications">
+              <h2 className="mt-0 mb-1 text-navy-900 text-lg">Notifications{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}</h2>
+              <p className="mt-0 mb-4 text-muted text-sm">Events that affect your queue, newest first.</p>
+              <ol className="m-0 p-0 list-none grid gap-2">
+                {notifications.slice(0, 8).map((notice) => (
+                  <li key={notice.id} className={"px-4 py-3 rounded-lg border flex items-start justify-between gap-4 flex-wrap " + (notice.readStatus ? "border-border bg-white" : "border-blue-600/30 bg-info-bg")}>
+                    <div className="min-w-0">
+                      <p className="m-0 text-sm text-ink">{notice.message}</p>
+                      <p className="mt-1 mb-0 text-xs text-quiet">
+                        {formatDate(notice.createdAt)}{notice.readStatus ? "" : " - unread"}
+                        {notice.applicationId && (
+                          <>
+                            {" - "}
+                            <a className="text-link" href={`/admin/applications/${notice.applicationId}`}>View application</a>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    {!notice.readStatus && (
+                      <button type="button" className="shrink-0 px-3 py-1.5 rounded-full border border-border bg-white text-muted text-xs font-semibold cursor-pointer hover:border-border-strong" onClick={() => handleMarkRead(notice.id)}>
+                        Mark as read
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          );
+        })()}
+
         {(() => {
           // Figma "Admissions overview" alignment, computed from live queue
           // data only. The mock-up's median review time is not derivable from
@@ -258,6 +312,7 @@ export default function AdminListPage() {
             ["Under review", counts.under_review],
             ["Offer issued", counts.offer],
             ["Rejected", counts.rejected],
+            ["Withdrawn", counts.withdrawn],
           ];
           const max = Math.max(1, ...stages.map((s) => s[1]));
           const CARD = "border border-border rounded-[14px] bg-white shadow-sm px-6 py-5";
