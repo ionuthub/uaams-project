@@ -6,9 +6,11 @@ rules_version = '2';
 //   2. Admins only see applications for THEIR university (scoping).
 // Field-level allow-lists on user/application updates added after PR review.
 // Sprint 3 TODO: App Check, GDPR delete cascade (IS-06).
-// Value-length limits added (#190) - see capped() and formWithinLimits() below.
-// Still outstanding: format validation (a name is length-checked but not
-// pattern-checked here), and Silvana empty-string finding on other fields.
+// Value limits added (#190): every string a client can write is now bounded,
+// and text a human will read (decision messages, notes, names) must actually
+// say something - see capped(), fieldCapped() and meaningfulText() below.
+// Still outstanding: pattern validation (a name is length-checked here, not
+// checked for shape), and App Check.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -39,6 +41,20 @@ service cloud.firestore {
       return !(form.get(field, '') is string) || form.get(field, '').size() <= max;
     }
 
+    // For a single top-level string field rather than one inside the form map.
+    // Absent is allowed here; callers add their own presence checks where a
+    // field is mandatory.
+    function fieldCapped(data, field, max) {
+      return !(data.get(field, '') is string) || data.get(field, '').size() <= max;
+    }
+
+    // A message a human wrote and another human will read. Must actually say
+    // something (Silvana's finding: a blank decision message was accepted) and
+    // must not be unbounded.
+    function meaningfulText(value, max) {
+      return value is string && value.size() > 0 && value.size() <= max;
+    }
+
     function formWithinLimits(form) {
       return capped(form, 'fullName', 100)
              && capped(form, 'nationality', 60)
@@ -67,6 +83,10 @@ service cloud.firestore {
                     && request.auth.uid == uid
                     && request.resource.data.role == 'student'
                     && request.resource.data.privacyConsent == true
+                    && meaningfulText(request.resource.data.fullName, 100)
+                    && fieldCapped(request.resource.data, 'nationality', 60)
+                    && fieldCapped(request.resource.data, 'studyLevel', 40)
+                    && fieldCapped(request.resource.data, 'email', 254)
                     && request.resource.data.keys()
                          .hasOnly(['email', 'fullName', 'role', 'nationality', 'studyLevel', 'privacyConsent', 'privacyConsentAt', 'createdAt', 'updatedAt'])
                     && request.resource.data.keys()
@@ -74,7 +94,8 @@ service cloud.firestore {
       allow update: if signedIn()
               && request.auth.uid == uid
               && request.resource.data.diff(resource.data).affectedKeys()
-                   .hasOnly(['fullName', 'updatedAt']);
+                   .hasOnly(['fullName', 'updatedAt'])
+              && meaningfulText(request.resource.data.fullName, 100);
       allow delete: if false; // GDPR delete cascade is a Sprint 3 item (IS-06)
     }
 
@@ -144,6 +165,11 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['status', 'latestDecisionMessage', 'updatedAt'])
           && request.resource.data.status in ['under_review', 'offer', 'rejected']
+          // A decision message is optional when simply moving to under review,
+          // but if one is written it must be real text and bounded. The blank
+          // case is caught in the decisions subcollection below, where the
+          // message is mandatory.
+          && fieldCapped(request.resource.data, 'latestDecisionMessage', 2000)
         )
       );
 
@@ -157,6 +183,10 @@ service cloud.firestore {
         allow create: if adminOf(get(/databases/$(database)/documents/applications/$(appId)).data.universityId)
                       && request.resource.data.decidedBy == request.auth.uid
                       && request.resource.data.decision in ['offer', 'rejected']
+                      // Silvana's finding: a blank decision message was accepted
+                      // and written to an append-only log that can never be
+                      // corrected, only superseded.
+                      && meaningfulText(request.resource.data.message, 2000)
                       && request.resource.data.keys()
                            .hasOnly(['decision', 'message', 'decidedBy', 'decidedAt'])
                       && request.resource.data.keys()
@@ -176,8 +206,7 @@ service cloud.firestore {
                       && request.resource.data.universityId == get(/databases/$(database)/documents/applications/$(appId)).data.universityId
                       && request.resource.data.keys()
                            .hasOnly(['body', 'authorUid', 'authorName', 'universityId', 'createdAt'])
-                      && request.resource.data.body is string
-                      && request.resource.data.body.size() > 0;
+                      && meaningfulText(request.resource.data.body, 2000);
         allow update, delete: if false;
       }
     }
