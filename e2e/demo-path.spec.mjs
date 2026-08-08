@@ -18,6 +18,13 @@ import path from "node:path";
 
 const EMAIL = process.env.E2E_EMAIL || "";
 const PASSWORD = process.env.E2E_PASSWORD || "";
+// Which institution this application is submitted to. Chosen by NAME, never
+// by position: an institution sorting ahead of this one would silently
+// repoint the whole suite, which is exactly what happened when Portsmouth
+// was seeded and selectOption({ index: 1 }) quietly changed meaning (#25).
+// Must match the university administered by E2E_ADMIN_EMAIL - admin-path and
+// isolation-path both expect to find this application there.
+const UNIVERSITY = process.env.E2E_UNIVERSITY || "Southampton Solent University";
 
 // Tiny valid PNG generated at runtime so no binary fixtures live in git.
 const PNG_BASE64 =
@@ -47,8 +54,8 @@ test.describe("UAAMS demo path", () => {
 
     // 3. Fill every PRD 4.2.3 field
     const uni = page.locator("#universityId");
-    await expect(uni.locator("option")).not.toHaveCount(1, { timeout: 30_000 });
-    await uni.selectOption({ index: 1 });
+    await expect(uni.locator("option", { hasText: UNIVERSITY })).toHaveCount(1, { timeout: 30_000 });
+    await uni.selectOption({ label: UNIVERSITY });
     await page.locator("#studyLevel").selectOption("Bachelors");
     await page.locator("#apply-intake").selectOption("September 2026");
     const fields = {

@@ -80,6 +80,7 @@ test.describe("Cross-university isolation", () => {
 
       // The exact address of a real application belonging to university A.
       const targetUrl = pageA.url();
+      const targetId = new URL(targetUrl).pathname.split("/").filter(Boolean).pop();
       await pageA.screenshot({
         path: "e2e-results/10-isolation-university-a-can-see.png",
         fullPage: true,
@@ -87,14 +88,26 @@ test.describe("Cross-university isolation", () => {
 
       // ---- University B: must not see it in the queue ----
       await signInAsAdmin(pageB, B_EMAIL, B_PASSWORD);
-      await pageB.locator("#queue-search").fill(APPLICANT);
+      // Searched by application ID, not by applicant name. A name search asserts
+      // "university B has nobody called this", which is a claim about B's OWN
+      // data - it broke the moment B legitimately held applications from a
+      // student of that name, which is exactly what runs #13-#17 created while
+      // demo-path was submitting to the wrong university (#25). The ID belongs
+      // to the one application created at A, so this asserts the thing that
+      // actually matters and stays true however much history either queue holds.
+      const searchBox = pageB.locator("#queue-search");
+      // The search control only renders when the queue is non-empty, so an
+      // empty queue is itself a pass rather than a timeout.
+      if (await searchBox.count()) {
+        await searchBox.fill(targetId);
+      }
       await pageB.screenshot({
         path: "e2e-results/11-isolation-university-b-queue-empty.png",
         fullPage: true,
       });
 
-      // Searching for the other university's applicant returns nothing.
-      await expect(pageB.getByRole("link", { name: "View details" })).toHaveCount(0);
+      // University A's application is not present in university B's queue.
+      await expect(pageB.getByText(targetId)).toHaveCount(0);
 
       // ---- University B: must not reach it by guessing the address ----
       // The interface guard is a courtesy; the Firestore rules are the real
