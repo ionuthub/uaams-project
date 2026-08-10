@@ -208,7 +208,15 @@ export default function AdminListPage() {
           ...item,
           children: item.children.map((child) =>
             child.key === "queue"
-              ? { ...child, badge: applications.length || null }
+              ? {
+                        ...child,
+                        // Matches the default "All active" view this links to.
+                        // Counting withdrawn here made the sidebar read 22
+                        // beside a queue showing 19.
+                        badge:
+                          applications.filter((a) => a.status !== "withdrawn")
+                            .length || null,
+                      }
               : child
           ),
         }
@@ -410,7 +418,7 @@ export default function AdminListPage() {
               </caption>
               <thead>
                 <tr>
-                  <th scope="col" className={TH}>Application</th>
+                  <th scope="col" className={TH}>Applicant</th>
                   <th scope="col" className={TH}>Status</th>
                   <th scope="col" className={TH_HIDE}>Submitted</th>
                   <th scope="col" className={TH_HIDE}>Document</th>
@@ -420,7 +428,13 @@ export default function AdminListPage() {
               <tbody className="[&_tr:last-child_td]:border-b-0">
                 {visible.map((app) => (
                   <tr key={app.id} className="hover:bg-blue-100">
-                    <td className={TD}><span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{app.id}</span></td>
+                    <td className={TD}>
+                        {/* Name first: an admissions officer scans by applicant,
+                            not by document ID. The ID stays underneath because
+                            it is what gets quoted in support and in evidence. */}
+                        <span className="block text-ink font-medium">{app.form?.fullName || "Name not recorded"}</span>
+                        <span className="block font-mono text-[0.75rem] text-quiet [overflow-wrap:anywhere]">{app.id}</span>
+                      </td>
                     <td className={TD}><StatusBadge status={app.status} /></td>
                     <td className={TD_HIDE}>{formatDate(app.submittedAt)}</td>
                     <td className={TD_HIDE}>{app.documentPath ? "Attached" : "None"}</td>
