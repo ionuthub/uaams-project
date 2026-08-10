@@ -368,7 +368,14 @@ export default function AdminListPage() {
             />
             <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Filter by status">
               {FILTERS.map(([value, label]) => {
-                const count = value === "all" ? applications.length : applications.filter((a) => a.status === value).length;
+                // "All active" hides withdrawn applications, so its count must hide them
+              // too. Counting every application here while the list below filtered
+              // withdrawn out made the chip disagree with the table underneath it
+              // - "All active (4)" above three rows - and described a withdrawn
+              // application as active.
+              const count = value === "all"
+                ? applications.filter((a) => a.status !== "withdrawn").length
+                : applications.filter((a) => a.status === value).length;
                 const active = statusFilter === value;
                 return (
                   <button
