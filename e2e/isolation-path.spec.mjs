@@ -112,8 +112,15 @@ test.describe("Cross-university isolation", () => {
       // ---- University B: must not reach it by guessing the address ----
       // The interface guard is a courtesy; the Firestore rules are the real
       // boundary. Either way the applicant's data must not appear.
-      await pageB.goto(targetUrl);
-      await pageB.waitForLoadState("networkidle");
+      await pageB.goto(targetUrl, { waitUntil: "domcontentloaded" });
+      // Deliberately NOT networkidle. Firestore holds a long-lived connection
+      // open, so the network never goes quiet and this waited until the 180s
+      // test timeout - it took 1.7m in run #19 and blew the cap in #22.
+      // Waiting for the page's own loading indicator to clear is faster and a
+      // truer signal that the screen has settled on its final state. If the
+      // indicator is absent this passes immediately, which is harmless: the
+      // assertion below is what actually proves anything.
+      await expect(pageB.locator('[role="status"]')).toHaveCount(0, { timeout: 60_000 });
       await pageB.screenshot({
         path: "e2e-results/12-isolation-university-b-direct-url-refused.png",
         fullPage: true,
