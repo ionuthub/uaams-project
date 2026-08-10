@@ -12,6 +12,18 @@ on:
   push:
     branches: [main]
 
+# This suite runs against PRODUCTION with one shared test student and shared
+# admin accounts, so two runs at once corrupt each other. Merging #217 and #218
+# seconds apart started runs #24 and #25 together: #25 passed, #24 failed on a
+# document upload while the other run was uploading as the same student.
+#
+# Queue rather than cancel. cancel-in-progress would discard a run, and every
+# run is evidence for the report - the screenshots and the pass/fail record are
+# the point, so none of them should be thrown away.
+concurrency:
+  group: e2e-production
+  cancel-in-progress: false
+
 jobs:
   demo-path:
     runs-on: ubuntu-latest
