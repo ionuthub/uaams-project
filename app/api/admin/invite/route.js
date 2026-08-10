@@ -87,6 +87,9 @@ async function handlePost(request) {
   } catch {
     return errorResponse("request/invalid-json", 400);
   }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return errorResponse("request/invalid-body", 400);
+  }
 
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!EMAIL_PATTERN.test(email) || email.length > 254) {
@@ -113,12 +116,15 @@ async function handlePost(request) {
 
   // Re-inviting is normal - people lose emails. Retire any outstanding
   // invitation for this address first so only one link is ever live.
-  const outstanding = await db
-    .collection("adminInvites")
-    .where("email", "==", email)
-    .where("status", "==", "pending")
-    .get();
-  await Promise.all(outstanding.docs.map((d) => d.ref.update({ status: "revoked" })));
+  // Filtered on email only, then narrowed in code. Two equality filters would
+  // need a composite Firestore index, and an index that has to be deployed
+  // separately is a trap: the code looks right and fails on first use.
+  const outstanding = await db.collection("adminInvites").where("email", "==", email).get();
+  await Promise.all(
+    outstanding.docs
+      .filter((d) => d.data().status === "pending")
+      .map((d) => d.ref.update({ status: "revoked" }))
+  );
 
   const rawToken = crypto.randomBytes(32).toString("base64url");
   const now = Timestamp.now();
@@ -208,6 +214,58 @@ export async function POST(request) {
     return await handlePost(request);
   } catch (error) {
     console.error("[admin-invite] request failed:", safeErrorCode(error));
+    return errorResponse("server/internal-error", 500);
+  }
+}
+
+// Cancel an outstanding invitation. Without this, an address typed wrongly
+// keeps a working invitation for the full expiry window and there is nothing
+// anyone can do about it.
+async function handleDelete(request) {
+  let auth;
+  let db;
+  try {
+    auth = getAdminAuth();
+    db = getAdminDb();
+  } catch (error) {
+    console.error("[admin-invite] server configuration failed:", safeErrorCode(error));
+    return errorResponse("server/configuration-error", 500);
+  }
+
+  const gate = await requireAdmin(request, auth, db);
+  if (gate.error) return gate.error;
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return errorResponse("request/invalid-json", 400);
+  }
+  const inviteId = typeof body?.inviteId === "string" ? body.inviteId.trim() : "";
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(inviteId)) {
+    return errorResponse("request/invalid-body", 400);
+  }
+
+  const ref = db.collection("adminInvites").doc(inviteId);
+  const snapshot = await ref.get();
+  // Same response whether it never existed or belongs to another university,
+  // so this cannot be used to probe other institutions.
+  if (!snapshot.exists || snapshot.data().universityId !== gate.profile.universityId) {
+    return errorResponse("invite/not-found", 404);
+  }
+  if (snapshot.data().status !== "pending") {
+    return errorResponse("invite/not-usable", 409);
+  }
+
+  await ref.update({ status: "revoked" });
+  return NextResponse.json({ ok: true, inviteId });
+}
+
+export async function DELETE(request) {
+  try {
+    return await handleDelete(request);
+  } catch (error) {
+    console.error("[admin-invite] revoke failed:", safeErrorCode(error));
     return errorResponse("server/internal-error", 500);
   }
 }
