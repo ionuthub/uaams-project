@@ -172,6 +172,14 @@ service cloud.firestore {
         ||
         (
           adminOf(resource.data.universityId)
+          // A withdrawal is the applicant own decision and is terminal. The
+          // student branch above already refuses to move OUT of withdrawn; this
+          // says the same for staff, who could otherwise set a withdrawn
+          // application back to under_review. No interface offers that, but
+          // "the button is not there" is exactly the reasoning #193 rejects.
+          // Reinstatement, if it is ever wanted, should be a deliberate action
+          // with an audit entry - not a quiet status change.
+          && resource.data.status != 'withdrawn'
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['status', 'latestDecisionMessage', 'updatedAt'])
           && request.resource.data.status in ['under_review', 'offer', 'rejected']
