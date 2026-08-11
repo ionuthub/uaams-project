@@ -258,7 +258,7 @@ export default function AdminListPage() {
       footerLinks={ADMIN_FOOTER}
     >
       <div className="max-w-[960px] mx-auto my-10 px-4">
-        <header className="flex justify-between items-start gap-4 mb-6 flex-wrap">
+        <header className="mb-6">
           <div>
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Admissions</p>
             <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Admissions overview</h1>
@@ -266,7 +266,6 @@ export default function AdminListPage() {
               Operational workload and application progress for {universityName}. Signed in as {profile.fullName} ({profile.email}).
             </p>
           </div>
-          <a className="button button-primary" href="#queue">Open queue</a>
         </header>
 
         {notifications.length > 0 && (() => {
