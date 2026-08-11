@@ -175,7 +175,7 @@ p { color: var(--muted); }
 .course-search:focus-within { border-color: var(--blue-600); box-shadow: 0 0 0 4px var(--blue-100); }
 .course-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 17px; }
 .search-symbol, .table-search > span, .help-search > span { width:28px;height:28px;display:grid;place-items:center;color:#53677a;flex:0 0 auto }.search-symbol svg, .table-search > span svg, .help-search > span svg { width:24px;height:24px;stroke-width:2 }
-.popular-searches { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--quiet); font-size: 13px; }
+.popular-searches { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
 .popular-searches button { padding: 6px 10px; border: 0; border-radius: 6px; background: #e9edef; color: #465564; cursor: pointer; }
 .popular-searches button { min-height:36px;padding:7px 12px;border:1px solid transparent;transition:color .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease }
 .popular-searches button:hover { color:var(--navy-900);background:#dfe6ec }
