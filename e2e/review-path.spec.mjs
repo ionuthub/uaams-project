@@ -1,4 +1,4 @@
-// e2e/admin-path.spec.mjs
+// e2e/review-path.spec.mjs
 // Automated check of the admin side of the demo path (PRD 4.3, issues #153,
 // #165): sign in as the admissions test account, find the application the
 // student test just submitted using the queue search and status filter, move
@@ -8,6 +8,16 @@
 // Runs AFTER demo-path.spec.mjs: Playwright runs spec files alphabetically
 // with workers=1, and review-path sorts after demo-path, so a freshly
 // submitted Playwright Test Student application always exists.
+//
+// THE FILENAME IS LOAD-BEARING (#211). This file was briefly renamed to
+// admin-path.spec.mjs, which sorts BEFORE demo-path - so it ran before the
+// application it reviews had been created, and quietly reviewed a leftover
+// from a previous run instead. When the leftovers ran out it hit the skip
+// below, and a skip is reported separately from a failure, so nothing went
+// red while the admin journey was not being tested at all.
+//
+// Do not rename this file to anything sorting before "demo-path" without
+// giving it its own fixture first.
 //
 // Needs a dedicated admin test account (role admin + universityId set in the
 // users document) passed in as env vars:
