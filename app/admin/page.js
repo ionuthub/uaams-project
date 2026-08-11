@@ -33,7 +33,18 @@ const ADMIN_NAV = [
 // #196: the Student view link is gone. Staff accounts are not applicant
 // accounts, so the admin portal no longer offers a route into the student
 // area - an admin following it would only ever see an empty dashboard.
-const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
+// "Invite a colleague" sits beside Privacy on purpose (#195): administrative
+// work rather than part of the daily queue, so it is present without competing
+// with the applications an officer came here to review.
+//
+// It is only rendered inside the admin portal, behind the staff sign-in. There
+// is deliberately no route to admin account creation from any public page - a
+// visible one would let anyone reach it, and a flaw in the gate would hand a
+// stranger access to applicant passports and addresses.
+const ADMIN_FOOTER = [
+  { label: "Privacy", href: "/privacy" },
+  { label: "Invite a colleague", href: "/admin/invite" },
+];
 
 const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
 const TD = "px-[0.9rem] py-[0.7rem] border-b border-border align-middle text-[0.95rem] text-ink max-sm:p-[0.6rem]";
