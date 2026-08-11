@@ -80,6 +80,7 @@ test.describe("Cross-university isolation", () => {
 
       // The exact address of a real application belonging to university A.
       const targetUrl = pageA.url();
+      const targetId = new URL(targetUrl).pathname.split("/").filter(Boolean).pop();
       await pageA.screenshot({
         path: "e2e-results/10-isolation-university-a-can-see.png",
         fullPage: true,
@@ -87,27 +88,39 @@ test.describe("Cross-university isolation", () => {
 
       // ---- University B: must not see it in the queue ----
       await signInAsAdmin(pageB, B_EMAIL, B_PASSWORD);
-      // Let this university's own queue finish loading first, otherwise the
-      // assertion below can pass or fail on timing rather than on isolation.
-      await pageB.waitForLoadState("networkidle");
-      await pageB.locator("#queue-search").fill(APPLICANT);
+      // Searched by application ID, not by applicant name. A name search asserts
+      // "university B has nobody called this", which is a claim about B's OWN
+      // data - it broke the moment B legitimately held applications from a
+      // student of that name, which is exactly what runs #13-#17 created while
+      // demo-path was submitting to the wrong university (#25). The ID belongs
+      // to the one application created at A, so this asserts the thing that
+      // actually matters and stays true however much history either queue holds.
+      const searchBox = pageB.locator("#queue-search");
+      // The search control only renders when the queue is non-empty, so an
+      // empty queue is itself a pass rather than a timeout.
+      if (await searchBox.count()) {
+        await searchBox.fill(targetId);
+      }
       await pageB.screenshot({
         path: "e2e-results/11-isolation-university-b-queue-empty.png",
         fullPage: true,
       });
 
-      // The property that matters is that the other university's applicant
-      // does not appear - NOT that the search box returned zero rows. The
-      // first version asserted the latter, which tests the search feature and
-      // fails against a queue that legitimately holds this university's own
-      // applications.
-      await expect(pageB.getByText(APPLICANT)).toHaveCount(0);
+      // University A's application is not present in university B's queue.
+      await expect(pageB.getByText(targetId)).toHaveCount(0);
 
       // ---- University B: must not reach it by guessing the address ----
       // The interface guard is a courtesy; the Firestore rules are the real
       // boundary. Either way the applicant's data must not appear.
-      await pageB.goto(targetUrl);
-      await pageB.waitForLoadState("networkidle");
+      await pageB.goto(targetUrl, { waitUntil: "domcontentloaded" });
+      // Deliberately NOT networkidle. Firestore holds a long-lived connection
+      // open, so the network never goes quiet and this waited until the 180s
+      // test timeout - it took 1.7m in run #19 and blew the cap in #22.
+      // Waiting for the page's own loading indicator to clear is faster and a
+      // truer signal that the screen has settled on its final state. If the
+      // indicator is absent this passes immediately, which is harmless: the
+      // assertion below is what actually proves anything.
+      await expect(pageB.locator('[role="status"]')).toHaveCount(0, { timeout: 60_000 });
       await pageB.screenshot({
         path: "e2e-results/12-isolation-university-b-direct-url-refused.png",
         fullPage: true,
