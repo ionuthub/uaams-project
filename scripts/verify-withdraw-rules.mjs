@@ -144,6 +144,35 @@ async function run() {
     record("admin withdraws an application on the student behalf", "NOT RUN", "No application found at this university.");
   }
 
+  // Withdrawn is terminal for staff too (#227): the admin branch previously
+  // constrained only the status being moved TO, so an officer could have set a
+  // withdrawn application back to under_review. Found while asking "what if a
+  // student withdrew by mistake" - the documented design and the enforced rule
+  // disagreed. Requires the #227 rules to be PUBLISHED, not just merged.
+  let withdrawnAtUni = null;
+  if (universityId) {
+    // One filter, status narrowed in code: two equality filters need a
+    // composite Firestore index and fail with FAILED_PRECONDITION without one.
+    const uniSnapshot = await getDocs(
+      query(collection(db, "applications"), where("universityId", "==", universityId))
+    );
+    const withdrawnDoc = uniSnapshot.docs.find((d) => d.data().status === "withdrawn");
+    withdrawnAtUni = withdrawnDoc ? withdrawnDoc.id : null;
+  }
+  if (withdrawnAtUni) {
+    await attempt(
+      "admin moves a withdrawn application back to under review",
+      () =>
+        updateDoc(ref(withdrawnAtUni), {
+          status: "under_review",
+          updatedAt: serverTimestamp(),
+        }),
+      "A withdrawal was reversed by staff. Set it back to withdrawn, then check the #227 rules were actually published."
+    );
+  } else {
+    record("admin moves a withdrawn application back to under review", "NOT RUN", "No withdrawn application at this university.");
+  }
+
   await signOut(auth);
 
   // ---- Student attempts ----
