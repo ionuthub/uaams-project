@@ -159,6 +159,16 @@ export default function AdminInvitePage() {
   }
 
   async function handleRevoke(inviteId) {
+    // PRD-UX-03 (#231): cancelling kills the emailed link permanently - the
+    // colleague would need a fresh invitation. Same native-confirm choice as
+    // the decision confirmation, for the same accessibility reasons.
+    if (
+      !window.confirm(
+        "Cancel this invitation? The link already emailed to them will stop working, and they would need a new invitation to join."
+      )
+    ) {
+      return;
+    }
     setNotice(null);
     try {
       const response = await authorisedFetch("/api/admin/invite", {
