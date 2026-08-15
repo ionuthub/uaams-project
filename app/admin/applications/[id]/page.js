@@ -230,6 +230,21 @@ export default function AdminApplicationDetailPage() {
 
   async function handleDecision(event) {
     event.preventDefault();
+    // PRD-UX-03 (#231): a decision is append-only - it can be superseded but
+    // never corrected - and the student is emailed immediately, so it gets a
+    // confirmation. The browser-native confirm is used deliberately: it is
+    // focus-trapped, announced to assistive tech and dismissible with Escape
+    // out of the box. Restyling to the in-page dialog pattern used for
+    // withdrawal is a follow-up, not a prerequisite.
+    // "Move to under review" deliberately has NO confirmation: it is a
+    // reversible pipeline step - an offer or rejection can still follow it.
+    if (
+      !window.confirm(
+        "Record this decision now? It is permanent - it can be superseded but not edited - and the student will be emailed immediately."
+      )
+    ) {
+      return;
+    }
     const trimmedMessage = message.trim();
     const nextErrors = {};
     if (!choice) nextErrors.choice = "Choose offer or reject.";
