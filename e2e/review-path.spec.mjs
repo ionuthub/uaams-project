@@ -71,6 +71,11 @@ test.describe("UAAMS admin path", () => {
     await page.locator("#decision-message").fill(
       "Automated regression decision. This offer was recorded by the Playwright admin-path test."
     );
+    // #231: recording a decision now asks for confirmation via the browser-native
+    // confirm(). Playwright auto-DISMISSES native dialogs unless handled, which
+    // would turn this click into a silent no-op and time out on the success
+    // message. Accept exactly one dialog, registered before the click.
+    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Record decision and send email" }).click();
     await expect(
       page.getByText("Decision recorded and the decision email was sent to the student.")
