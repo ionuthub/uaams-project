@@ -10,11 +10,13 @@
 
 **Completed by:** Ionut, as Sprint 2 Week 1 catch-up work
 
+> **Execution record:** Results and evidence are recorded in [Issue #25 Test Record](test-record-25.md). This document defines the tests; it does not record outcomes.
+
 ## Purpose
 
 This plan turns the Sprint 2 proof-of-concept path into repeatable tests. It covers the complete journey from student registration to an admin decision, decision email and student status update.
 
-Creating this plan does not mean every feature has passed. Each execution must record the exact build, actual result, result status and evidence. Unimplemented or blocked steps must not be reported as passed.
+Creating this plan does not mean every feature has passed. Each execution must record the exact build, actual result, result status and evidence in the linked Issue #25 test record. Unimplemented or blocked steps must not be reported as passed.
 
 ## Scope
 
@@ -31,11 +33,11 @@ The plan covers:
 - loading, validation, failure and unauthorised-access behaviour;
 - Vercel preview and production smoke checks.
 
-Storage tests are ready to run but remain **Not run** until the enabled bucket and deployed rules are verified live. The Blaze-plan decision is resolved. The decision-email backend is implemented in issue #19; complete live offer/rejection tests still depend on issue #15 connecting the admin interface and on the preview having its server-only Firebase and Resend variables.
+Implementation and execution status are intentionally omitted from this plan. See the linked Issue #25 test record for current results, blockers and evidence.
 
-## Automated Week 2 Checks
+## Planned Automated Checks
 
-Run `npm run check` before review. The repository suite currently verifies:
+Run `npm run check` before review. The planned repository checks cover:
 
 - allowed PDF, JPG and PNG uploads at the 10 MB boundary;
 - missing, oversized and unsupported upload rejection;
@@ -48,7 +50,7 @@ Automated checks support the acceptance evidence but do not replace live Firebas
 
 ## Result Values
 
-Use exactly one of these values:
+Use exactly one of these values in the linked execution record:
 
 | Result | Meaning |
 |---|---|
@@ -99,126 +101,103 @@ Use a normal browser window for the student and a private/incognito window for t
 
 ## Authentication Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| AUTH-01 | Positive | New test email; Firebase configured | Open `/register`; enter valid name, email and password; submit | Loading state appears; Auth account and matching student `/users` profile are created; user reaches verification guidance | | Not run | |
-| AUTH-02 | Negative | Existing student email | Register again using the same email | No duplicate account/profile is created; clear existing-account error appears | | Not run | |
-| AUTH-03 | Validation | Registration screen | Submit empty fields, invalid email, short password, missing uppercase/number and mismatched confirmation | Each invalid field has clear text; submit is blocked; no account is created | | Not run | |
-| AUTH-04 | Access | Registered but unverified student | Log out; log in before verification | User is not allowed into protected application functions and is directed to verification guidance | | Not run | |
-| AUTH-05 | Positive/error | Unverified signed-in student | Select resend verification; repeat quickly | First request shows success; throttling/failure shows an honest error and does not claim delivery | | Not run | |
-| AUTH-06 | Positive | Verification email received | Open the newest email link; complete verification; return to login; sign in | Link is accepted once; verified login succeeds; protected student actions are available | | Not run | |
-| AUTH-07 | Negative | Used, invalid or expired verification code | Open an invalid/used verification URL | Clear invalid/expired message appears; no protected access is granted | | Not run | |
-| AUTH-08 | Positive | Existing student account | Open `/reset-password`; request reset; open email link; enter matching valid new password | Request does not reveal account existence; reset link opens the app; password changes successfully | | Not run | |
-| AUTH-09 | Negative | Invalid/expired reset code | Open invalid reset URL; attempt weak/mismatched passwords | Invalid code and field errors are clear; password remains unchanged | | Not run | |
-| AUTH-10 | Session | Verified student logged in | Log out; refresh protected pages | Session ends; protected data/actions are no longer available | | Not run | |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| AUTH-01 | Positive | New test email; Firebase configured | Open `/register`; enter valid name, email and password; submit | Loading state appears; Auth account and matching student `/users` profile are created; user reaches verification guidance |
+| AUTH-02 | Negative | Existing student email | Register again using the same email | No duplicate account/profile is created; clear existing-account error appears |
+| AUTH-03 | Validation | Registration screen | Submit empty fields, invalid email, short password, missing uppercase/number and mismatched confirmation | Each invalid field has clear text; submit is blocked; no account is created |
+| AUTH-04 | Access | Registered but unverified student | Log out; log in before verification | User is not allowed into protected application functions and is directed to verification guidance |
+| AUTH-05 | Positive/error | Unverified signed-in student | Select resend verification; repeat quickly | First request shows success; throttling/failure shows an honest error and does not claim delivery |
+| AUTH-06 | Positive | Verification email received | Open the newest email link; complete verification; return to login; sign in | Link is accepted once; verified login succeeds; protected student actions are available |
+| AUTH-07 | Negative | Used, invalid or expired verification code | Open an invalid/used verification URL | Clear invalid/expired message appears; no protected access is granted |
+| AUTH-08 | Positive | Existing student account | Open `/reset-password`; request reset; open email link; enter matching valid new password | Request does not reveal account existence; reset link opens the app; password changes successfully |
+| AUTH-09 | Negative | Invalid/expired reset code | Open invalid reset URL; attempt weak/mismatched passwords | Invalid code and field errors are clear; password remains unchanged |
+| AUTH-10 | Session | Verified student logged in | Log out; refresh protected pages | Session ends; protected data/actions are no longer available |
 
 ## Student Dashboard Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| DASH-01 | Positive | Verified student with no applications | Open dashboard | Empty state and next action are clear; no other student's data appears | | Not run | |
-| DASH-02 | Positive | Student applications in each supported status | Open dashboard and compare records | `draft`, `submitted`, `under_review`, `offer` and `rejected` use the correct readable labels/styles | | Not run | |
-| DASH-03 | State update | Admin has just decided an application | Refresh or revisit dashboard | New status and latest decision message appear for the correct application | | Not run | |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| DASH-01 | Positive | Verified student with no applications | Open dashboard | Empty state and next action are clear; no other student's data appears |
+| DASH-02 | Positive | Student applications in each supported status | Open dashboard and compare records | `draft`, `submitted`, `under_review`, `offer` and `rejected` use the correct readable labels/styles |
+| DASH-03 | State update | Admin has just decided an application | Refresh or revisit dashboard | New status and latest decision message appear for the correct application |
 
 ## Application and Upload Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| APP-01 | Positive | Verified student; universities seeded | Start application; select university; complete required step 1 and step 4 fields; save | Draft is created for the signed-in student/university; entered data is retained | | Not run | |
-| APP-02 | Validation | Application form open | Submit required fields empty or invalid | Field errors appear; no invalid submission is created | | Not run | |
-| APP-03 | Positive | Storage enabled; draft exists | Upload a PDF smaller than 10 MB | Upload succeeds under `applications/{applicationId}/...`; `documentPath` updates | Client policy accepts PDF through the 10 MB boundary; live upload remains pending | Not run | `tests/week2-applicant.test.mjs` |
-| APP-04 | Positive | Storage enabled; draft exists | Repeat APP-03 with JPG and PNG files | Each allowed type uploads successfully | Client policy accepts JPG and PNG through the 10 MB boundary; live uploads remain pending | Not run | `tests/week2-applicant.test.mjs` |
-| APP-05 | Negative | Draft exists | Select a file larger than 10 MB | Client and Storage rules reject it; application remains usable | Automated client-policy rejection passes; deployed-rule execution remains pending | Not run | `tests/week2-applicant.test.mjs` |
-| APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type | Automated unsupported-type rejection passes; deployed-rule execution remains pending | Not run | `tests/week2-applicant.test.mjs` |
-| APP-07 | Positive | Valid draft and required document | Submit the application; refresh dashboard | Status changes from `draft` to `submitted`; submitted timestamp exists; admin queue can include it | | Not run | |
-| APP-08 | Access/state | Submitted application | Attempt to change form/document fields or submit again | Firestore rules reject changes outside the allowed transition; stored submission remains unchanged | | Not run | |
-| APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` | Enforced by the application UI, `submitApplication()` and Firestore rules; live Firebase execution remains pending | Pass (code/build) | Week 2 applicant-journey branch; live evidence pending |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| APP-01 | Positive | Verified student; universities seeded | Start application; select university; complete required step 1 and step 4 fields; save | Draft is created for the signed-in student/university; entered data is retained |
+| APP-02 | Validation | Application form open | Submit required fields empty or invalid | Field errors appear; no invalid submission is created |
+| APP-03 | Positive | Storage enabled; draft exists | Upload a PDF smaller than 10 MB | Upload succeeds under `applications/{applicationId}/...`; `documentPath` updates |
+| APP-04 | Positive | Storage enabled; draft exists | Repeat APP-03 with JPG and PNG files | Each allowed type uploads successfully |
+| APP-05 | Negative | Draft exists | Select a file larger than 10 MB | Client and Storage rules reject it; application remains usable |
+| APP-06 | Negative | Draft exists | Select EXE, DOCX or MIME-spoofed unsupported file | Client and Storage rules reject unsupported content type |
+| APP-07 | Positive | Valid draft and required document | Submit the application; refresh dashboard | Status changes from `draft` to `submitted`; submitted timestamp exists; admin queue can include it |
+| APP-08 | Access/state | Submitted application | Attempt to change form/document fields or submit again | Firestore rules reject changes outside the allowed transition; stored submission remains unchanged |
+| APP-09 | Required document | Draft has no `documentPath` | Attempt to submit the application | Submission is blocked until one valid document is attached; status remains `draft` |
 
 ## Admin and Scoping Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| ADM-01 | Positive | Verified seeded admin; applications at admin university | Log in as admin; open list | Only applications for the admin's university appear, newest submitted first | | Not run | |
-| ADM-02 | Security | Application belongs to a different university | Attempt direct detail read and document read using its ID/path | Firestore/Storage deny access; no personal/application data is displayed | | Not run | |
-| ADM-03 | Positive | In-scope submitted application | Open application detail | Student/application fields, document reference and decision controls match the selected record | | Not run | |
-| ADM-04 | Security | Student account | Attempt to open admin list/detail or call decision action | Access is denied; no admin data or action succeeds | | Not run | |
-| ADM-05 | Error | Admin list/detail open | Trigger missing record/network/permission failure | Loading and failure state are clear; previous data is not shown as current success | | Not run | |
-| ADM-06 | Isolation | Two admins for different universities, if available | Compare each admin's list against seeded applications | Each admin sees only their own university's records | | Not run | |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| ADM-01 | Positive | Verified seeded admin; applications at admin university | Log in as admin; open list | Only applications for the admin's university appear, newest submitted first |
+| ADM-02 | Security | Application belongs to a different university | Attempt direct detail read and document read using its ID/path | Firestore/Storage deny access; no personal/application data is displayed |
+| ADM-03 | Positive | In-scope submitted application | Open application detail | Student/application fields, document reference and decision controls match the selected record |
+| ADM-04 | Security | Student account | Attempt to open admin list/detail or call decision action | Access is denied; no admin data or action succeeds |
+| ADM-05 | Error | Admin list/detail open | Trigger missing record/network/permission failure | Loading and failure state are clear; previous data is not shown as current success |
+| ADM-06 | Isolation | Two admins for different universities, if available | Compare each admin's list against seeded applications | Each admin sees only their own university's records |
 
 ## Decision Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| DEC-01 | Positive | In-scope submitted application | Enter custom message; choose Offer; confirm | Application becomes `offer`; message and timestamp update; one audit record is added atomically | | Not run | |
-| DEC-02 | Positive | In-scope submitted application | Enter custom message; choose Reject; confirm | Application becomes `rejected`; message and timestamp update; one audit record is added atomically | | Not run | |
-| DEC-03 | Validation | Decision form open | Submit missing/whitespace message or invalid decision value | UI and backend reject a blank message; backend rejects values other than `offer`/`rejected` | Current `recordDecision()` validates the decision value but does not reject a blank message | Not implemented | Implementation gap |
-| DEC-04 | Audit | Application has a previous decision | Record another valid decision where policy allows | A new append-only history record is added; previous history is unchanged | | Not run | |
-| DEC-05 | Atomic failure | Simulate denied/interrupted write | Attempt decision and inspect application/history | No half-written state: application update and audit record either both exist or neither exists | | Not run | |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| DEC-01 | Positive | In-scope submitted application | Enter custom message; choose Offer; confirm | Application becomes `offer`; message and timestamp update; one audit record is added atomically |
+| DEC-02 | Positive | In-scope submitted application | Enter custom message; choose Reject; confirm | Application becomes `rejected`; message and timestamp update; one audit record is added atomically |
+| DEC-03 | Validation | Decision form open | Submit missing/whitespace message or invalid decision value | UI and backend reject a blank message; backend rejects values other than `offer`/`rejected` |
+| DEC-04 | Audit | Application has a previous decision | Record another valid decision where policy allows | A new append-only history record is added; previous history is unchanged |
+| DEC-05 | Atomic failure | Simulate denied/interrupted write | Attempt decision and inspect application/history | No half-written state: application update and audit record either both exist or neither exists |
 
 ## Email Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger the controlled issue #17 test route | Email is sent without exposing secrets and a provider message ID is returned | | Not run | Repeat on this branch preview |
-| EMAIL-02 | Offer | DEC-01 passes | Record an offer; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `offer`, message and student email from Firebase; student receives one matching email; log is `sent` | | Not run | #15 UI hook and live data required |
-| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `rejected`, message and student email from Firebase; student receives one matching email; log is `sent` | | Not run | #15 UI hook and live data required |
-| EMAIL-04 | Failure | Use controlled invalid provider configuration | Trigger send; inspect admin feedback and `emailLogs` | Decision remains recorded; route returns failure; failed log contains no secret or email body | | Not run | Protected route implemented in #19 |
-| EMAIL-05 | Duplicate prevention | Completed decision email exists | Retry the same request/action | Deterministic log and Resend idempotency key prevent duplicate delivery; response reports `alreadySent` | | Not run | Protected route implemented in #19 |
-| EMAIL-06 | Authorisation | Student or admin from another university has an application ID | Call the decision-email route using that user's Firebase ID token | Server rejects the request; no email is sent and no false success log is created | | Not run | Protected route implemented in #19 |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| EMAIL-01 | Configuration | Resend domain verified; Vercel variables set | Trigger the controlled issue #17 test route | Email is sent without exposing secrets and a provider message ID is returned |
+| EMAIL-02 | Offer | DEC-01 passes | Record an offer; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `offer`, message and student email from Firebase; student receives one matching email; log is `sent` |
+| EMAIL-03 | Rejection | DEC-02 passes | Record a rejection; invoke the email route with only the application ID; inspect recipient mailbox and log | Server reads the committed `rejected`, message and student email from Firebase; student receives one matching email; log is `sent` |
+| EMAIL-04 | Failure | Use controlled invalid provider configuration | Trigger send; inspect admin feedback and `emailLogs` | Decision remains recorded; route returns failure; failed log contains no secret or email body |
+| EMAIL-05 | Duplicate prevention | Completed decision email exists | Retry the same request/action | Deterministic log and Resend idempotency key prevent duplicate delivery; response reports `alreadySent` |
+| EMAIL-06 | Authorisation | Student or admin from another university has an application ID | Call the decision-email route using that user's Firebase ID token | Server rejects the request; no email is sent and no false success log is created |
 
-## Known Implementation Gaps Found During Plan Review
+## Historical Plan-Review Findings
 
-These are findings from comparing this plan with Dawid's current `develop` backend. They are not test passes.
-
-- `submitApplication()` and Firestore rules now reject submission without a non-empty `documentPath`; APP-09 still requires a live Firebase execution record.
-- `recordDecision()` rejects invalid decision values but currently accepts a blank decision message; DEC-03 records the required fix.
-- The protected issue #19 route writes `emailLogs` through Firebase Admin and client writes are denied. The rules still need deployment and live scope evidence.
-- The route is not yet called by the issue #15 admin decision interface.
-- The Blaze-plan decision is resolved; Firebase Storage remains blocked only on live bucket/rules/upload evidence.
-- Firebase email-action routing is a separate authentication concern. The shared `/auth/action` route must continue to branch on Firebase's `mode` query parameter and be tested with real verification and reset links.
+Implementation gaps identified during Sprint 2 planning are retained in issue #20 and the repository history as contribution context. Their current status and retest evidence belong in the linked Issue #25 test record, not in this test-definition document.
 
 ## End-to-End and Deployment Tests
 
-| ID | Type | Preconditions | Exact steps | Expected result | Actual result | Result | Evidence |
-|---|---|---|---|---|---|---|---|
-| E2E-01 | Offer journey | Integrated preview; student/admin accounts; Storage/email ready | Register; verify; login; create/upload/submit; admin opens scoped record and offers with message; student checks email/dashboard | Every step succeeds on one recorded build; email, status and audit data agree | | Not run | |
-| E2E-02 | Rejection journey | Same as E2E-01 with new application | Repeat full journey and reject | Rejection email, status, message and audit data agree | | Not run | |
-| E2E-03 | Isolation journey | Two universities and out-of-scope application | Student submits to university B; university A admin attempts list/detail/document access | University A admin cannot discover or access university B application/document | | Not run | |
-| DEP-01 | Build | Commit `bf664b3` on `develop` | Inspect Vercel deployment for the merged student-auth build | Deployment reaches `READY` without build errors | Vercel deployment `dpl_Fh4azKJKBF2tW7tQfi3tAfk9FRhe` is `READY` | Pass | https://vercel.com/ionuthubs-projects/uaams-project/Fh4azKJKBF2tW7tQfi3tAfk9FRhe |
-| DEP-02 | Route smoke | A `READY` integrated preview | In a real browser, open `/`, `/register`, `/login`, `/verify-email`, `/reset-password` at desktop/mobile widths; inspect console | Routes render without 404/overlap; no unexpected console errors | | Not run | |
-| DEP-03 | Production release | Release PR from `develop` to `main` | Review PR/checks; merge only after Must tests; run smoke path on production URL | Production points to approved commit and critical path still passes | | Not run | |
+| ID | Type | Preconditions | Exact steps | Expected result |
+|---|---|---|---|--- |
+| E2E-01 | Offer journey | Integrated preview; student/admin accounts; Storage/email ready | Register; verify; login; create/upload/submit; admin opens scoped record and offers with message; student checks email/dashboard | Every step succeeds on one recorded build; email, status and audit data agree |
+| E2E-02 | Rejection journey | Same as E2E-01 with new application | Repeat full journey and reject | Rejection email, status, message and audit data agree |
+| E2E-03 | Isolation journey | Two universities and out-of-scope application | Student submits to university B; university A admin attempts list/detail/document access | University A admin cannot discover or access university B application/document |
+| DEP-01 | Build | Commit `bf664b3` on `develop` | Inspect Vercel deployment for the merged student-auth build | Deployment reaches `READY` without build errors |
+| DEP-02 | Route smoke | A `READY` integrated preview | In a real browser, open `/`, `/register`, `/login`, `/verify-email`, `/reset-password` at desktop/mobile widths; inspect console | Routes render without 404/overlap; no unexpected console errors |
+| DEP-03 | Production release | Release PR from `develop` to `main` | Review PR/checks; merge only after Must tests; run smoke path on production URL | Production points to approved commit and critical path still passes |
 
-## Feature-Owner Confirmation
+## Feature-Owner Review Responsibilities
 
-Before issue #20 is marked fully Done, each owner should confirm that the expected behaviour above matches their implementation.
+The reviewers below were identified when issue #20 was completed. This preserves the original ownership and catch-up contribution record; confirmations and current outcomes belong in the linked execution record.
 
-| Area | Reviewer | Confirmation | Date / link |
-|---|---|---|---|
-| Firebase/auth/security | Dawid | Pending | |
-| Student screens/dashboard/form/upload | Alina | Pending | |
-| Admin/scoping/decisions | Ionut | Pending final implementation | |
-| Email | Ionut as fallback for Sorin | Provider decision documented; implementation pending #17 | `docs/email-provider-decision.md` |
-| Test coverage | Ionut as fallback for Cornel | Draft completed; team review pending | This document |
+| Area | Reviewer |
+|---|---|
+| Firebase/auth/security | Dawid |
+| Student screens/dashboard/form/upload | Alina |
+| Admin/scoping/decisions | Ionut |
+| Email | Ionut as fallback for Sorin |
+| Test coverage | Ionut as fallback for Cornel |
 
-## Weekly Smoke-Test Record Template
+## Execution Records
 
-Copy this section for each meaningful integrated build. Do not overwrite an earlier run.
-
-```text
-Test date/time:
-Tester:
-Build URL:
-Commit/PR:
-Browser/device:
-Test account roles:
-Tests run:
-Passed:
-Failed:
-Blocked/not implemented:
-Evidence links:
-Issues raised:
-Retest build/date:
-```
+Record every meaningful integrated-build execution in [Issue #25 Test Record](test-record-25.md). Do not add outcomes to this plan or overwrite earlier evidence.
 
 ## Exit Criteria
 
