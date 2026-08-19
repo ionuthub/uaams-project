@@ -77,7 +77,7 @@ for (const secretPath of [".env.local", "serviceAccountKey.json"]) {
 }
 
 for (const absolutePath of await collectFiles()) {
-  const relativePath = path.relative(root, absolutePath);
+  const relativePath = path.relative(root, absolutePath).replace(/\\/g, "/");
   const contents = await readFile(absolutePath, "utf8");
 
   if (/^<<<<<<< |^>>>>>>> /m.test(contents)) {
