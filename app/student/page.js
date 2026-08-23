@@ -174,6 +174,11 @@ export default function StudentDashboardPage() {
         { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
         { key: "apply", label: "New application", href: "/apply" },
         { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
+        // #241: visible but inactive ahead of the payments feature itself - real
+        // payments (funding method, instalments, transactions) is separate,
+        // larger scope pending a PRD change-request decision (see README). No
+        // href, so PortalShell renders this as a disabled span, not a link.
+        { key: "payments", label: "Payments", disabled: true, badgeLabel: "Coming soon" },
       ],
     },
   ];
