@@ -174,6 +174,11 @@ export default function StudentDashboardPage() {
         { key: "dashboard", label: "My applications", href: "/student", badge: applications.length || null },
         { key: "apply", label: "New application", href: "/apply" },
         { key: "notifications", label: "Notifications", href: "#notifications", badge: unreadCount || null },
+        // #241: visible but inactive ahead of the payments feature itself - real
+        // payments (funding method, instalments, transactions) is separate,
+        // larger scope pending a PRD change-request decision (see README). No
+        // href, so PortalShell renders this as a disabled span, not a link.
+        { key: "payments", label: "Payments", disabled: true, badgeLabel: "Coming soon" },
       ],
     },
   ];
@@ -248,7 +253,7 @@ export default function StudentDashboardPage() {
                   <ol className="m-0 px-7 pt-[30px] pb-7 grid grid-cols-4 list-none border-y border-border bg-[#fbfcfd] max-[900px]:grid-cols-2 max-[900px]:gap-y-5" aria-label="Application progress">
                     {STAGES.map((stage, index) => {
                       const state = states[index];
-                      const dot = state === "done" ? "✓" : index + 1;
+                      const dot = state === "done" ? "â" : index + 1;
                       return (
                         <li key={stage} className={LI_BASE + " " + (state === "done" ? "before:bg-success" : "before:bg-border")}>
                           <span className={"w-[31px] h-[31px] relative z-[1] shrink-0 grid place-items-center border-2 rounded-full text-[11px] font-bold " + (state === "done" ? "text-white bg-success border-success" : state === "current" ? "text-white bg-blue-600 border-blue-600 shadow-[0_0_0_5px_var(--color-blue-100)]" : "text-quiet bg-white border-border-strong")}>{dot}</span>
