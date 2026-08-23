@@ -430,6 +430,14 @@ export default function AdminListPage() {
 
         {applications.length > 0 && (
           <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              disabled={filtered.length === 0 || exporting}
+              className="button button-secondary"
+            >
+              {exporting ? "Exporting…" : "Export CSV"}
+            </button>
             <label className="sr-only" htmlFor="queue-search">Search by student name or application ID</label>
             <input
               id="queue-search"
@@ -463,14 +471,6 @@ export default function AdminListPage() {
                 );
               })}
             </div>
-            <button
-              type="button"
-              onClick={handleExportCsv}
-              disabled={filtered.length === 0 || exporting}
-              className="button button-secondary ml-auto"
-            >
-              {exporting ? "Exporting…" : "Export CSV"}
-            </button>
           </div>
         )}
 
