@@ -107,6 +107,9 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
             <div className="step-number" aria-hidden="true">04</div>
             <h3>Payments</h3>
             <p>Choose a funding method and follow your payment status alongside the rest of your application, from tuition deposits to instalment plans.</p>
+            <p style={{ marginTop: "10px", color: "var(--muted)", fontSize: "14px" }}>
+              Supported funding routes include self-funded instalments, Student Finance (SLC), scholarships and bursaries, employer or apprenticeship sponsorship, and sponsor-invoiced payments.
+            </p>
           </article>
         </div>
       </section>
