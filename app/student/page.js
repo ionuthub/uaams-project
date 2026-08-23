@@ -178,7 +178,7 @@ export default function StudentDashboardPage() {
         // payments (funding method, instalments, transactions) is separate,
         // larger scope pending a PRD change-request decision (see README). No
         // href, so PortalShell renders this as a disabled span, not a link.
-        { key: "payments", label: "Payments", disabled: true, badgeLabel: "Coming soon" },
+        { key: "payments", label: "Payments", disabled: true },
       ],
     },
   ];
