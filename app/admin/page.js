@@ -19,6 +19,7 @@ import {
   getUniversities,
   getNotifications,
   markNotificationRead,
+  logCsvExport,
 } from "../../lib/db";
 
 const ADMIN_NAV = [
@@ -64,9 +65,39 @@ function formatDate(ts) {
   });
 }
 
+// #240: minimal RFC-4180-ish escaping - wrap in quotes and double any quote
+// a name or ID happens to contain. Good enough for the four columns below;
+// none of them are free text a student writes (that stays out of the CSV).
+function toCsvValue(value) {
+  const str = value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+}
+
+// Exports exactly the rows the admin is looking at (the filtered array),
+// never the whole university - see #240 for why.
+function toCsv(rows) {
+  const header = ["Application ID", "Applicant name", "Status", "Submitted", "Document attached"];
+  const lines = [header.map(toCsvValue).join(",")];
+  for (const row of rows) {
+    lines.push(
+      [
+        row.id,
+        row.form?.fullName || "Name not recorded",
+        row.status,
+        formatDate(row.submittedAt),
+        row.documentPath ? "Yes" : "No",
+      ]
+        .map(toCsvValue)
+        .join(",")
+    );
+  }
+  return lines.join("\r\n");
+}
+
 export default function AdminListPage() {
   const [phase, setPhase] = useState("loading"); // loading | signed-out | denied | error | ready
   const [profile, setProfile] = useState(null);
+  const [adminUid, setAdminUid] = useState(null);
   const [universityName, setUniversityName] = useState(null);
   const [applications, setApplications] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -74,6 +105,8 @@ export default function AdminListPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(10);
+  // #240: local-only UI state for the CSV export button - not persisted.
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -128,6 +161,7 @@ export default function AdminListPage() {
             (item) => item.id === userProfile.universityId
           );
           setProfile(userProfile);
+          setAdminUid(user.uid);
           setUniversityName(university ? university.name : userProfile.universityId);
           setApplications(apps);
           setNotifications(notices);
@@ -243,6 +277,37 @@ export default function AdminListPage() {
         (a.form?.fullName || "").toLowerCase().includes(q))
   );
   const visible = filtered.slice(0, visibleCount);
+
+  // #240: exports the filtered array above, i.e. exactly what is on screen
+  // (status filter + search applied), not every application for the
+  // university. The log call is best-effort - a failed log write should
+  // never undo a download the admin already has in hand.
+  async function handleExportCsv() {
+    if (filtered.length === 0 || exporting) return;
+    setExporting(true);
+    try {
+      const csv = toCsv(filtered);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = "applications-" + (universityName || "export") + "-" + stamp + ".csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      await logCsvExport(adminUid, profile?.universityId, filtered.length, {
+        statusFilter,
+        query,
+      }).catch((error) => {
+        console.warn("CSV export log failed:", error?.code || error?.message);
+      });
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const FILTERS = [
     ["all", "All active"],
     ["submitted", "Submitted"],
@@ -375,6 +440,14 @@ export default function AdminListPage() {
 
         {applications.length > 0 && (
           <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              disabled={filtered.length === 0 || exporting}
+              className="button button-secondary"
+            >
+              {exporting ? "Exporting…" : "Export CSV"}
+            </button>
             <label className="sr-only" htmlFor="queue-search">Search by student name or application ID</label>
             <input
               id="queue-search"
