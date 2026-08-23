@@ -44,6 +44,17 @@ const NAV_GROUP_LABEL =
 const NAV_CHILD = NAV_BASE + " text-[0.85rem] font-normal";
 const NAV_CHILD_CURRENT = NAV_CHILD + NAV_ACCENT + " font-medium";
 
+// #241: a disabled nav child (e.g. Payments, ahead of the payments feature
+// itself) keeps the same size and spacing so the sidebar doesn't jump, but
+// drops the hover/focus affordances and dims the text - it should read as
+// present-but-not-yet, not as a broken link.
+const NAV_CHILD_DISABLED = NAV_CHILD.replace("cursor-pointer", "cursor-default").replace(
+  "hover:bg-white/[0.06] hover:text-white",
+  "opacity-50"
+);
+const NAV_SOON_BADGE =
+  "ml-auto px-1.5 h-5 grid place-items-center rounded-full bg-white/[0.10] text-side-quiet text-[10px] font-semibold uppercase tracking-[0.04em]";
+
 export default function PortalShell({
   user,
   current,
@@ -128,16 +139,28 @@ export default function PortalShell({
                     >
                       {item.children.map((child) => (
                         <li key={child.key}>
-                          <a
-                            className={child.key === current ? NAV_CHILD_CURRENT : NAV_CHILD}
-                            href={child.href}
-                            aria-current={child.key === current ? "page" : undefined}
-                          >
-                            {child.label}
-                            {child.badge != null && (
-                              <span className={NAV_BADGE} aria-label={child.badge + " items"}>{child.badge}</span>
-                            )}
-                          </a>
+                          {child.disabled ? (
+                            // #241: no href, so a click can never navigate and never
+                            // fires a request - this is the only thing that makes an
+                            // "inactive" nav entry actually inactive.
+                            <span className={NAV_CHILD_DISABLED} aria-disabled="true">
+                              {child.label}
+                              {child.badgeLabel && (
+                                <span className={NAV_SOON_BADGE}>{child.badgeLabel}</span>
+                              )}
+                            </span>
+                          ) : (
+                            <a
+                              className={child.key === current ? NAV_CHILD_CURRENT : NAV_CHILD}
+                              href={child.href}
+                              aria-current={child.key === current ? "page" : undefined}
+                            >
+                              {child.label}
+                              {child.badge != null && (
+                                <span className={NAV_BADGE} aria-label={child.badge + " items"}>{child.badge}</span>
+                              )}
+                            </a>
+                          )}
                         </li>
                       ))}
                     </ul>
