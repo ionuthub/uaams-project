@@ -240,5 +240,28 @@ service cloud.firestore {
                   && resource.data.universityId == userDoc().universityId;
       allow write: if false; // Firebase Admin performs authorised server writes
     }
+
+    // ---- CSV export audit log (#240) ----
+    // One doc per export click. Records THAT the queue was exported, how much,
+    // and under what filter/search - never the row contents themselves, which
+    // is the GDPR-relevant fact (data leaving the system). Written directly by
+    // the admin's own client, unlike emailLogs, so create is scoped the same
+    // way every other admin-authored record in this file is: caller's own
+    // uid, caller's own university, and a capped allow-list of fields.
+    // Append-only for the same reason as decisions and notes.
+    match /exportLogs/{logId} {
+      allow read: if isAdmin()
+                  && resource.data.universityId == userDoc().universityId;
+      allow create: if isAdmin()
+                    && request.resource.data.adminUid == request.auth.uid
+                    && request.resource.data.universityId == userDoc().universityId
+                    && request.resource.data.rowCount is int
+                    && request.resource.data.rowCount >= 0
+                    && fieldCapped(request.resource.data, 'statusFilter', 40)
+                    && request.resource.data.searchActive is bool
+                    && request.resource.data.keys()
+                         .hasOnly(['adminUid', 'universityId', 'rowCount', 'statusFilter', 'searchActive', 'exportedAt']);
+      allow update, delete: if false;
+    }
   }
 }
