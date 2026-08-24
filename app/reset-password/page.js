@@ -88,6 +88,7 @@ function RequestResetForm() {
         value={email}
         onChange={(v) => { setEmail(v); if (error) setError(null); }}
         isInvalid={status !== "error" && !!error}
+        isRequired
         className="grid gap-2"
       >
         <Label className={LABEL}>Email address<span className="text-error" aria-hidden="true">*</span></Label>
@@ -196,6 +197,7 @@ function ConfirmResetForm({ oobCode }) {
         value={password}
         onChange={(v) => { setPassword(v); setErrors((prev) => (prev.password ? { ...prev, password: null } : prev)); }}
         isInvalid={!!errors.password}
+        isRequired
         className="grid gap-2"
       >
         <Label className={LABEL}>New password<span className="text-error" aria-hidden="true">*</span></Label>
@@ -213,6 +215,7 @@ function ConfirmResetForm({ oobCode }) {
         value={confirmPasswordValue}
         onChange={(v) => { setConfirmPasswordValue(v); setErrors((prev) => (prev.confirmPassword ? { ...prev, confirmPassword: null } : prev)); }}
         isInvalid={!!errors.confirmPassword}
+        isRequired
         className="grid gap-2"
       >
         <Label className={LABEL}>Confirm new password<span className="text-error" aria-hidden="true">*</span></Label>
