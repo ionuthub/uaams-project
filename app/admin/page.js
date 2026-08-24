@@ -34,7 +34,18 @@ const ADMIN_NAV = [
 // #196: the Student view link is gone. Staff accounts are not applicant
 // accounts, so the admin portal no longer offers a route into the student
 // area - an admin following it would only ever see an empty dashboard.
-const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
+// "Invite a colleague" sits beside Privacy on purpose (#195): administrative
+// work rather than part of the daily queue, so it is present without competing
+// with the applications an officer came here to review.
+//
+// It is only rendered inside the admin portal, behind the staff sign-in. There
+// is deliberately no route to admin account creation from any public page - a
+// visible one would let anyone reach it, and a flaw in the gate would hand a
+// stranger access to applicant passports and addresses.
+const ADMIN_FOOTER = [
+  { label: "Privacy", href: "/privacy" },
+  { label: "Invite a colleague", href: "/admin/invite" },
+];
 
 const TH = "text-left text-[0.8rem] uppercase tracking-[0.04em] text-quiet bg-slate-50 px-[0.9rem] py-[0.6rem] border-b border-border max-sm:p-[0.6rem]";
 const TD = "px-[0.9rem] py-[0.7rem] border-b border-border align-middle text-[0.95rem] text-ink max-sm:p-[0.6rem]";
@@ -323,7 +334,7 @@ export default function AdminListPage() {
       footerLinks={ADMIN_FOOTER}
     >
       <div className="max-w-[960px] mx-auto my-10 px-4">
-        <header className="flex justify-between items-start gap-4 mb-6 flex-wrap">
+        <header className="mb-6">
           <div>
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-blue-700">Admissions</p>
             <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Admissions overview</h1>
@@ -331,7 +342,6 @@ export default function AdminListPage() {
               Operational workload and application progress for {universityName}. Signed in as {profile.fullName} ({profile.email}).
             </p>
           </div>
-          <a className="button button-primary" href="#queue">Open queue</a>
         </header>
 
         {notifications.length > 0 && (() => {
