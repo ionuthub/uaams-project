@@ -30,7 +30,7 @@ const STRENGTH_LABEL = { weak: "Weak", medium: "Okay", strong: "Strong" };
 const INPUT = "w-full min-h-12 px-[13px] py-[11px] border border-border-strong rounded-[7px] text-ink bg-white outline-0 focus:border-blue-600 focus:shadow-[0_0_0_4px_var(--color-blue-100)]";
 const LABEL = "!flex items-center gap-1";
 const SUBMIT = "w-full inline-flex items-center justify-center gap-2 min-h-[52px] px-6 py-[13px] rounded-lg border border-transparent bg-blue-600 text-white font-semibold text-[15px] transition hover:bg-blue-700 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed";
-const TOGGLE = "absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer";
+const TOGGLE = "absolute right-3 top-1/2 -translate-y-1/2 min-h-6 min-w-11 grid place-items-center px-2 border-0 bg-transparent text-blue-600 text-[11px] font-bold cursor-pointer";
 
 function RequestResetForm() {
   const [email, setEmail] = useState("");
