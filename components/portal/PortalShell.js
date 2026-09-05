@@ -211,7 +211,7 @@ export default function PortalShell({
         </div>
       </aside>
 
-      <main className="min-w-0 bg-warm-50">{children}</main>
+    <main id="main-content" tabIndex={-1} className="min-w-0 bg-warm-50">{children}</main>
     </div>
   );
 }
