@@ -336,7 +336,7 @@ export default function ApplicationPage() {
           <p className="mt-0 mb-1 text-sm font-semibold text-ink">{label}{required ? "" : " (optional)"}{documents[docType]?.path && <span className="ml-2 text-success font-bold" role="status">Attached</span>}</p>
           {documents[docType]?.name && <p className="mt-0 mb-2 text-xs text-muted">{documents[docType].name}</p>}
           <div className="flex items-center gap-3 flex-wrap">
-            <input className="block flex-1 min-w-[220px]" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/pjpeg,image/png" onChange={(e) => { setFiles((current) => ({ ...current, [docType]: e.target.files?.[0] || null })); setMessage(null); }} />
+            <input className="block flex-1 min-w-[220px]" type="file" aria-label={label} accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/pjpeg,image/png" onChange={(e) => { setFiles((current) => ({ ...current, [docType]: e.target.files?.[0] || null })); setMessage(null); }} />
             <LoadingButton type="button" full={false} loading={uploadingType === docType} onClick={() => uploadOne(docType)}>{documents[docType]?.path ? "Replace" : "Upload"}</LoadingButton>
           </div>
         </div>
