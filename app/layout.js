@@ -19,9 +19,11 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <a className="skip-link" href="#main-content">
-          Skip to main content
-        </a>
+        <nav aria-label="Skip links">
+  <a className="skip-link" href="#main-content">
+    Skip to main content
+  </a>
+</nav>
         {children}
       </body>
     </html>
