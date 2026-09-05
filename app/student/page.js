@@ -242,7 +242,7 @@ export default function StudentDashboardPage() {
                     <div className="flex gap-4">
                       <span className="w-12 h-12 shrink-0 grid place-items-center border border-[#c2a979] rounded-full text-gold bg-[#fbf8f1] font-editorial font-semibold">{seal}</span>
                       <div>
-                        <p className="mt-0 mb-1 text-quiet text-[10px] font-bold tracking-[0.1em] uppercase">Application</p>
+                        <p className="mt-0 mb-1 text-muted text-[10px] font-bold tracking-[0.1em] uppercase">Application</p>
                         <h2 className="mt-0 mb-1.5 text-navy-900 text-[21px] tracking-[-0.01em]">{university}</h2>
                         <p className="m-0 text-muted text-xs">Reference {application.id}</p>
                       </div>
@@ -256,17 +256,17 @@ export default function StudentDashboardPage() {
                       const dot = state === "done" ? "â" : index + 1;
                       return (
                         <li key={stage} className={LI_BASE + " " + (state === "done" ? "before:bg-success" : "before:bg-border")}>
-                          <span className={"w-[31px] h-[31px] relative z-[1] shrink-0 grid place-items-center border-2 rounded-full text-[11px] font-bold " + (state === "done" ? "text-white bg-success border-success" : state === "current" ? "text-white bg-blue-600 border-blue-600 shadow-[0_0_0_5px_var(--color-blue-100)]" : "text-quiet bg-white border-border-strong")}>{dot}</span>
+                          <span className={"w-[31px] h-[31px] relative z-[1] shrink-0 grid place-items-center border-2 rounded-full text-[11px] font-bold " + (state === "done" ? "text-white bg-success border-success" : state === "current" ? "text-white bg-blue-600 border-blue-600 shadow-[0_0_0_5px_var(--color-blue-100)]" : "text-muted bg-white border-border-strong")}>{dot}</span>
                           <strong className="text-xs text-ink leading-[1.2]">{stage}</strong>
-                          {index === 3 && application.status === "offer" && <small className="mt-0.5 text-quiet text-[10px]">Offer made</small>}
-                          {index === 3 && application.status === "rejected" && <small className="mt-0.5 text-quiet text-[10px]">Not successful</small>}
+                          {index === 3 && application.status === "offer" && <small className="mt-0.5 text-muted text-[10px]">Offer made</small>}
+                          {index === 3 && application.status === "rejected" && <small className="mt-0.5 text-muted text-[10px]">Not successful</small>}
                         </li>
                       );
                     })}
                   </ol>
 
                   <div className="px-7 py-[18px] flex items-center justify-between gap-6 flex-wrap max-[900px]:flex-col max-[900px]:items-start">
-                    <dl className="m-0 flex gap-10 [&>div]:grid [&>div]:gap-[3px] [&_dt]:text-quiet [&_dt]:text-[11px] [&_dt]:uppercase [&_dt]:tracking-[0.06em] [&_dd]:m-0 [&_dd]:text-ink [&_dd]:text-sm [&_dd]:font-semibold">
+                    <dl className="m-0 flex gap-10 [&>div]:grid [&>div]:gap-[3px] [&_dt]:text-muted [&_dt]:text-[11px] [&_dt]:uppercase [&_dt]:tracking-[0.06em] [&_dd]:m-0 [&_dd]:text-ink [&_dd]:text-sm [&_dd]:font-semibold">
                       <div><dt>Submitted</dt><dd>{formatDate(application.submittedAt)}</dd></div>
                       <div><dt>Document</dt><dd>{application.documentPath ? "Attached" : "Not attached"}</dd></div>
                     </dl>
@@ -279,7 +279,7 @@ export default function StudentDashboardPage() {
 
                   {application.latestDecisionMessage && (
                     <div className="px-7 pt-[18px] pb-[22px] border-t border-border bg-info-bg [&>p:last-child]:m-0 [&>p:last-child]:text-ink">
-                      <p className="mt-0 mb-1 text-quiet text-[10px] font-bold tracking-[0.1em] uppercase">Message from the university</p>
+                      <p className="mt-0 mb-1 text-muted text-[10px] font-bold tracking-[0.1em] uppercase">Message from the university</p>
                       <p>{application.latestDecisionMessage}</p>
                     </div>
                   )}
@@ -298,7 +298,7 @@ export default function StudentDashboardPage() {
                 <li key={notice.id} className={"px-4 py-3 rounded-lg border flex items-start justify-between gap-4 flex-wrap " + (notice.readStatus ? "border-border bg-white" : "border-blue-600/30 bg-info-bg")}>
                   <div className="min-w-0">
                     <p className="m-0 text-sm text-ink">{notice.message}</p>
-                    <p className="mt-1 mb-0 text-xs text-quiet">{formatDate(notice.createdAt)}{notice.readStatus ? "" : " - unread"}</p>
+                    <p className="mt-1 mb-0 text-xs text-muted">{formatDate(notice.createdAt)}{notice.readStatus ? "" : " - unread"}</p>
                   </div>
                   {!notice.readStatus && (
                     <button type="button" className="shrink-0 px-3 py-1.5 rounded-full border border-border bg-white text-muted text-xs font-semibold cursor-pointer hover:border-border-strong" onClick={() => handleMarkRead(notice.id)}>
