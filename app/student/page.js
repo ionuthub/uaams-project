@@ -166,7 +166,6 @@ export default function StudentDashboardPage() {
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   const unreadCount = notifications.filter((n) => !n.readStatus).length;
   const navWithCounts = [
-    { key: "home", label: "Home", href: "/" },
     {
       key: "student-dashboard",
       label: "Dashboard",
