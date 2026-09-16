@@ -105,9 +105,9 @@ export default function LandingScreen({ setScreen, universities, onSelectCourse,
           </article>
           <article className="editorial-step">
             <div className="step-number" aria-hidden="true">04</div>
-            <h3>Payments</h3>
+            <h3>Funding</h3>
             <p style={{ marginTop: "10px", color: "var(--muted)", fontSize: "14px" }}>
-              Supported funding includes self-funding, Student Finance, scholarships, apprenticeship, and sponsor-invoiced payments.
+              Supported funding includes self-funding, Student Finance, scholarships, apprenticeships, and sponsor-invoiced payments.
             </p>
           </article>
         </div>
