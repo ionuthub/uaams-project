@@ -25,7 +25,6 @@ import {
 } from "../../lib/db";
 
 const ADMIN_NAV = [
-  { key: "home", label: "Home", href: "/" },
   {
     key: "admin-dashboard",
     label: "Dashboard",

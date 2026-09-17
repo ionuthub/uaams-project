@@ -11,7 +11,6 @@ import { logout } from "../../lib/auth";
 // links, the user chip and log out) collapses behind that button, so the
 // header stays readable on a phone instead of wrapping onto several rows.
 const STUDENT_NAV = [
-  { key: "home", label: "Home", href: "/" },
   {
     key: "student-dashboard",
     label: "Dashboard",
