@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-17T12:53:38.808Z",
+  "mode": "Isolated actual-page render with local fixture; not authenticated production UAT",
+  "results": [
+    "Desktop details: readable reference, aligned fields, no overflow, sidebar remains at viewport top after scroll.",
+    "Applicant dashboard: separate references on two application cards; original detail URL retained.",
+    "Admin search: case-insensitive short reference returns one correct row; filtered CSV retains readable reference and internal ID.",
+    "Admin details: same reference as applicant details.",
+    "390px mobile: applicant cards/details fit; navigation opens and closes.",
+    "Reference outage fallback: clearly labelled original ID and explanation, no invented number or mobile overflow."
+  ],
+  "errors": []
+}

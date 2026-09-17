@@ -8,6 +8,7 @@ import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile } from "../../lib/auth";
 import { getStudentApplications, getNotifications, markNotificationRead } from "../../lib/db";
 import { statusMeta } from "../../components/StatusBadge";
+import ApplicationReference from "../../components/ApplicationReference";
 
 
 const LI_BASE =
@@ -238,13 +239,13 @@ export default function StudentDashboardPage() {
               const seal = university.trim().slice(0, 2).toUpperCase();
               return (
                 <article className="border border-border rounded-[14px] bg-white shadow-sm overflow-hidden" key={application.id}>
-                  <div className="px-7 pt-6 pb-[22px] flex items-start justify-between gap-5">
-                    <div className="flex gap-4">
+                  <div className="px-7 pt-6 pb-[22px] flex items-start justify-between gap-5 flex-wrap max-sm:px-5">
+                    <div className="flex gap-4 min-w-0">
                       <span className="w-12 h-12 shrink-0 grid place-items-center border border-[#c2a979] rounded-full text-gold bg-[#fbf8f1] font-editorial font-semibold">{seal}</span>
-                      <div>
+                      <div className="min-w-0">
                         <p className="mt-0 mb-1 text-muted text-[10px] font-bold tracking-[0.1em] uppercase">Application</p>
                         <h2 className="mt-0 mb-1.5 text-navy-900 text-[21px] tracking-[-0.01em]">{university}</h2>
-                        <p className="m-0 text-muted text-xs">Reference {application.id}</p>
+                        <ApplicationReference application={application} />
                       </div>
                     </div>
                     <span className={"status status-" + meta.tone}>{meta.label}</span>

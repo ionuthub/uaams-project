@@ -83,7 +83,7 @@ async function handlePost(request) {
   // The message names the university and the reference, never the student.
   // An admin who wants details opens the application itself.
   const universityName = application.form?.universityName || application.universityId;
-  const message = `An applicant withdrew their application to ${universityName} (ref ${applicationId}).`;
+  const message = `An applicant withdrew their application to ${universityName} (ref ${application.referenceNumber || applicationId}).`;
   const now = Timestamp.now();
 
   let created = 0;

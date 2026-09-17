@@ -12,6 +12,8 @@ import AuthCard from "../../components/auth/AuthCard";
 import AlertBanner from "../../components/auth/AlertBanner";
 import LoadingButton from "../../components/auth/LoadingButton";
 import StatusBadge from "../../components/StatusBadge";
+import ApplicationReference from "../../components/ApplicationReference";
+import { applicationReference, matchesApplicationSearch } from "../../lib/application-reference.mjs";
 import PortalShell from "../../components/portal/PortalShell";
 import { watchAuth, getUserProfile, logout } from "../../lib/auth";
 import {
@@ -76,11 +78,12 @@ function toCsvValue(value) {
 // Exports exactly the rows the admin is looking at (the filtered array),
 // never the whole university - see #240 for why.
 function toCsv(rows) {
-  const header = ["Application ID", "Applicant name", "Status", "Submitted", "Document attached"];
+  const header = ["Application reference", "Application ID", "Applicant name", "Status", "Submitted", "Document attached"];
   const lines = [header.map(toCsvValue).join(",")];
   for (const row of rows) {
     lines.push(
       [
+        applicationReference(row),
         row.id,
         row.form?.fullName || "Name not recorded",
         row.status,
@@ -272,9 +275,7 @@ export default function AdminListPage() {
   const filtered = applications.filter(
     (a) =>
       (statusFilter === "all" ? a.status !== "withdrawn" : a.status === statusFilter) &&
-      (!q ||
-        a.id.toLowerCase().includes(q) ||
-        (a.form?.fullName || "").toLowerCase().includes(q))
+      (!q || matchesApplicationSearch(a, q))
   );
   const visible = filtered.slice(0, visibleCount);
 
@@ -448,13 +449,13 @@ export default function AdminListPage() {
             >
               {exporting ? "Exporting…" : "Export CSV"}
             </button>
-            <label className="sr-only" htmlFor="queue-search">Search by student name or application ID</label>
+            <label className="sr-only" htmlFor="queue-search">Search by student name, reference or application ID</label>
             <input
               id="queue-search"
               type="search"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setVisibleCount(10); }}
-              placeholder="Search by student name or application ID"
+              placeholder="Search by name, reference or ID"
               className="min-w-[260px] flex-1 max-w-[360px] px-3 py-2 border border-border rounded-lg bg-white text-sm text-ink"
             />
             <div className="flex gap-1.5 flex-wrap" role="group" aria-label="Filter by status">
@@ -516,7 +517,7 @@ export default function AdminListPage() {
                             not by document ID. The ID stays underneath because
                             it is what gets quoted in support and in evidence. */}
                         <span className="block text-ink font-medium">{app.form?.fullName || "Name not recorded"}</span>
-                        <span className="block font-mono text-[0.75rem] text-quiet [overflow-wrap:anywhere]">{app.id}</span>
+                        <ApplicationReference application={app} />
                       </td>
                     <td className={TD}><StatusBadge status={app.status} /></td>
                     <td className={TD_HIDE}>{formatDate(app.submittedAt)}</td>
