@@ -46,6 +46,9 @@ const FORM_FIELDS = [
   ["intake", "Intake"],
 ];
 
+const CARD = "bg-white border border-border rounded-[14px] px-7 py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem] max-sm:px-5";
+const GRID = "grid grid-cols-2 gap-x-8 gap-y-5 m-0 max-sm:grid-cols-1 [&_dt]:text-sm [&_dt]:text-muted [&_dd]:m-0 [&_dd]:mt-1 [&_dd]:text-[0.95rem] [&_dd]:text-navy-900 [&_dd]:[overflow-wrap:anywhere]";
+
 const ADMIN_NAV = [{ key: "queue", label: "Application queue", href: "/admin" }];
 // #196: Student view removed - staff accounts are not applicant accounts.
 const ADMIN_FOOTER = [{ label: "Privacy", href: "/privacy" }];
@@ -380,28 +383,28 @@ export default function AdminApplicationDetailPage() {
 
       {notice && <AlertBanner variant={notice.type}>{notice.text}</AlertBanner>}
 
-      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="application-summary">
+      <section className={CARD} aria-labelledby="application-summary">
         <h2 id="application-summary">Summary</h2>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 m-0 max-sm:grid-cols-1 [&_dt]:text-[0.78rem] [&_dt]:uppercase [&_dt]:tracking-[0.04em] [&_dt]:text-quiet [&_dd]:mt-[0.15rem] [&_dd]:text-[0.95rem] [&_dd]:[overflow-wrap:anywhere]">
+        <dl className={GRID}>
           <div><dt>University</dt><dd>{application.form?.universityName || application.universityId}</dd></div>
           <div><dt>Submitted</dt><dd>{formatDateTime(application.submittedAt)}</dd></div>
           <div><dt>Last updated</dt><dd>{formatDateTime(application.updatedAt)}</dd></div>
-          <div><dt>Student ID</dt><dd className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.studentUid}</dd></div>
+          <div><dt>Student account ID</dt><dd className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.studentUid}</dd></div>
         </dl>
       </section>
 
-      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="applicant-details">
+      <section className={CARD} aria-labelledby="applicant-details">
         <h2 id="applicant-details">Applicant details</h2>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 m-0 max-sm:grid-cols-1 [&_dt]:text-[0.78rem] [&_dt]:uppercase [&_dt]:tracking-[0.04em] [&_dt]:text-quiet [&_dd]:mt-[0.15rem] [&_dd]:text-[0.95rem] [&_dd]:[overflow-wrap:anywhere]">
+        <dl className={GRID}>
           {FORM_FIELDS.map(([key, label]) => (
-            <div key={key}><dt>{label}</dt><dd>{application.form?.[key] || "-"}</dd></div>
+            <div key={key}><dt>{label}</dt><dd>{key === "dateOfBirth" && /^\d{4}-\d{2}-\d{2}$/.test(application.form?.[key] || "") ? new Date(application.form[key] + "T00:00:00Z").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }) : application.form?.[key] || "-"}</dd></div>
           ))}
         </dl>
         <h3>Personal statement</h3>
         <p className="m-0 text-[0.95rem] leading-relaxed whitespace-pre-wrap">{application.form?.personalStatement || "-"}</p>
       </section>
 
-      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="supporting-document">
+      <section className={CARD} aria-labelledby="supporting-document">
         <h2 id="supporting-document">Supporting documents</h2>
         {application.documents && Object.keys(application.documents).length > 0 ? (
           <ul className="m-0 p-0 list-none grid gap-2">
@@ -423,7 +426,7 @@ export default function AdminApplicationDetailPage() {
         {documentError && <AlertBanner variant="error">{documentError}</AlertBanner>}
       </section>
 
-      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="record-decision">
+      <section className={CARD} aria-labelledby="record-decision">
         <h2 id="record-decision">Record a decision</h2>
         {isWithdrawn ? (
           <AlertBanner variant="info">
@@ -499,7 +502,7 @@ export default function AdminApplicationDetailPage() {
         )}
       </section>
 
-      <section className="bg-white border border-border rounded-lg px-[1.4rem] py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem]" aria-labelledby="decision-history">
+      <section className={CARD} aria-labelledby="decision-history">
         <h2 id="decision-history">Decision history and email delivery</h2>
         {decisions.length === 0 ? (
           <p className="text-muted text-[0.9rem] my-1">No decisions recorded yet.</p>
