@@ -2,6 +2,16 @@
 
 ## 1. Purpose
 
+### Issue 254 verification note dated 17 September 2026
+
+The team-approved reference and applicant-layout refinement is recorded in
+[issue 254](https://github.com/ionuthub/uaams-project/issues/254). It adds a permanent
+readable reference while retaining internal IDs, clearer applicant details and a
+sticky desktop sidebar. Local unit, Firestore-emulator and isolated UI-render
+checks are recorded in [the evidence folder](evidence/issue-254/README.md).
+Authenticated deployment verification remains outstanding; this branch evidence
+does not upgrade any baseline requirement to fully accepted or establish external UAT.
+
 This register compares the original 13-page **Project Requirements Document - University Administration & Application Management System** with the implemented repository and Product Backlog.
 
 It prevents a reduced sprint increment from silently replacing the agreed product scope. A requirement may be deferred to a later sprint, but it remains required unless the client or supervisor approves a documented change.

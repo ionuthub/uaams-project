@@ -143,7 +143,7 @@ export async function POST(request) {
   const { subject, text, html } = buildSubmissionEmail({
     universityName: application.form?.universityName || application.universityId,
     courseName: application.form?.courseName || "",
-    applicationId,
+    applicationId: application.referenceNumber || applicationId,
   });
 
   const logRef = db.collection("emailLogs").doc(key);

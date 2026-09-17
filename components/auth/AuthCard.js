@@ -16,7 +16,7 @@ export default function AuthCard({ title, subtitle, children }) {
           ← Back to home
         </a>
       </header>
-      <main className="min-h-[calc(100vh-64px)] flex justify-center items-start bg-warm-50 px-4 py-10 min-[480px]:items-center">
+      <main id="main-content" tabIndex={-1} className="min-h-[calc(100vh-64px)] flex justify-center items-start bg-warm-50 px-4 py-10 min-[480px]:items-center">
         <div className="w-full max-w-[420px] bg-white border border-border rounded-[10px] p-6 shadow-sm">
           <h1 className="m-0 text-xl font-semibold text-navy-900">{title}</h1>
           {subtitle && <p className="mt-1 mb-0 text-sm text-muted">{subtitle}</p>}

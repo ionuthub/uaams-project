@@ -80,8 +80,8 @@ export default function PortalShell({
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-[248px_1fr] text-ink font-ui leading-[1.6] max-[900px]:grid-cols-1">
-      <aside className="sticky top-0 h-screen overflow-y-auto min-h-screen px-4 pt-[26px] pb-5 flex flex-col bg-navy-900 text-side-text max-[900px]:min-h-0 max-[900px]:px-5 max-[900px]:pt-3 max-[900px]:pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+    <div className="min-h-screen grid grid-cols-[248px_minmax(0,1fr)] text-ink font-ui leading-[1.6] max-[900px]:grid-cols-1">
+      <aside className="sticky top-0 self-start h-dvh overflow-y-auto px-4 pt-[26px] pb-5 flex flex-col bg-navy-900 text-side-text max-[900px]:static max-[900px]:h-auto max-[900px]:overflow-visible max-[900px]:px-5 max-[900px]:pt-3 max-[900px]:pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-3 mb-7 px-1.5 max-[900px]:mb-0 max-[900px]:px-0 [&_strong]:block [&_strong]:text-white [&_strong]:text-[15px] [&_strong]:tracking-[0.08em] [&_small]:text-side-quiet [&_small]:text-xs">
           <span className="w-[38px] h-[38px] shrink-0 grid place-items-center rounded-[50%_50%_46%_46%] text-white bg-blue-600 font-editorial text-xl">U</span>
           <div>
@@ -210,7 +210,7 @@ export default function PortalShell({
         </div>
       </aside>
 
-      <main className="min-w-0 bg-warm-50">{children}</main>
+    <main id="main-content" tabIndex={-1} className="min-w-0 bg-warm-50">{children}</main>
     </div>
   );
 }

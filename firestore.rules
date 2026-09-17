@@ -116,6 +116,15 @@ service cloud.firestore {
     }
 
     // ---- applications ----
+    // Reference allocation is exclusively server-side. These documents must
+    // never be readable or writable by a browser, including an admin browser.
+    match /applicationReferenceCounters/{year} {
+      allow read, write: if false;
+    }
+    match /applicationReferences/{reference} {
+      allow read, write: if false;
+    }
+
     match /applications/{appId} {
       // Student: own applications. Admin: applications for their university.
       allow read: if isVerified()

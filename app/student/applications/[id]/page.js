@@ -15,7 +15,8 @@ import { useParams } from "next/navigation";
 import AuthCard from "../../../../components/auth/AuthCard";
 import AlertBanner from "../../../../components/auth/AlertBanner";
 import LoadingButton from "../../../../components/auth/LoadingButton";
-import StatusBadge from "../../../../components/StatusBadge";
+import StatusBadge, { statusMeta } from "../../../../components/StatusBadge";
+import ApplicationReference from "../../../../components/ApplicationReference";
 import PortalShell from "../../../../components/portal/PortalShell";
 import { watchAuth } from "../../../../lib/auth";
 import {
@@ -43,7 +44,7 @@ const FORM_FIELDS = [
 ];
 
 const CARD = "bg-white border border-border rounded-[14px] px-7 py-5 shadow-sm [&_h2]:mt-0 [&_h2]:mb-[0.9rem] [&_h2]:text-[1.1rem] [&_h2]:text-navy-900 [&_h3]:mt-[1.1rem] [&_h3]:mb-1.5 [&_h3]:text-[0.95rem] max-sm:px-5";
-const GRID = "grid grid-cols-2 gap-x-6 gap-y-3 m-0 max-sm:grid-cols-1 [&_dt]:text-[0.78rem] [&_dt]:uppercase [&_dt]:tracking-[0.04em] [&_dt]:text-quiet [&_dd]:mt-[0.15rem] [&_dd]:text-[0.95rem] [&_dd]:[overflow-wrap:anywhere]";
+const GRID = "grid grid-cols-2 gap-x-8 gap-y-5 m-0 max-sm:grid-cols-1 [&_dt]:text-sm [&_dt]:text-muted [&_dd]:m-0 [&_dd]:mt-1 [&_dd]:text-[0.95rem] [&_dd]:text-navy-900 [&_dd]:[overflow-wrap:anywhere]";
 const MUTED = "text-muted text-[0.9rem] my-1";
 
 function formatDateTime(value) {
@@ -245,13 +246,13 @@ export default function StudentApplicationDetailPage() {
     <PortalShell user={user} current="dashboard">
       <div className="max-w-[860px] mx-auto my-10 px-4 pb-16 grid gap-5">
         <header className="flex justify-between items-start gap-4 flex-wrap">
-          <div>
-            <p className="mt-0 mb-1.5 text-[0.85rem] text-muted">
-              <a className="text-link font-medium" href="/student"><span aria-hidden="true">&larr;</span> My applications</a> /{" "}
-              <span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.id}</span>
+          <div className="min-w-0 grid gap-2">
+            <p className="m-0 text-sm">
+              <a className="text-link font-medium" href="/student"><span aria-hidden="true">&larr;</span> My applications</a>
             </p>
+            <ApplicationReference application={application} />
             <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">{university}</h1>
-            <p className={MUTED}>Submitted {formatDateTime(application.submittedAt)}</p>
+            <p className={MUTED}>{isDraft ? "Draft saved " + formatDateTime(application.updatedAt) : "Submitted " + formatDateTime(application.submittedAt)}</p>
           </div>
           <StatusBadge status={application.status} />
         </header>
@@ -280,7 +281,7 @@ export default function StudentApplicationDetailPage() {
           <h2 id="application-summary">Summary</h2>
           <dl className={GRID}>
             <div><dt>University</dt><dd>{university}</dd></div>
-            <div><dt>Status</dt><dd>{application.status}</dd></div>
+            <div><dt>Status</dt><dd>{statusMeta(application.status).label}</dd></div>
             <div><dt>Submitted</dt><dd>{formatDateTime(application.submittedAt)}</dd></div>
             <div><dt>Last updated</dt><dd>{formatDateTime(application.updatedAt)}</dd></div>
           </dl>
@@ -290,7 +291,7 @@ export default function StudentApplicationDetailPage() {
           <h2 id="your-answers">What you submitted</h2>
           <dl className={GRID}>
             {FORM_FIELDS.map(([key, label]) => (
-              <div key={key}><dt>{label}</dt><dd>{application.form?.[key] || "-"}</dd></div>
+              <div key={key}><dt>{label}</dt><dd>{key === "dateOfBirth" && /^\d{4}-\d{2}-\d{2}$/.test(application.form?.[key] || "") ? new Date(application.form[key] + "T00:00:00Z").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }) : application.form?.[key] || "-"}</dd></div>
             ))}
           </dl>
           <h3>Personal statement</h3>
