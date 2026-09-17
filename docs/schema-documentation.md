@@ -59,8 +59,46 @@ The current seed creates document ID `solent`. Signed-in users can read universi
 
 Path: `/applications/{applicationId}` with an automatically generated ID.
 
+### Readable references added in issue 254
+
+The reference change is additive. `referenceNumber` is an optional string on legacy
+applications until first allocated, for example `APP-2026-00142`. The internal
+document ID, URLs, ownership, document paths and decision history remain unchanged.
+The authenticated server route `/api/applications/references` assigns missing
+references on a portal read and before a new submission. An owning verified user
+or a verified admin of the application's university can request allocation.
+
+Allocation is atomic across these records:
+
+| Path | Field | Purpose |
+|---|---|---|
+| `/applications/{applicationId}` | `referenceNumber: string` | Permanent displayed reference, immutable to clients |
+| `/applicationReferenceCounters/{year}` | `lastSequence: integer` | Last allocated annual number; server-only |
+| `/applicationReferences/{referenceNumber}` | `applicationId: string` | Unique reservation linking the readable number to the existing ID; server-only |
+
+The year comes from `submittedAt` for a previously submitted application, otherwise
+`createdAt`, in UTC. A draft keeps its assigned reference even if submitted in a
+later year. The number is allocated in request order, not submission-date order;
+it is not a count of successful submissions. At least five sequence digits are
+shown, and larger numbers are not truncated. A repeated request returns the saved
+number. A reservation conflict fails instead of reusing a number. Counter and
+reservation records must be restored together with applications from backups.
+
+Allocation changes only `referenceNumber`: it does not alter `updatedAt`, submission
+dates, applicant details, status, documents or audit history. Old records are
+numbered lazily, so no destructive migration or replacement of existing records
+is required. If the service is unavailable, reads show the original ID with an
+explicit message; a new submission waits until its reference can be assigned.
+Neither these reference records nor application references are writable from the
+browser. Existing field allow-lists already protect the new field.
+
+See [issue 254 evidence](evidence/issue-254/README.md) for test scope and rollout status.
+
+### Application fields
+
 | Field | Type | Required | Source and meaning |
 |---|---|---|---|
+| `referenceNumber` | string | Assigned by the server; optional on legacy records until first access | Permanent readable reference; clients cannot set or edit it |
 | `studentUid` | string | Yes | Owning Firebase Auth user ID |
 | `universityId` | string | Yes | University receiving the application and admin-scope key |
 | `status` | string | Yes | One of the supported status values below |

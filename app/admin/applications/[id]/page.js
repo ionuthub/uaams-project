@@ -18,6 +18,7 @@ import AuthCard from "../../../../components/auth/AuthCard";
 import AlertBanner from "../../../../components/auth/AlertBanner";
 import LoadingButton from "../../../../components/auth/LoadingButton";
 import StatusBadge from "../../../../components/StatusBadge";
+import ApplicationReference from "../../../../components/ApplicationReference";
 import { watchAuth, getUserProfile } from "../../../../lib/auth";
 import {
   getApplication,
@@ -369,7 +370,8 @@ export default function AdminApplicationDetailPage() {
       <div className="max-w-[860px] mx-auto my-10 pt-0 px-4 pb-16 grid gap-5">
       <header className="flex justify-between items-start gap-4 flex-wrap">
         <div>
-          <p className="mt-0 mb-1.5 text-[0.85rem] text-muted"><a className="text-link font-medium" href="/admin"><span aria-hidden="true">&larr;</span> Application queue</a> / <span className="font-mono text-[0.85rem] text-muted [overflow-wrap:anywhere]">{application.id}</span></p>
+          <p className="mt-0 mb-2 text-sm"><a className="text-link font-medium" href="/admin"><span aria-hidden="true">&larr;</span> Application queue</a></p>
+          <ApplicationReference application={application} />
           <h1 className="mt-0 mb-1 text-2xl text-navy-900 font-editorial">Application detail</h1>
           <p className="text-muted text-[0.9rem] my-1">Signed in as {profile.fullName} ({profile.email})</p>
         </div>
