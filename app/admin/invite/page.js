@@ -20,7 +20,6 @@ import { watchAuth, getUserProfile, logout } from "../../../lib/auth";
 import { getUniversities } from "../../../lib/db";
 
 const NAV = [
-  { key: "home", label: "Home", href: "/" },
   {
     key: "admin-dashboard",
     label: "Dashboard",
